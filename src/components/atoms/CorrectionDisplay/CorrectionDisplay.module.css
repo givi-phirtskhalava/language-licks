@@ -1,0 +1,32 @@
+.wordList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.375em;
+  font-family: var(--font-serif);
+  font-size: 1.125em;
+  line-height: 1.6;
+}
+
+.wordGroup {
+  display: inline-flex;
+  gap: 0.2em;
+}
+
+.wordCorrect {
+  color: var(--text-dark);
+}
+
+.wordWarning {
+  color: var(--warning-mid);
+  font-weight: 500;
+}
+
+.wordStruck {
+  color: var(--text-light);
+  text-decoration: line-through;
+}
+
+.wordCorrection {
+  color: var(--warning-orange);
+  font-weight: 500;
+}

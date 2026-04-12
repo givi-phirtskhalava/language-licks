@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faChevronRight } from "@fortawesome/free-solid-svg-icons";
 import SentenceDisplay from "@/components/organisms/LanguageCard/SentenceDisplay";
@@ -17,6 +18,7 @@ interface Props {
 }
 
 export default function WritingPractice({ lesson, onReady }: Props) {
+  const [textVisible, setTextVisible] = useState(false);
   const writeStreak = useStreak("I think you\u2019re ready for the speaking test! \uD83C\uDF99\uFE0F");
   const writeTimer = useBestTime();
   const writing = useWritingCheck();
@@ -44,7 +46,14 @@ export default function WritingPractice({ lesson, onReady }: Props) {
 
   return (
     <div className={styles.body}>
-      <SentenceDisplay lesson={lesson} blurrable />
+      <SentenceDisplay
+        lesson={lesson}
+        blurrable
+        onRevealChange={(visible) => {
+          setTextVisible(visible);
+          if (visible) writeStreak.miss();
+        }}
+      />
 
       <div>
         <SectionHeader
@@ -62,6 +71,7 @@ export default function WritingPractice({ lesson, onReady }: Props) {
           hasWarnings={writing.hasWarnings}
           isPass={writing.isPass}
           onRetry={handleWriteRetry}
+          disabled={textVisible}
         >
           {writing.result !== null && writing.isPass && (
             <div

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import SentenceDisplay from "@/components/organisms/LanguageCard/SentenceDisplay";
-import WordResult from "@/components/organisms/LanguageCard/WordResult";
+import CorrectionDisplay from "@/components/atoms/CorrectionDisplay";
 import RecordButton from "@/components/organisms/LanguageCard/RecordButton";
 import WritingInput from "@/components/organisms/LanguageCard/WritingInput";
 import useWritingCheck from "@/components/organisms/LanguageCard/hooks/useWritingCheck";
@@ -45,7 +45,7 @@ export default function Test({ lesson, onPass, onFail }: Props) {
       if (newAttempts >= MAX_ATTEMPTS) {
         setTimeout(onFail, 1500);
       }
-    },
+    }
   );
 
   // Auto-advance from writing to speaking on pass
@@ -91,7 +91,9 @@ export default function Test({ lesson, onPass, onFail }: Props) {
         lesson={lesson}
         showAudio={false}
         alwaysBlurred
-        hint={step === "writing" ? "Write it from memory!" : "Say it from memory!"}
+        hint={
+          step === "writing" ? "Write it from memory!" : "Say it from memory!"
+        }
       />
 
       {/* Attempts remaining */}
@@ -151,13 +153,7 @@ export default function Test({ lesson, onPass, onFail }: Props) {
 
       {/* Wrong words for speaking */}
       {step === "speaking" && speaking.result && !speaking.result.correct && (
-        <div className={styles.wordList}>
-          {speaking.result.words
-            .filter((w) => !w.correct)
-            .map((w, i) => (
-              <WordResult key={i} word={w} />
-            ))}
-        </div>
+        <CorrectionDisplay words={speaking.result.words} />
       )}
     </div>
   );

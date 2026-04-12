@@ -11,15 +11,15 @@
 }
 
 .bestTime {
-  font-size: 0.75rem;
-  color: #9ca3af;
+  font-size: 0.75em;
+  color: var(--text-light);
   font-weight: 500;
 }
 
 .label {
-  font-size: 0.75rem;
+  font-size: 0.75em;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  color: #9ca3af;
+  color: var(--text-light);
 }

@@ -46,6 +46,7 @@ export function useSpeechRecognition(lang: string): SpeechRecognitionResult {
   const recognitionRef = useRef<SpeechRecognition | null>(null);
   const busyRef = useRef(false);
   const gotResultRef = useRef(false);
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const isSupported =
     typeof window !== "undefined" &&
@@ -84,14 +85,16 @@ export function useSpeechRecognition(lang: string): SpeechRecognitionResult {
     const recognition = new SpeechRecognitionAPI();
     recognition.lang = lang;
     recognition.interimResults = false;
-    recognition.continuous = false;
+    recognition.continuous = true;
     recognition.maxAlternatives = 1;
 
     recognition.onresult = (event: SpeechRecognitionEvent) => {
       gotResultRef.current = true;
-      const text = event.results[0][0].transcript;
+      let text = "";
+      for (let i = 0; i < event.results.length; i++) {
+        text += event.results[i][0].transcript;
+      }
       setTranscript(text);
-      setResultId((id) => id + 1);
     };
 
     recognition.onerror = (event: SpeechRecognitionErrorEvent) => {
@@ -106,15 +109,16 @@ export function useSpeechRecognition(lang: string): SpeechRecognitionResult {
     };
 
     recognition.onend = () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+        timeoutRef.current = null;
+      }
       recognitionRef.current = null;
       busyRef.current = false;
       setIsListening(false);
-      // Only clear processing after result has arrived or on error
+      setIsProcessing(false);
       if (gotResultRef.current) {
-        setIsProcessing(false);
-      } else {
-        // No result came — error path already handled, just clean up
-        setIsProcessing(false);
+        setResultId((id) => id + 1);
       }
     };
 
@@ -128,11 +132,21 @@ export function useSpeechRecognition(lang: string): SpeechRecognitionResult {
       return false;
     }
 
+    timeoutRef.current = setTimeout(() => {
+      if (recognitionRef.current) {
+        recognitionRef.current.stop();
+      }
+    }, 60000);
+
     setIsListening(true);
     return true;
   }, [isSupported, lang]);
 
   const stop = useCallback(() => {
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+      timeoutRef.current = null;
+    }
     if (recognitionRef.current) {
       setIsListening(false);
       setIsProcessing(true);

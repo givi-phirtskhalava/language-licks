@@ -1,35 +1,35 @@
 .card {
   width: 100%;
-  max-width: 32rem;
-  border-radius: 1rem;
-  background: #fff;
-  box-shadow: 0 1.25em 1.5625em -0.3125em rgba(0,0,0,.1), 0 0.5em 0.625em -0.375em rgba(0,0,0,.1);
+  max-width: 32em;
+  border-radius: 1em;
+  background: var(--bg-white);
+  box-shadow: 0 1.25em 1.5625em -0.3125em var(--shadow), 0 0.5em 0.625em -0.375em var(--shadow);
   overflow: hidden;
 }
 
 .header {
-  background: #4f46e5;
-  padding: 1rem 1.5rem;
+  background: var(--primary);
+  padding: 1em 1.5em;
   display: flex;
   align-items: center;
   justify-content: space-between;
 }
 
 .headerTitle {
-  color: #c7d2fe;
-  font-size: 0.75rem;
+  color: var(--primary-muted);
+  font-size: 0.75em;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.05em;
 }
 
 .headerCount {
-  color: #a5b4fc;
-  font-size: 0.75rem;
+  color: var(--primary-soft);
+  font-size: 0.75em;
 }
 
 .backBtn {
-  color: #c7d2fe;
-  font-size: 0.75rem;
+  color: var(--primary-muted);
+  font-size: 0.75em;
   font-weight: 600;
 }

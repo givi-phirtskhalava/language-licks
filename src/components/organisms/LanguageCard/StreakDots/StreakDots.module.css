@@ -8,11 +8,11 @@
   width: 0.625em;
   height: 0.625em;
   border-radius: 50%;
-  background: #e5e7eb;
+  background: var(--border);
   transition: background 0.3s, box-shadow 0.3s;
 }
 
 .dotActive {
-  background: #10b981;
-  box-shadow: 0 0 0.375em rgba(16, 185, 129, 0.5);
+  background: var(--success-mid);
+  box-shadow: 0 0 0.375em var(--success-glow);
 }

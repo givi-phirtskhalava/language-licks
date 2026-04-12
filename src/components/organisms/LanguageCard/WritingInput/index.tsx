@@ -1,8 +1,9 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPen, faRotateLeft } from "@fortawesome/free-solid-svg-icons";
+import CorrectionDisplay from "@/components/atoms/CorrectionDisplay";
 import { IWriteWordResult } from "@/components/organisms/LanguageCard/hooks/useWritingCheck";
 import styles from "./WritingInput.module.css";
 
@@ -15,6 +16,7 @@ interface Props {
   isPass?: boolean;
   onRetry?: () => void;
   placeholder?: string;
+  disabled?: boolean;
   children?: React.ReactNode;
 }
 
@@ -27,10 +29,15 @@ export default function WritingInput({
   isPass,
   onRetry,
   placeholder = "Type the sentence here\u2026",
+  disabled,
   children,
 }: Props) {
   const [input, setInput] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (disabled) setInput("");
+  }, [disabled]);
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -69,17 +76,19 @@ export default function WritingInput({
             setInput(e.target.value);
             onInputChange?.();
           }}
+          onPaste={(e) => e.preventDefault()}
           placeholder={placeholder}
           className={`${styles.input} ${inputStateClass}`}
           autoComplete="off"
           autoCorrect="off"
           autoCapitalize="off"
           spellCheck={false}
+          disabled={disabled}
         />
         <button
           type="submit"
           className={styles.submitBtn}
-          disabled={!input.trim()}
+          disabled={!input.trim() || disabled}
         >
           <FontAwesomeIcon icon={faPen} style={{ marginRight: "0.5rem" }} />
           Check
@@ -90,30 +99,7 @@ export default function WritingInput({
 
       {result && (hasErrors || hasWarnings) && (
         <div style={{ marginTop: "0.75rem" }}>
-          <div className={styles.wordList}>
-            {result.map((r, i) => (
-              <span key={i} className={styles.wordGroup}>
-                {r.status === "correct" && (
-                  <span className={styles.wordCorrect}>{r.expected}</span>
-                )}
-                {r.status === "warning" && (
-                  <span className={styles.wordWarning}>{r.expected}</span>
-                )}
-                {r.status === "error" && (
-                  <>
-                    <span className={styles.wordStruck}>{r.actual}</span>
-                    <span className={styles.wordCorrection}>{r.expected}</span>
-                  </>
-                )}
-                {r.status === "missing" && (
-                  <span className={styles.wordCorrection}>{r.expected}</span>
-                )}
-                {r.status === "extra" && (
-                  <span className={styles.wordStruck}>{r.actual}</span>
-                )}
-              </span>
-            ))}
-          </div>
+          <CorrectionDisplay words={result} />
 
           {onRetry && (
             <button

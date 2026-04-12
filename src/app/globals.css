@@ -1,3 +1,62 @@
+:root {
+  /* Fonts */
+  --font-system: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    Helvetica, Arial, sans-serif;
+  --font-serif: Georgia, "Times New Roman", serif;
+
+  /* Primary */
+  --primary: #4f46e5;
+  --primary-hover: #4338ca;
+  --primary-light: #e0e7ff;
+  --primary-lighter: #eef2ff;
+  --primary-bg: #eff6ff;
+  --primary-muted: #c7d2fe;
+  --primary-soft: #a5b4fc;
+
+  /* Success */
+  --success: #059669;
+  --success-dark: #047857;
+  --success-darker: #065f46;
+  --success-mid: #10b981;
+  --success-bright: #22c55e;
+  --success-light: #d1fae5;
+  --success-bg: #ecfdf5;
+
+  /* Error */
+  --error: #ef4444;
+  --error-dark: #b91c1c;
+  --error-darker: #991b1b;
+  --error-mid: #dc2626;
+  --error-light: #fee2e2;
+  --error-bg: #fef2f2;
+
+  /* Warning */
+  --warning: #f59e0b;
+  --warning-dark: #b45309;
+  --warning-mid: #d97706;
+  --warning-orange: #ea580c;
+  --warning-bg: #fffbeb;
+
+  /* Text */
+  --text-body: #171717;
+  --text-dark: #111827;
+  --text-secondary: #374151;
+  --text-tertiary: #4b5563;
+  --text-muted: #6b7280;
+  --text-light: #9ca3af;
+  --text-placeholder: #d1d5db;
+
+  /* Borders & Backgrounds */
+  --border: #e5e7eb;
+  --bg-white: #ffffff;
+  --bg-subtle: #f9fafb;
+
+  /* Shadows */
+  --shadow: rgba(0, 0, 0, 0.1);
+  --shadow-hover: rgba(0, 0, 0, 0.12);
+  --success-glow: rgba(16, 185, 129, 0.5);
+}
+
 *,
 *::before,
 *::after {
@@ -14,10 +73,9 @@ html {
 
 body {
   min-height: 100%;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
-    Helvetica, Arial, sans-serif;
-  color: #171717;
-  background: #ffffff;
+  font-family: var(--font-system);
+  color: var(--text-body);
+  background: var(--bg-white);
 }
 
 button {

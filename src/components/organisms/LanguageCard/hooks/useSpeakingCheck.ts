@@ -3,11 +3,14 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import toast from "react-hot-toast";
 import { useSpeechRecognition } from "@/lib/useSpeechRecognition";
-import { compareWords, IWordComparison } from "@/lib/compareText";
+import {
+  compareWriting,
+  IWriteWordResult,
+} from "@/components/organisms/LanguageCard/hooks/useWritingCheck";
 
 interface ISpeakResult {
   correct: boolean;
-  words: IWordComparison[];
+  words: IWriteWordResult[];
 }
 
 interface IUseSpeakingCheckReturn {
@@ -43,9 +46,14 @@ export default function useSpeakingCheck(
   useEffect(() => {
     if (resultId > processedResultId.current && transcript) {
       processedResultId.current = resultId;
-      const comparison = compareWords(sentence, transcript);
-      const passed = comparison.score === 1;
-      setResult({ correct: passed, words: comparison.words });
+      const results = compareWriting(sentence, transcript);
+      const passed = !results.some(
+        (r) =>
+          r.status === "error" ||
+          r.status === "missing" ||
+          r.status === "extra",
+      );
+      setResult({ correct: passed, words: results });
       if (passed) {
         onCorrect?.();
       } else {

@@ -3,7 +3,7 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faChevronRight } from "@fortawesome/free-solid-svg-icons";
 import SentenceDisplay from "@/components/organisms/LanguageCard/SentenceDisplay";
-import WordResult from "@/components/organisms/LanguageCard/WordResult";
+import CorrectionDisplay from "@/components/atoms/CorrectionDisplay";
 import SectionHeader from "@/components/atoms/SectionHeader";
 import RecordButton from "@/components/organisms/LanguageCard/RecordButton";
 import useStreak from "@/components/organisms/LanguageCard/useStreak";
@@ -40,7 +40,13 @@ export default function SpeakingPractice({ lesson, onReady }: Props) {
 
   return (
     <div className={styles.body}>
-      <SentenceDisplay lesson={lesson} blurrable />
+      <SentenceDisplay
+        lesson={lesson}
+        blurrable
+        onRevealChange={(visible) => {
+          if (visible) speakStreak.miss();
+        }}
+      />
 
       <div>
         <SectionHeader
@@ -77,12 +83,8 @@ export default function SpeakingPractice({ lesson, onReady }: Props) {
         )}
 
         {speaking.result && !speaking.result.correct && (
-          <div className={styles.wordList} style={{ marginTop: "0.5rem" }}>
-            {speaking.result.words
-              .filter((w) => !w.correct)
-              .map((w, i) => (
-                <WordResult key={i} word={w} />
-              ))}
+          <div style={{ marginTop: "0.5rem" }}>
+            <CorrectionDisplay words={speaking.result.words} />
           </div>
         )}
       </div>

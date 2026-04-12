@@ -1,7 +1,8 @@
 "use client";
 
+import { useState } from "react";
 import SentenceDisplay from "@/components/organisms/LanguageCard/SentenceDisplay";
-import WordResult from "@/components/organisms/LanguageCard/WordResult";
+import CorrectionDisplay from "@/components/atoms/CorrectionDisplay";
 import SectionHeader from "@/components/atoms/SectionHeader";
 import RecordButton from "@/components/organisms/LanguageCard/RecordButton";
 import WritingInput from "@/components/organisms/LanguageCard/WritingInput";
@@ -18,11 +19,14 @@ interface Props {
 }
 
 export default function Practice({ lesson, onReady }: Props) {
-  const writeStreak = useStreak("I think you\u2019re ready for the writing test! \u270D\uFE0F");
+  const [textVisible, setTextVisible] = useState(false);
+  const writeStreak = useStreak(
+    "You're ready to move on to speaking practice!"
+  );
   const writeTimer = useBestTime();
   const writing = useWritingCheck();
 
-  const speakStreak = useStreak("I think you\u2019re ready for the speaking test! \uD83C\uDF99\uFE0F");
+  const speakStreak = useStreak("You're ready for the test!");
   const speakTimer = useBestTime();
   const speaking = useSpeakingCheck(
     "fr-FR",
@@ -34,7 +38,7 @@ export default function Practice({ lesson, onReady }: Props) {
     () => {
       speakTimer.resetTimer();
       speakStreak.miss();
-    },
+    }
   );
 
   function handleWriteSubmit(input: string) {
@@ -66,7 +70,17 @@ export default function Practice({ lesson, onReady }: Props) {
   return (
     <div className={styles.body}>
       {/* Sentence + audio — blurred by default */}
-      <SentenceDisplay lesson={lesson} blurrable />
+      <SentenceDisplay
+        lesson={lesson}
+        blurrable
+        onRevealChange={(visible) => {
+          setTextVisible(visible);
+          if (visible) {
+            writeStreak.miss();
+            speakStreak.miss();
+          }
+        }}
+      />
 
       {/* Writing practice */}
       <div>
@@ -85,6 +99,7 @@ export default function Practice({ lesson, onReady }: Props) {
           hasWarnings={writing.hasWarnings}
           isPass={writing.isPass}
           onRetry={handleWriteRetry}
+          disabled={textVisible}
         >
           {writing.result !== null && writing.isPass && (
             <div
@@ -97,9 +112,10 @@ export default function Practice({ lesson, onReady }: Props) {
                   {writeTimer.elapsed.toFixed(1)}s
                 </span>
               )}
-              {writeTimer.bestTime !== null && writeTimer.elapsed === writeTimer.bestTime && (
-                <span className={styles.newBest}>&nbsp;New best!</span>
-              )}
+              {writeTimer.bestTime !== null &&
+                writeTimer.elapsed === writeTimer.bestTime && (
+                  <span className={styles.newBest}>&nbsp;New best!</span>
+                )}
             </div>
           )}
         </WritingInput>
@@ -128,25 +144,27 @@ export default function Practice({ lesson, onReady }: Props) {
             className={`${styles.alert} ${speaking.result.correct ? styles.feedbackCorrect : styles.feedbackWrong}`}
             style={{ marginTop: "0.75rem" }}
           >
-            <span>{speaking.result.correct ? "Correct!" : "Not quite \u2014 try again"}</span>
+            <span>
+              {speaking.result.correct
+                ? "Correct!"
+                : "Not quite \u2014 try again"}
+            </span>
             {speaking.result.correct && speakTimer.elapsed !== null && (
               <span className={styles.timeInfo}>
                 {speakTimer.elapsed.toFixed(1)}s
               </span>
             )}
-            {speaking.result.correct && speakTimer.bestTime !== null && speakTimer.elapsed === speakTimer.bestTime && (
-              <span className={styles.newBest}>&nbsp;New best!</span>
-            )}
+            {speaking.result.correct &&
+              speakTimer.bestTime !== null &&
+              speakTimer.elapsed === speakTimer.bestTime && (
+                <span className={styles.newBest}>&nbsp;New best!</span>
+              )}
           </div>
         )}
 
         {speaking.result && !speaking.result.correct && (
-          <div className={styles.wordList} style={{ marginTop: "0.5rem" }}>
-            {speaking.result.words
-              .filter((w) => !w.correct)
-              .map((w, i) => (
-                <WordResult key={i} word={w} />
-              ))}
+          <div style={{ marginTop: "0.5rem" }}>
+            <CorrectionDisplay words={speaking.result.words} />
           </div>
         )}
       </div>

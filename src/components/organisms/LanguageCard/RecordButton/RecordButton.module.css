@@ -2,20 +2,20 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.5rem;
-  margin-top: 0.5rem;
+  gap: 0.5em;
+  margin-top: 0.5em;
 }
 
 .btn {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.5em;
   border-radius: 9999em;
-  padding: 0.75rem 1.5rem;
+  padding: 0.75em 1.5em;
   font-weight: 500;
   transition: background 0.2s, opacity 0.2s;
   user-select: none;
-  color: #fff;
+  color: var(--bg-white);
 }
 
 .btn:disabled {
@@ -24,51 +24,51 @@
 }
 
 .btnIdle {
-  background: #10b981;
+  background: var(--success-mid);
 }
 
 .btnIdle:hover:not(:disabled) {
-  background: #059669;
+  background: var(--success);
 }
 
 .btnListening {
-  background: #ef4444;
+  background: var(--error);
   animation: pulse 1.5s infinite;
 }
 
 .btnProcessing {
-  background: #9ca3af;
+  background: var(--text-light);
   cursor: wait;
 }
 
 .hint {
-  font-size: 0.75rem;
-  color: #9ca3af;
+  font-size: 0.75em;
+  color: var(--text-light);
 }
 
 .spinner {
   animation: spin 1s linear infinite;
-  font-size: 1rem;
+  font-size: 1em;
 }
 
 .unsupported {
-  border-radius: 0.5rem;
-  padding: 0.75rem 1rem;
-  font-size: 0.875rem;
+  border-radius: 0.5em;
+  padding: 0.75em 1em;
+  font-size: 0.875em;
   text-align: center;
-  background: #fffbeb;
-  color: #b45309;
-  margin-top: 0.5rem;
+  background: var(--warning-bg);
+  color: var(--warning-dark);
+  margin-top: 0.5em;
 }
 
 .error {
-  border-radius: 0.5rem;
-  padding: 0.75rem 1rem;
-  font-size: 0.875rem;
+  border-radius: 0.5em;
+  padding: 0.75em 1em;
+  font-size: 0.875em;
   text-align: center;
-  background: #fef2f2;
-  color: #dc2626;
-  margin-top: 0.75rem;
+  background: var(--error-bg);
+  color: var(--error-mid);
+  margin-top: 0.75em;
 }
 
 @keyframes pulse {

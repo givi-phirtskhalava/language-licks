@@ -13,6 +13,7 @@ interface Props {
   blurrable?: boolean;
   alwaysBlurred?: boolean;
   hint?: string;
+  onRevealChange?: (revealed: boolean) => void;
 }
 
 export default function SentenceDisplay({
@@ -21,6 +22,7 @@ export default function SentenceDisplay({
   blurrable,
   alwaysBlurred,
   hint,
+  onRevealChange,
 }: Props) {
   const [revealed, setRevealed] = useState(!blurrable);
   const blurred = alwaysBlurred || !revealed;
@@ -50,7 +52,12 @@ export default function SentenceDisplay({
         <div className={styles.center}>
           <button
             className={styles.revealBtn}
-            onClick={() => setRevealed((prev) => !prev)}
+            onClick={() => {
+              setRevealed((prev) => {
+                onRevealChange?.(!prev);
+                return !prev;
+              });
+            }}
           >
             <FontAwesomeIcon icon={revealed ? faEyeSlash : faEye} />
           </button>

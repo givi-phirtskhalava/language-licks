@@ -1,23 +1,23 @@
 .wordBadge {
   display: inline-block;
-  border-radius: 0.25rem;
-  padding: 0.25rem 0.5rem;
-  font-size: 0.875rem;
+  border-radius: 0.25em;
+  padding: 0.25em 0.5em;
+  font-size: 0.875em;
   font-weight: 500;
 }
 
 .wordCorrect {
-  background: #d1fae5;
-  color: #065f46;
+  background: var(--success-light);
+  color: var(--success-darker);
 }
 
 .wordWrong {
-  background: #fee2e2;
-  color: #991b1b;
+  background: var(--error-light);
+  color: var(--error-darker);
 }
 
 .wordActual {
-  margin-left: 0.25rem;
-  font-size: 0.75rem;
+  margin-left: 0.25em;
+  font-size: 0.75em;
   opacity: 0.6;
 }

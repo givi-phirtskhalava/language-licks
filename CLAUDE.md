@@ -39,7 +39,7 @@
 
 - CSS modules with `import style from "./Component.module.css"`
 - Use CSS custom properties like `var(--text-color)`
-- Use em units where possible for spacing and sizing
+- Use em units only — never use rem
 - Use `.container` and `.content` as wrapper classes
 - Use `classNames` package for multiple classes: `classNames(style.base, condition && style.conditional)`
 - Apply `box-sizing: border-box` globally

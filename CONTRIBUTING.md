@@ -32,7 +32,7 @@ See [CLAUDE.md](./CLAUDE.md) for full coding conventions. Below is a quick refer
 
 - CSS Modules only — no inline styles
 - Use CSS custom properties (`var(--text-color)`)
-- Use `em` units for spacing/sizing
+- Use `em` units only — never use `rem`
 - Use `.container` / `.content` as wrapper classes
 
 ## JSX
