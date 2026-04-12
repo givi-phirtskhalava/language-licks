@@ -15,12 +15,27 @@ import styles from "./WritingPractice.module.css";
 interface Props {
   lesson: ILesson;
   onReady: () => void;
+  initialStreak?: number;
+  initialBestTime?: number | null;
+  onStreakChange?: (streak: number) => void;
+  onBestTimeChange?: (time: number) => void;
 }
 
-export default function WritingPractice({ lesson, onReady }: Props) {
+export default function WritingPractice({
+  lesson,
+  onReady,
+  initialStreak = 0,
+  initialBestTime = null,
+  onStreakChange,
+  onBestTimeChange,
+}: Props) {
   const [textVisible, setTextVisible] = useState(false);
-  const writeStreak = useStreak("I think you\u2019re ready for the speaking test! \uD83C\uDF99\uFE0F");
-  const writeTimer = useBestTime();
+  const writeStreak = useStreak({
+    readyMessage: "I think you\u2019re ready for the speaking test! \uD83C\uDF99\uFE0F",
+    initialStreak,
+    onStreakChange,
+  });
+  const writeTimer = useBestTime({ initialBestTime, onBestTimeChange });
   const writing = useWritingCheck();
 
   function handleWriteSubmit(input: string) {

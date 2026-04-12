@@ -3,6 +3,12 @@ import toast from "react-hot-toast";
 
 const GOAL = 5;
 
+interface Props {
+  readyMessage: string;
+  initialStreak?: number;
+  onStreakChange?: (streak: number) => void;
+}
+
 interface UseStreakReturn {
   streak: number;
   goal: number;
@@ -10,9 +16,13 @@ interface UseStreakReturn {
   miss: () => void;
 }
 
-export default function useStreak(readyMessage: string): UseStreakReturn {
-  const [streak, setStreak] = useState(0);
-  const firedRef = useRef(false);
+export default function useStreak({
+  readyMessage,
+  initialStreak = 0,
+  onStreakChange,
+}: Props): UseStreakReturn {
+  const [streak, setStreak] = useState(initialStreak);
+  const firedRef = useRef(initialStreak >= GOAL);
 
   const hit = useCallback(() => {
     setStreak((prev) => {
@@ -21,14 +31,16 @@ export default function useStreak(readyMessage: string): UseStreakReturn {
         firedRef.current = true;
         setTimeout(() => toast.success(readyMessage, { duration: 4000 }), 600);
       }
+      onStreakChange?.(next);
       return next;
     });
-  }, [readyMessage]);
+  }, [readyMessage, onStreakChange]);
 
   const miss = useCallback(() => {
     setStreak(0);
     firedRef.current = false;
-  }, []);
+    onStreakChange?.(0);
+  }, [onStreakChange]);
 
   return { streak, goal: GOAL, hit, miss };
 }

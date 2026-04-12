@@ -20,13 +20,13 @@ interface Props {
 
 export default function Practice({ lesson, onReady }: Props) {
   const [textVisible, setTextVisible] = useState(false);
-  const writeStreak = useStreak(
-    "You're ready to move on to speaking practice!"
-  );
+  const writeStreak = useStreak({
+    readyMessage: "You're ready to move on to speaking practice!",
+  });
   const writeTimer = useBestTime();
   const writing = useWritingCheck();
 
-  const speakStreak = useStreak("You're ready for the test!");
+  const speakStreak = useStreak({ readyMessage: "You're ready for the test!" });
   const speakTimer = useBestTime();
   const speaking = useSpeakingCheck(
     "fr-FR",

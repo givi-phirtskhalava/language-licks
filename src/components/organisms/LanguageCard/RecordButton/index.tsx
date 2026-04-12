@@ -1,5 +1,6 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faMicrophone, faSpinner } from "@fortawesome/free-solid-svg-icons";
+import { faMicrophone } from "@fortawesome/free-solid-svg-icons";
+import Spinner from "@atoms/Spinner";
 import styles from "./RecordButton.module.css";
 
 interface Props {
@@ -41,7 +42,9 @@ export default function RecordButton({
           className={`${styles.btn} ${btnClass}`}
         >
           {isProcessing ? (
-            <FontAwesomeIcon icon={faSpinner} className={styles.spinner} />
+            <span className={styles.spinnerWrap}>
+              <Spinner color="white" />
+            </span>
           ) : (
             <FontAwesomeIcon icon={faMicrophone} />
           )}

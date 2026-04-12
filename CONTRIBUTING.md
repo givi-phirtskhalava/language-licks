@@ -62,3 +62,72 @@ See [CLAUDE.md](./CLAUDE.md) for full coding conventions. Below is a quick refer
 
 - Never use ternary for conditional rendering — use `&&`
 - Lift shared state to context; render separate components from the page level
+
+## Free Tier
+
+- The first 10 lessons are fully accessible without an account (`FREE_LESSON_COUNT` in `src/lib/projectConfig.ts`)
+- Lessons beyond the free limit show the lesson phase only — writing, speaking, test, and reviews are gated behind auth
+- The `isFree` prop on `LanguageCard` controls phase gating; the `useAuth` hook provides `isLoggedIn`
+- Reviews in `Reviews` are filtered by free lesson IDs for unauthenticated users
+- **Never** gate the lesson list itself — all lessons should be browsable by anyone
+
+## Authentication
+
+### Architecture
+
+The app uses passwordless email OTP authentication with JWT tokens stored in httpOnly cookies. Auth is enforced at the **API route level**, not via middleware/proxy.
+
+- **Auth utilities** live in `src/lib/auth/`
+- **`requireAuth()`** is the single guard function — call it in any API route that needs authentication
+- **Auth API routes** live in `src/app/api/auth/`
+- **Client-side auth state** is provided by `useAuth()` hook in `src/lib/hooks/useAuth.ts`
+- **Page routes are never protected server-side** — pages use `useAuth()` to show different UI based on login status
+
+### Security Rules for Contributors
+
+- **Never** store tokens in localStorage or sessionStorage — always use httpOnly cookies
+- **Never** include PII (email, name) in JWT payloads — only store user ID and token version
+- **Never** store OTP codes in plaintext — always hash them before writing to the database
+- **Never** skip Origin header checking on mutating API routes
+- **Always** set `httpOnly`, `secure`, `sameSite: "lax"` on auth cookies
+- **Always** verify `tokenVersion` from the database when validating refresh tokens
+- **Always** delete used OTP codes after successful verification
+- **Always** delete expired OTP codes when generating new ones
+
+### Auth Flow Reference
+
+```
+Email input → POST /api/auth/send-code → OTP email sent
+Code input  → POST /api/auth/verify    → access + refresh cookies set
+API request → requireAuth() verifies access token → returns user or throws AuthError
+Token expired → POST /api/auth/refresh  → new access token issued
+Logout      → POST /api/auth/logout    → cookies cleared
+```
+
+### Protecting an API Route
+
+Call `requireAuth()` at the top of any route handler that needs auth. It returns `{ userId, tokenVersion }` or throws an `AuthError`:
+
+```ts
+import { requireAuth, AuthError } from "@lib/auth";
+
+export async function GET() {
+  try {
+    const { userId } = await requireAuth();
+    // ... fetch user-specific data
+  } catch (error) {
+    if (error instanceof AuthError) {
+      return Response.json({ error: error.message }, { status: error.status });
+    }
+    throw error;
+  }
+}
+```
+
+### Adding Sensitive Operations
+
+For actions that require re-verification (e.g., email change, account deletion):
+
+1. Trigger a new OTP challenge via `POST /api/auth/send-code`
+2. Verify the code via `POST /api/auth/verify` with a `reverify` flag
+3. Only proceed with the sensitive action after successful verification

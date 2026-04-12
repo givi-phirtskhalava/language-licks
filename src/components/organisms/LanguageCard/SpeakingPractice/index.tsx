@@ -16,11 +16,27 @@ interface Props {
   lesson: ILesson;
   locale: string;
   onReady: () => void;
+  initialStreak?: number;
+  initialBestTime?: number | null;
+  onStreakChange?: (streak: number) => void;
+  onBestTimeChange?: (time: number) => void;
 }
 
-export default function SpeakingPractice({ lesson, locale, onReady }: Props) {
-  const speakStreak = useStreak("I think you\u2019re ready for the test! \uD83C\uDF99\uFE0F");
-  const speakTimer = useBestTime();
+export default function SpeakingPractice({
+  lesson,
+  locale,
+  onReady,
+  initialStreak = 0,
+  initialBestTime = null,
+  onStreakChange,
+  onBestTimeChange,
+}: Props) {
+  const speakStreak = useStreak({
+    readyMessage: "I think you\u2019re ready for the test! \uD83C\uDF99\uFE0F",
+    initialStreak,
+    onStreakChange,
+  });
+  const speakTimer = useBestTime({ initialBestTime, onBestTimeChange });
   const speaking = useSpeakingCheck(
     locale,
     lesson.sentence,

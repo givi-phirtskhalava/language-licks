@@ -3,7 +3,9 @@
 import { useState } from "react";
 import useLanguage from "@lib/useLanguage";
 import useLessons from "@lib/hooks/useLessons";
+import useAuth from "@lib/hooks/useAuth";
 import useProgress, { getMasteryLevel } from "@lib/useProgress";
+import { FREE_LESSON_COUNT } from "@lib/projectConfig";
 import MasteryBar from "@/components/atoms/MasteryBar";
 import classNames from "classnames";
 import LanguageCard from "@/components/organisms/LanguageCard";
@@ -11,14 +13,18 @@ import styles from "./Lessons.module.css";
 
 export default function Lessons() {
   const [selectedId, setSelectedId] = useState<number | null>(null);
+  const [selectedIndex, setSelectedIndex] = useState<number>(0);
   const { language } = useLanguage();
+  const { isLoggedIn } = useAuth();
   const { progress, getLesson, unretire } = useProgress(language);
   const { data: lessons, isLoading } = useLessons(language);
 
   if (selectedId !== null) {
+    const isFree = selectedIndex < FREE_LESSON_COUNT || isLoggedIn;
     return (
       <LanguageCard
         lessonId={selectedId}
+        isFree={isFree}
         onBack={() => setSelectedId(null)}
       />
     );
@@ -52,6 +58,7 @@ export default function Lessons() {
                     unretire(lesson.id);
                   } else {
                     setSelectedId(lesson.id);
+                    setSelectedIndex(index);
                   }
                 }}
               >

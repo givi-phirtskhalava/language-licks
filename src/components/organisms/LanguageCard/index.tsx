@@ -8,7 +8,9 @@ import WritingPractice from "./WritingPractice";
 import SpeakingPractice from "./SpeakingPractice";
 import Review from "./Review";
 import Complete from "./Complete";
+import SignUpPrompt from "@atoms/SignUpPrompt";
 import useLesson from "@lib/hooks/useLesson";
+import useAuth from "@lib/hooks/useAuth";
 import { TPhase } from "@lib/types";
 import useLanguage from "@lib/useLanguage";
 import { LANGUAGES } from "@lib/projectConfig";
@@ -19,11 +21,14 @@ interface Props {
   lessonId: number;
   onBack: () => void;
   mode?: "lesson" | "review";
+  isFree?: boolean;
 }
 
-export default function LanguageCard({ lessonId, onBack, mode = "lesson" }: Props) {
+export default function LanguageCard({ lessonId, onBack, mode = "lesson", isFree = true }: Props) {
   const { language } = useLanguage();
-  const { getLesson, updatePhase } = useProgress(language);
+  const { isLoggedIn } = useAuth();
+  const { getLesson, updatePhase, updateStreak, updateBestTime } = useProgress(language);
+  const hasFullAccess = isFree || isLoggedIn;
   const { data: lesson, isLoading } = useLesson(lessonId);
   const saved = getLesson(lessonId);
   const savedPhase =
@@ -88,8 +93,8 @@ export default function LanguageCard({ lessonId, onBack, mode = "lesson" }: Prop
   const isFirstPhase = phase === "lesson";
   const isLastPhase = phases.indexOf(phase) >= phases.length - 1;
   const isTest = phase === "test";
-  const showBack = mode !== "review" && !isFirstPhase;
-  const showNext = mode !== "review" && !isLastPhase && !isTest;
+  const showBack = mode !== "review" && !isFirstPhase && hasFullAccess;
+  const showNext = mode !== "review" && !isLastPhase && !isTest && hasFullAccess;
 
   const phaseLabel =
     phase === "lesson"
@@ -138,16 +143,29 @@ export default function LanguageCard({ lessonId, onBack, mode = "lesson" }: Prop
         {phase === "lesson" && (
           <LessonPhase
             lesson={lesson}
-            onReady={() => changePhase("practice-writing")}
+            onReady={() => {
+              if (hasFullAccess) {
+                changePhase("practice-writing");
+              }
+            }}
           />
         )}
-        {phase === "practice-writing" && (
+
+        {phase === "lesson" && !hasFullAccess && (
+          <SignUpPrompt message="Sign up to practice writing, speaking, and unlock reviews for this lesson." />
+        )}
+
+        {phase === "practice-writing" && hasFullAccess && (
           <WritingPractice
             lesson={lesson}
             onReady={() => changePhase("practice-speaking")}
+            initialStreak={saved?.writingStreak ?? 0}
+            initialBestTime={saved?.writingBestTime ?? null}
+            onStreakChange={(streak) => updateStreak(lessonId, "writing", streak)}
+            onBestTimeChange={(time) => updateBestTime(lessonId, "writing", time)}
           />
         )}
-        {phase === "practice-speaking" && (
+        {phase === "practice-speaking" && hasFullAccess && (
           <SpeakingPractice
             lesson={lesson}
             locale={locale}
@@ -158,9 +176,13 @@ export default function LanguageCard({ lessonId, onBack, mode = "lesson" }: Prop
                 changePhase("test");
               }
             }}
+            initialStreak={saved?.speakingStreak ?? 0}
+            initialBestTime={saved?.speakingBestTime ?? null}
+            onStreakChange={(streak) => updateStreak(lessonId, "speaking", streak)}
+            onBestTimeChange={(time) => updateBestTime(lessonId, "speaking", time)}
           />
         )}
-        {(phase === "test" || phase === "review") && (
+        {(phase === "test" || phase === "review") && hasFullAccess && (
           <Review
             lesson={lesson}
             locale={locale}

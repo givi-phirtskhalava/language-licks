@@ -1,0 +1,64 @@
+.container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: calc(100vh - var(--header-height));
+  padding: 2em 2em calc(2em + var(--header-height));
+}
+
+.card {
+  width: 100%;
+  max-width: 24em;
+}
+
+.title {
+  font-size: 1.5em;
+  font-weight: 600;
+  color: var(--text-dark);
+  margin-bottom: 1.5em;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 1em;
+}
+
+.label {
+  font-size: 0.875em;
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+
+.input {
+  width: 100%;
+  padding: 0.75em;
+  font-size: 1em;
+  border: 1px solid var(--border);
+  border-radius: 0.5em;
+  background: var(--bg-white);
+  color: var(--text-body);
+  box-sizing: border-box;
+}
+
+.input:focus {
+  outline: 2px solid var(--primary);
+  outline-offset: -1px;
+  border-color: var(--primary);
+}
+
+.input::placeholder {
+  color: var(--text-placeholder);
+}
+
+.hint {
+  font-size: 0.875em;
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+
+.error {
+  font-size: 0.875em;
+  color: var(--error);
+}
+

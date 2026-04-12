@@ -36,6 +36,10 @@ createdb language_training
 
 ```
 DATABASE_URL=postgresql://localhost:5432/language_training
+JWT_ACCESS_SECRET=     # openssl rand -base64 64
+JWT_REFRESH_SECRET=    # openssl rand -base64 64 (must be different from access)
+RESEND_API_KEY=        # from resend.com
+EMAIL_FROM=            # verified sender in Resend
 ```
 
 4. Generate and run migrations:
@@ -89,12 +93,85 @@ npm run db:generate   # generates SQL migration in ./drizzle/
 npm run db:migrate    # applies it to the database
 ```
 
+## Free Tier
+
+The app is accessible without an account. Unauthenticated users get:
+
+- **First 10 lessons**: Full access — lesson, writing practice, speaking practice, test, and reviews
+- **Lessons 11+**: Lesson phase only (read the sentence, grammar, liaison tips). Writing practice, speaking practice, tests, and reviews require signing up.
+- **Progress**: Stored in localStorage for both free and authenticated users
+
+The free lesson count is configured via `FREE_LESSON_COUNT` in `src/lib/projectConfig.ts`.
+
+## Authentication
+
+### Method: Passwordless Email OTP
+
+Users authenticate via a one-time code sent to their email. There are no passwords — email ownership is the identity proof.
+
+**Login flow:**
+
+1. User enters their email address
+2. Server generates a 6-digit code with a 10-minute expiry
+3. Code is sent to the user's email via Resend
+4. User enters the code
+5. Server verifies the code, issues an access token and a refresh token
+6. User is authenticated
+
+### Token Strategy
+
+| Token | Storage | Lifetime | Purpose |
+|-------|---------|----------|---------|
+| Access token | httpOnly cookie | 15 minutes | Authenticates API requests |
+| Refresh token | httpOnly cookie | 90 days | Silently renews access tokens |
+
+When the access token expires, the refresh token is used to issue a new one without user interaction. The user stays logged in until the refresh token expires or is revoked.
+
+### Token Revocation
+
+Each user has a `tokenVersion` column in the database. Every issued JWT includes the current `tokenVersion` in its payload. On verification, the server checks that the JWT's version matches the database value.
+
+- **Single user revocation**: Increment the user's `tokenVersion` — all their existing tokens become invalid immediately.
+- **Global revocation**: Rotate both `JWT_ACCESS_SECRET` and `JWT_REFRESH_SECRET` — all tokens for all users are invalidated.
+
+### Re-verification for Sensitive Operations
+
+Certain actions (changing email, deleting account) require a fresh OTP challenge before proceeding, even if the user is already logged in.
+
+## Security
+
+### Cookie Configuration
+
+All auth cookies are set with:
+
+| Flag | Value | Purpose |
+|------|-------|---------|
+| `httpOnly` | `true` | Prevents JavaScript from reading the token — mitigates XSS |
+| `secure` | `true` | Cookie is only sent over HTTPS |
+| `sameSite` | `lax` | Cookie is not sent on cross-site POST requests — mitigates CSRF |
+| `path` | `/` | Cookie is available to all routes |
+
+### CSRF Protection
+
+- **`SameSite=Lax` cookies**: The browser does not send auth cookies on cross-origin POST/PUT/DELETE requests. This blocks the primary CSRF attack vector.
+- **Origin header checking**: API routes that mutate data verify that the `Origin` header matches the app's domain. Requests from unknown origins are rejected.
+
+### Additional Measures
+
+- OTP codes expire after 10 minutes and are single-use
+- OTP codes are hashed before storage (not stored in plaintext)
+- Failed verification attempts are rate-limited
+- Tokens contain minimal claims (user ID, token version) — no PII in the payload
+
 ## Project Structure
 
 ```
 src/
   app/
-    api/lessons/          # API routes for lesson data
+    api/
+      auth/               # Auth API routes (send-code, verify, refresh, logout, me)
+      lessons/            # API routes for lesson data
+    login/                # Login page
     settings/             # Settings page
     reviews/              # Reviews page
     profile/              # Profile page
@@ -104,8 +181,9 @@ src/
     atoms/                # Stateless, reusable UI components
     organisms/            # Stateful, composed components
   lib/
+    auth/                 # JWT helpers, cookies, OTP, email, origin check, requireAuth
     db/                   # Database connection, schema, seed
-    hooks/                # React Query hooks (useLessons, useLesson)
+    hooks/                # React Query hooks (useLessons, useLesson, useAuth)
     providers/            # React Query provider
     types.ts              # Shared TypeScript interfaces
     projectConfig.ts      # Language configuration

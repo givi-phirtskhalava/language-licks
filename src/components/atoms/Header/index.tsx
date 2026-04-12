@@ -7,17 +7,18 @@ import classNames from "classnames";
 import useLessons from "@lib/hooks/useLessons";
 import useLanguage from "@lib/useLanguage";
 import useProgress from "@lib/useProgress";
+import useAuth from "@lib/hooks/useAuth";
 import style from "./Header.module.css";
 
 const NAV_ITEMS = [
   { href: "/", label: "Lessons" },
   { href: "/reviews", label: "Reviews" },
   { href: "/settings", label: "Settings" },
-  { href: "/profile", label: "Profile" },
 ];
 
 export default function Header() {
   const pathname = usePathname();
+  const { isLoggedIn } = useAuth();
   const { language } = useLanguage();
   const { getLesson, pausedAt } = useProgress(language);
   const { data: lessons } = useLessons(language);
@@ -40,9 +41,15 @@ export default function Header() {
     );
   });
 
+  const authItem = isLoggedIn
+    ? { href: "/profile", label: "Profile" }
+    : { href: `/login?redirect=${pathname}`, label: "Log in" };
+
+  const navItems = [...NAV_ITEMS, authItem];
+
   return (
     <header className={style.header}>
-      {NAV_ITEMS.map(({ href, label }) => (
+      {navItems.map(({ href, label }) => (
         <Link
           key={href}
           href={href}

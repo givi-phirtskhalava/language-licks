@@ -22,4 +22,8 @@ export interface ILessonProgress {
   interval: number;
   nextReview: number | null;
   retired: boolean;
+  writingBestTime: number | null;
+  speakingBestTime: number | null;
+  writingStreak: number;
+  speakingStreak: number;
 }

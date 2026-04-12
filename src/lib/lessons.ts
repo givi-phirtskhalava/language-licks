@@ -113,7 +113,7 @@ const FRENCH_LESSONS: ILegacyLesson[] = [
 
 const ITALIAN_LESSONS: ILegacyLesson[] = [
   {
-    sentence: "Non cercare amore più grande di quella della mamma.",
+    sentence: "Non cercare amore più grande di quello della mamma.",
     translation: "Don't look for love greater than that of a mother.",
     audio: "/sentence.mp3",
     grammar: [
@@ -128,9 +128,9 @@ const ITALIAN_LESSONS: ILegacyLesson[] = [
           '"Greater love." "Più" = more, used before adjectives to form comparatives. "Grande" = great/big.',
       },
       {
-        label: "di quella",
+        label: "di quello",
         explanation:
-          '"Than that (one)." "Di" = than (in comparisons), "quella" = that one (feminine demonstrative pronoun, referring to "amore" in the abstract sense of love).',
+          '"Than that (one)." "Di" = than (in comparisons), "quello" = that one (masculine demonstrative pronoun, referring to "amore" in the abstract sense of love).',
       },
       {
         label: "della mamma",

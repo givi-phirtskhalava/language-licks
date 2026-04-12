@@ -6,9 +6,12 @@ import { faRotateLeft } from "@fortawesome/free-solid-svg-icons";
 import toast from "react-hot-toast";
 import useLanguage from "@lib/useLanguage";
 import useLessons from "@lib/hooks/useLessons";
+import useAuth from "@lib/hooks/useAuth";
 import useProgress, { getMasteryLevel } from "@lib/useProgress";
+import { FREE_LESSON_COUNT } from "@lib/projectConfig";
 import MasteryBar from "@/components/atoms/MasteryBar";
 import Modal from "@/components/atoms/Modal";
+import SignUpPrompt from "@atoms/SignUpPrompt";
 import LanguageCard from "@/components/organisms/LanguageCard";
 import styles from "./Reviews.module.css";
 
@@ -28,6 +31,7 @@ export default function Reviews() {
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const [resetId, setResetId] = useState<number | null>(null);
   const { language } = useLanguage();
+  const { isLoggedIn } = useAuth();
   const { getLesson, resetLesson, pausedAt } = useProgress(language);
   const { data: lessons, isLoading } = useLessons(language);
   const [now, setNow] = useState(Date.now());
@@ -60,12 +64,26 @@ export default function Reviews() {
   }
 
   const effectiveNow = pausedAt ?? now;
+  const freeLessonIds = new Set(
+    lessons.slice(0, FREE_LESSON_COUNT).map((l) => l.id)
+  );
   const ready: { id: number; translation: string; level: number }[] = [];
-  const comingUp: { id: number; translation: string; timeLeft: number; level: number }[] = [];
+  const comingUp: {
+    id: number;
+    translation: string;
+    timeLeft: number;
+    level: number;
+  }[] = [];
+  let hasLockedReviews = false;
 
   lessons.forEach((lesson) => {
     const p = getLesson(lesson.id);
     if (!p || !p.completed || p.retired) return;
+
+    if (!isLoggedIn && !freeLessonIds.has(lesson.id)) {
+      hasLockedReviews = true;
+      return;
+    }
     const level = getMasteryLevel(p);
 
     if (p.nextReview && p.nextReview <= effectiveNow) {
@@ -86,7 +104,7 @@ export default function Reviews() {
     <div className={styles.container}>
       {ready.length > 0 && (
         <section>
-          <h2 className={styles.sectionTitle}>Ready</h2>
+          <h2 className={styles.sectionTitle}>Ready for review</h2>
           <div className={styles.list}>
             {ready.map(({ id, translation, level }) => (
               <div key={id} className={styles.itemRow}>
@@ -159,8 +177,14 @@ export default function Reviews() {
         </section>
       )}
 
-      {ready.length === 0 && comingUp.length === 0 && (
-        <p className={styles.tag}>No reviews yet. Complete some lessons first.</p>
+      {hasLockedReviews && (
+        <SignUpPrompt message="Sign up to unlock reviews for all lessons." />
+      )}
+
+      {ready.length === 0 && comingUp.length === 0 && !hasLockedReviews && (
+        <p className={styles.tag}>
+          No reviews yet. Complete some lessons first.
+        </p>
       )}
 
       {resetId !== null && (

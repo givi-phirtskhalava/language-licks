@@ -29,7 +29,11 @@ export function getMasteryLevel(p: ILessonProgress | null): number {
 
 type TProgressMap = Record<number, ILessonProgress>;
 
+// --- Module-level store ---
+
 let listeners: (() => void)[] = [];
+let dbMode = false;
+const dbData = new Map<string, TProgressMap>();
 const snapshotCache = new Map<
   string,
   { raw: string | null; data: TProgressMap }
@@ -40,7 +44,12 @@ function emitChange() {
   listeners.forEach((l) => l());
 }
 
+const EMPTY_PROGRESS: TProgressMap = {};
+
 function getSnapshot(key: string): TProgressMap {
+  if (dbMode) {
+    return dbData.get(key) ?? EMPTY_PROGRESS;
+  }
   const raw = localStorage.getItem(key);
   const cached = snapshotCache.get(key);
   if (cached && cached.raw === raw) return cached.data;
@@ -57,10 +66,23 @@ function subscribe(listener: () => void) {
 }
 
 function save(key: string, progress: TProgressMap) {
+  if (dbMode) {
+    dbData.set(key, progress);
+    emitChange();
+    return;
+  }
   const json = JSON.stringify(progress);
   snapshotCache.set(key, { raw: json, data: progress });
   localStorage.setItem(key, json);
   emitChange();
+}
+
+function syncLessonToApi(lessonId: number, data: ILessonProgress) {
+  fetch("/api/progress", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ lessonId, ...data }),
+  }).catch((err) => console.error("Failed to sync progress:", err));
 }
 
 function defaultProgress(): ILessonProgress {
@@ -71,8 +93,14 @@ function defaultProgress(): ILessonProgress {
     interval: INITIAL_INTERVAL_MS,
     nextReview: null,
     retired: false,
+    writingBestTime: null,
+    speakingBestTime: null,
+    writingStreak: 0,
+    speakingStreak: 0,
   };
 }
+
+// --- Pause store (localStorage for both modes) ---
 
 const pauseCache = new Map<
   string,
@@ -89,17 +117,64 @@ function getPauseSnapshot(language: TLanguageId): number | null {
   return value;
 }
 
+// --- Public API for sync ---
+
+export async function hydrateFromApi(language: TLanguageId) {
+  const res = await fetch(`/api/progress?language=${language}`);
+  if (!res.ok) return;
+  const { progress } = await res.json();
+  dbMode = true;
+  dbData.set(storageKey(language), progress as TProgressMap);
+  emitChange();
+}
+
+export async function syncAndClear(language: TLanguageId) {
+  const key = storageKey(language);
+  const raw = localStorage.getItem(key);
+  const localProgress: TProgressMap = raw ? JSON.parse(raw) : {};
+
+  if (Object.keys(localProgress).length > 0) {
+    await fetch("/api/progress/sync", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ language, progress: localProgress }),
+    });
+  }
+
+  const res = await fetch(`/api/progress?language=${language}`);
+  if (res.ok) {
+    const { progress } = await res.json();
+    dbData.set(key, progress as TProgressMap);
+  } else {
+    dbData.set(key, localProgress);
+  }
+
+  dbMode = true;
+  localStorage.removeItem(key);
+  emitChange();
+}
+
+export function clearDbMode() {
+  dbMode = false;
+  dbData.clear();
+  emitChange();
+}
+
+export async function clearAllProgress(language: TLanguageId) {
+  const res = await fetch("/api/progress/clear", { method: "POST" });
+  if (!res.ok) throw new Error("Failed to clear progress");
+  dbData.set(storageKey(language), {});
+  emitChange();
+}
+
+// --- Hook ---
+
 export default function useProgress(language: TLanguageId) {
   const key = storageKey(language);
-  const progress = useSyncExternalStore(
-    subscribe,
-    () => getSnapshot(key),
-    () => SERVER_SNAPSHOT
-  );
-  const pausedAt = useSyncExternalStore(
-    subscribe,
-    () => getPauseSnapshot(language),
-    () => null
+  const getSnap = useCallback(() => getSnapshot(key), [key]);
+  const getPause = useCallback(() => getPauseSnapshot(language), [language]);
+  const progress = useSyncExternalStore(subscribe, getSnap, () => SERVER_SNAPSHOT);
+  const pausedAt = useSyncExternalStore(subscribe, getPause, () => null
   );
 
   const updatePhase = useCallback(
@@ -108,41 +183,61 @@ export default function useProgress(language: TLanguageId) {
       const existing = current[lessonId] ?? defaultProgress();
       const now = Date.now();
 
+      let updated: ILessonProgress;
+
       if (phase === "complete") {
-        // Lesson test on an already-completed lesson — don't touch the review schedule
         if (!isReview && existing.completed) {
-          save(key, {
-            ...current,
-            [lessonId]: { ...existing, phase },
-          });
-          return;
-        }
+          updated = { ...existing, phase };
+        } else {
+          const nextInterval = isReview
+            ? existing.interval * 2
+            : INITIAL_INTERVAL_MS;
+          const retired = nextInterval >= RETIRE_THRESHOLD_MS;
 
-        const nextInterval = isReview
-          ? existing.interval * 2
-          : INITIAL_INTERVAL_MS;
-        const retired = nextInterval >= RETIRE_THRESHOLD_MS;
-
-        save(key, {
-          ...current,
-          [lessonId]: {
+          updated = {
+            ...existing,
             phase,
             completed: true,
             completedAt: now,
             interval: nextInterval,
             nextReview: retired ? null : now + nextInterval,
             retired,
-          },
-        });
+          };
+        }
       } else {
-        save(key, {
-          ...current,
-          [lessonId]: {
-            ...existing,
-            phase,
-          },
-        });
+        updated = { ...existing, phase };
       }
+
+      save(key, { ...current, [lessonId]: updated });
+      if (dbMode) syncLessonToApi(lessonId, updated);
+    },
+    [key]
+  );
+
+  const updateStreak = useCallback(
+    (lessonId: number, type: "writing" | "speaking", streak: number) => {
+      const current = getSnapshot(key);
+      const existing = current[lessonId] ?? defaultProgress();
+      const field = type === "writing" ? "writingStreak" : "speakingStreak";
+      const updated = { ...existing, [field]: streak };
+      save(key, { ...current, [lessonId]: updated });
+      if (dbMode) syncLessonToApi(lessonId, updated);
+    },
+    [key]
+  );
+
+  const updateBestTime = useCallback(
+    (lessonId: number, type: "writing" | "speaking", time: number) => {
+      const current = getSnapshot(key);
+      const existing = current[lessonId] ?? defaultProgress();
+      const field =
+        type === "writing" ? "writingBestTime" : "speakingBestTime";
+      const current_best = existing[field];
+      const newBest =
+        current_best === null ? time : Math.min(current_best, time);
+      const updated = { ...existing, [field]: newBest };
+      save(key, { ...current, [lessonId]: updated });
+      if (dbMode) syncLessonToApi(lessonId, updated);
     },
     [key]
   );
@@ -160,15 +255,14 @@ export default function useProgress(language: TLanguageId) {
       const existing = current[lessonId];
       if (!existing) return;
 
-      save(key, {
-        ...current,
-        [lessonId]: {
-          ...existing,
-          retired: false,
-          interval: INITIAL_INTERVAL_MS,
-          nextReview: Date.now() + INITIAL_INTERVAL_MS,
-        },
-      });
+      const updated: ILessonProgress = {
+        ...existing,
+        retired: false,
+        interval: INITIAL_INTERVAL_MS,
+        nextReview: Date.now() + INITIAL_INTERVAL_MS,
+      };
+      save(key, { ...current, [lessonId]: updated });
+      if (dbMode) syncLessonToApi(lessonId, updated);
     },
     [key]
   );
@@ -178,6 +272,9 @@ export default function useProgress(language: TLanguageId) {
       const current = getSnapshot(key);
       const { [lessonId]: _, ...rest } = current;
       save(key, rest);
+      if (dbMode) {
+        syncLessonToApi(lessonId, defaultProgress());
+      }
     },
     [key]
   );
@@ -206,11 +303,19 @@ export default function useProgress(language: TLanguageId) {
     save(key, updated);
     localStorage.removeItem(pauseKey(language));
     emitChange();
+
+    if (dbMode) {
+      for (const idx of Object.keys(updated)) {
+        syncLessonToApi(Number(idx), updated[Number(idx)]);
+      }
+    }
   }, [key, language]);
 
   return {
     progress,
     updatePhase,
+    updateStreak,
+    updateBestTime,
     getLesson,
     unretire,
     resetLesson,
