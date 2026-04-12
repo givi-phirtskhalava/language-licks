@@ -44,12 +44,7 @@ export default function WritingPractice({ lesson, onReady }: Props) {
 
   return (
     <div className={styles.body}>
-      <SentenceDisplay
-        sentence={lesson.sentence}
-        translation={lesson.translation}
-        audio={lesson.audio}
-        blurrable
-      />
+      <SentenceDisplay lesson={lesson} blurrable />
 
       <div>
         <div className={styles.sectionHeader}>

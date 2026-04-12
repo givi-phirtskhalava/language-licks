@@ -3,35 +3,50 @@
 import { useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEye, faEyeSlash } from "@fortawesome/free-solid-svg-icons";
-import AudioButton from "@/components/organisms/LanguageCard/AudioButton";
+import AudioButton from "./AudioButton";
+import { ILesson } from "@lib/types";
 import styles from "./SentenceDisplay.module.css";
 
 interface Props {
-  sentence: string;
-  translation: string;
-  audio: string;
+  lesson: ILesson;
+  showAudio?: boolean;
   blurrable?: boolean;
+  alwaysBlurred?: boolean;
+  hint?: string;
 }
 
-export default function SentenceDisplay({ sentence, translation, audio, blurrable }: Props) {
+export default function SentenceDisplay({
+  lesson,
+  showAudio = true,
+  blurrable,
+  alwaysBlurred,
+  hint,
+}: Props) {
   const [revealed, setRevealed] = useState(!blurrable);
+  const blurred = alwaysBlurred || !revealed;
 
   return (
     <>
-      <div className={`${styles.topSection} ${!revealed && styles.topSectionBlurred}`}>
+      <div
+        className={`${styles.topSection} ${blurred && styles.topSectionBlurred}`}
+      >
         <div className={styles.sentenceWrap}>
-          <p className={styles.sentence}>{sentence}</p>
+          <p className={styles.sentence}>{lesson.sentence}</p>
           <p className={styles.translation}>
-            {"\u201C" + translation + "\u201D"}
+            {"\u201C" + lesson.translation + "\u201D"}
           </p>
         </div>
 
-        <div className={styles.center}>
-          <AudioButton src={audio} />
-        </div>
+        {showAudio && (
+          <div className={styles.center}>
+            <AudioButton src={lesson.audio} />
+          </div>
+        )}
       </div>
 
-      {blurrable && (
+      {hint && <p className={styles.hint}>{hint}</p>}
+
+      {blurrable && !alwaysBlurred && (
         <div className={styles.center}>
           <button
             className={styles.revealBtn}

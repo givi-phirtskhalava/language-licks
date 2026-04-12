@@ -30,6 +30,14 @@
   font-style: italic;
 }
 
+.hint {
+  text-align: center;
+  margin-top: 0.5rem;
+  color: #9ca3af;
+  font-size: 0.75rem;
+  font-style: italic;
+}
+
 .center {
   display: flex;
   justify-content: center;

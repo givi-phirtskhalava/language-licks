@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import SentenceDisplay from "@/components/organisms/LanguageCard/SentenceDisplay";
 import WordResult from "@/components/organisms/LanguageCard/WordResult";
 import RecordButton from "@/components/organisms/LanguageCard/RecordButton";
 import WritingInput from "@/components/organisms/LanguageCard/WritingInput";
@@ -86,14 +87,12 @@ export default function Test({ lesson, onPass, onFail }: Props) {
   return (
     <div className={styles.body}>
       {/* Sentence — always blurred */}
-      <div className={styles.sentenceWrap}>
-        <p className={`${styles.sentence} ${styles.sentenceBlurred}`}>
-          {lesson.sentence}
-        </p>
-        <p className={styles.memoryHint}>
-          {step === "writing" ? "Write it from memory!" : "Say it from memory!"}
-        </p>
-      </div>
+      <SentenceDisplay
+        lesson={lesson}
+        showAudio={false}
+        alwaysBlurred
+        hint={step === "writing" ? "Write it from memory!" : "Say it from memory!"}
+      />
 
       {/* Attempts remaining */}
       <div className={styles.streakWrap}>

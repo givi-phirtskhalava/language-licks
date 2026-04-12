@@ -1,9 +1,6 @@
 "use client";
 
-import { useState } from "react";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faEye, faEyeSlash } from "@fortawesome/free-solid-svg-icons";
-import AudioButton from "@/components/organisms/LanguageCard/AudioButton";
+import SentenceDisplay from "@/components/organisms/LanguageCard/SentenceDisplay";
 import WordResult from "@/components/organisms/LanguageCard/WordResult";
 import StreakDots from "@/components/organisms/LanguageCard/StreakDots";
 import RecordButton from "@/components/organisms/LanguageCard/RecordButton";
@@ -21,8 +18,6 @@ interface Props {
 }
 
 export default function Practice({ lesson, onReady }: Props) {
-  const [revealed, setRevealed] = useState(false);
-
   const writeStreak = useStreak("I think you\u2019re ready for the writing test! \u270D\uFE0F");
   const writeTimer = useBestTime();
   const writing = useWritingCheck();
@@ -71,27 +66,7 @@ export default function Practice({ lesson, onReady }: Props) {
   return (
     <div className={styles.body}>
       {/* Sentence + audio — blurred by default */}
-      <div className={`${styles.topSection} ${!revealed && styles.topSectionBlurred}`}>
-        <div className={styles.sentenceWrap}>
-          <p className={styles.sentence}>{lesson.sentence}</p>
-          <p className={styles.translation}>
-            {"\u201C" + lesson.translation + "\u201D"}
-          </p>
-        </div>
-
-        <div className={styles.center}>
-          <AudioButton src={lesson.audio} />
-        </div>
-      </div>
-
-      <div className={styles.center}>
-        <button
-          className={styles.revealBtn}
-          onClick={() => setRevealed((prev) => !prev)}
-        >
-          <FontAwesomeIcon icon={revealed ? faEyeSlash : faEye} />
-        </button>
-      </div>
+      <SentenceDisplay lesson={lesson} blurrable />
 
       {/* Writing practice */}
       <div>

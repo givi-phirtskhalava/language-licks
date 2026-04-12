@@ -14,11 +14,7 @@ interface Props {
 export default function LessonPhase({ lesson, onReady }: Props) {
   return (
     <div className={styles.body}>
-      <SentenceDisplay
-        sentence={lesson.sentence}
-        translation={lesson.translation}
-        audio={lesson.audio}
-      />
+      <SentenceDisplay lesson={lesson} />
 
       <div>
         <p className={styles.sectionLabel}>Grammar Breakdown</p>
