@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Header from "@/components/atoms/Header";
+import NavigationProgress from "@/components/atoms/NavigationProgress";
 import ToastProvider from "@/components/atoms/ToastProvider";
 import "./globals.css";
 
@@ -16,6 +17,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
+        <NavigationProgress />
         <Header />
         <ToastProvider />
         {children}
