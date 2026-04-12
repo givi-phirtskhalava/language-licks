@@ -1,0 +1,23 @@
+.wordBadge {
+  display: inline-block;
+  border-radius: 0.25rem;
+  padding: 0.25rem 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.wordCorrect {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+.wordWrong {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.wordActual {
+  margin-left: 0.25rem;
+  font-size: 0.75rem;
+  opacity: 0.6;
+}

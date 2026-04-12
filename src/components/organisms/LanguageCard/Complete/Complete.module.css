@@ -1,0 +1,51 @@
+.completeBody {
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.5rem;
+  text-align: center;
+}
+
+.checkCircle {
+  width: 4rem;
+  height: 4rem;
+  border-radius: 50%;
+  background: #d1fae5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #059669;
+  font-size: 1.75rem;
+}
+
+.completeTitle {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #111827;
+}
+
+.completeSubtitle {
+  color: #6b7280;
+  font-size: 0.875rem;
+}
+
+.primaryBtn {
+  width: 100%;
+  border-radius: 0.75rem;
+  background: #4f46e5;
+  padding: 0.75rem 1.5rem;
+  color: #fff;
+  font-weight: 500;
+  transition: background 0.2s;
+}
+
+.primaryBtn:hover {
+  background: #4338ca;
+}
+
+.doneText {
+  color: #9ca3af;
+  font-size: 0.875rem;
+  font-style: italic;
+}

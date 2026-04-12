@@ -1,0 +1,15 @@
+.audioBtn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  border-radius: 9999px;
+  background: #eef2ff;
+  padding: 0.625rem 1.25rem;
+  color: #4338ca;
+  font-weight: 500;
+  transition: background 0.2s;
+}
+
+.audioBtn:hover {
+  background: #e0e7ff;
+}
