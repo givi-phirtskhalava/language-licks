@@ -1,27 +1,24 @@
 "use client";
 
-import AudioButton from "@/components/organisms/LanguageCard/AudioButton";
-import { Lesson } from "@lib/types";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faChevronRight } from "@fortawesome/free-solid-svg-icons";
+import SentenceDisplay from "@/components/organisms/LanguageCard/SentenceDisplay";
+import { ILesson } from "@lib/types";
 import styles from "./Lesson.module.css";
 
 interface Props {
-  lesson: Lesson;
+  lesson: ILesson;
   onReady: () => void;
 }
 
 export default function LessonPhase({ lesson, onReady }: Props) {
   return (
     <div className={styles.body}>
-      <div className={styles.sentenceWrap}>
-        <p className={styles.sentence}>{lesson.sentence}</p>
-        <p className={styles.translation}>
-          {"\u201C" + lesson.translation + "\u201D"}
-        </p>
-      </div>
-
-      <div className={styles.center}>
-        <AudioButton src={lesson.audio} />
-      </div>
+      <SentenceDisplay
+        sentence={lesson.sentence}
+        translation={lesson.translation}
+        audio={lesson.audio}
+      />
 
       <div>
         <p className={styles.sectionLabel}>Grammar Breakdown</p>
@@ -35,8 +32,21 @@ export default function LessonPhase({ lesson, onReady }: Props) {
         </div>
       </div>
 
+      <div>
+        <p className={styles.sectionLabel}>Liaison Tips</p>
+        <div className={styles.grammarList} style={{ marginTop: "0.5rem" }}>
+          {lesson.liaisonTips.map((tip) => (
+            <div key={tip.phrase} className={styles.grammarItem}>
+              <span className={styles.grammarLabel}>{tip.phrase}</span>
+              <p className={styles.grammarExplanation}>{tip.explanation}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+
       <button onClick={onReady} className={styles.primaryBtn}>
-        {"I\u2019m ready \u2014 start practicing"}
+        Writing Practice
+        <FontAwesomeIcon icon={faChevronRight} style={{ marginLeft: "0.5rem" }} />
       </button>
     </div>
   );

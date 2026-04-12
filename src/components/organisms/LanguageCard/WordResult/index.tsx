@@ -1,8 +1,8 @@
-import { WordComparison } from "@/lib/compareText";
+import { IWordComparison } from "@/lib/compareText";
 import styles from "./WordResult.module.css";
 
 interface Props {
-  word: WordComparison;
+  word: IWordComparison;
 }
 
 export default function WordResult({ word }: Props) {

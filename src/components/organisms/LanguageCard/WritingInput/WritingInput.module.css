@@ -76,9 +76,18 @@
   font-weight: 500;
 }
 
-.wordError {
-  color: #dc2626;
+.wordGroup {
+  display: inline-flex;
+  gap: 0.2em;
+}
+
+.wordStruck {
+  color: #9ca3af;
   text-decoration: line-through;
+}
+
+.wordCorrection {
+  color: #ea580c;
   font-weight: 500;
 }
 

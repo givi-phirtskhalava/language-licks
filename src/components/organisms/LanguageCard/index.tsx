@@ -3,65 +3,72 @@
 import { useCallback, useState } from "react";
 import { Toaster } from "react-hot-toast";
 import LessonPhase from "./Lesson";
-import Practice from "./Practice";
+import WritingPractice from "./WritingPractice";
+import SpeakingPractice from "./SpeakingPractice";
 import Test from "./Test";
 import Complete from "./Complete";
 import { LESSONS } from "@lib/lessons";
+import { TPhase } from "@lib/types";
+import useProgress from "@lib/useProgress";
 import styles from "./LanguageCard.module.css";
 
-type Phase = "lesson" | "practice" | "test" | "complete";
+interface Props {
+  lessonIndex: number;
+  onBack: () => void;
+}
 
-export default function LanguageCard() {
-  const [lessonIndex, setLessonIndex] = useState(0);
-  const [phase, setPhase] = useState<Phase>("lesson");
+export default function LanguageCard({ lessonIndex, onBack }: Props) {
+  const { getLesson, updatePhase } = useProgress();
+  const saved = getLesson(lessonIndex);
+  const savedPhase = saved?.phase === "practice" ? "practice-writing" : saved?.phase;
+  const initialPhase: TPhase = saved?.completed ? "lesson" : (savedPhase ?? "lesson");
+  const [phase, setPhase] = useState<TPhase>(initialPhase);
 
   const lesson = LESSONS[lessonIndex];
-  const hasNext = lessonIndex < LESSONS.length - 1;
+
+  function changePhase(next: TPhase) {
+    setPhase(next);
+    updatePhase(lessonIndex, next);
+  }
 
   const handleTestPass = useCallback(() => {
-    setPhase("complete");
+    changePhase("complete");
   }, []);
 
   const handleTestFail = useCallback(() => {
-    setPhase("practice");
+    changePhase("practice-writing");
   }, []);
-
-  function handleNext() {
-    setLessonIndex((i) => i + 1);
-    setPhase("lesson");
-  }
 
   const phaseLabel =
     phase === "lesson"
       ? "Study"
-      : phase === "practice"
-        ? "Practice"
-        : phase === "test"
-          ? "Test"
-          : "Complete";
+      : phase === "practice-writing"
+        ? "Writing Practice"
+        : phase === "practice-speaking"
+          ? "Speaking Practice"
+          : phase === "test"
+            ? "Test"
+            : "Complete";
 
   return (
     <>
       <Toaster position="top-center" />
       <div className={styles.card}>
         <div className={styles.header}>
-          <p className={styles.headerTitle}>
-            {"French \u2014 "}
-            {phaseLabel}
-          </p>
-          <p className={styles.headerCount}>
-            {"Lesson "}
-            {lessonIndex + 1}
-            {"/"}
-            {LESSONS.length}
-          </p>
+          <button className={styles.backBtn} onClick={onBack}>
+            {"< Back"}
+          </button>
+          <p className={styles.headerTitle}>{phaseLabel}</p>
         </div>
 
         {phase === "lesson" && (
-          <LessonPhase lesson={lesson} onReady={() => setPhase("practice")} />
+          <LessonPhase lesson={lesson} onReady={() => changePhase("practice-writing")} />
         )}
-        {phase === "practice" && (
-          <Practice lesson={lesson} onReady={() => setPhase("test")} />
+        {phase === "practice-writing" && (
+          <WritingPractice lesson={lesson} onReady={() => changePhase("practice-speaking")} />
+        )}
+        {phase === "practice-speaking" && (
+          <SpeakingPractice lesson={lesson} onReady={() => changePhase("test")} />
         )}
         {phase === "test" && (
           <Test
@@ -71,7 +78,7 @@ export default function LanguageCard() {
           />
         )}
         {phase === "complete" && (
-          <Complete lesson={lesson} onNext={hasNext ? handleNext : null} />
+          <Complete lesson={lesson} onNext={onBack} />
         )}
       </div>
     </>

@@ -99,6 +99,12 @@
   font-weight: 500;
 }
 
+.feedbackWarning {
+  background: #fffbeb;
+  color: #b45309;
+  font-weight: 500;
+}
+
 .feedbackWrong {
   background: #fef2f2;
   color: #b91c1c;

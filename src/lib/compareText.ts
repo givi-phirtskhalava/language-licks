@@ -1,4 +1,4 @@
-export interface WordComparison {
+export interface IWordComparison {
   expected: string;
   actual: string | null;
   correct: boolean;
@@ -62,14 +62,14 @@ function lcsMatches(
 export function compareWords(
   expected: string,
   actual: string
-): { words: WordComparison[]; extraWords: string[]; score: number } {
+): { words: IWordComparison[]; extraWords: string[]; score: number } {
   const expectedWords = normalize(expected);
   const actualWords = normalize(actual);
 
   const dp = lcsTable(expectedWords, actualWords);
   const matched = lcsMatches(expectedWords, actualWords, dp);
 
-  const words: WordComparison[] = expectedWords.map((exp, i) => ({
+  const words: IWordComparison[] = expectedWords.map((exp, i) => ({
     expected: exp,
     actual: matched.has(i) ? exp : null,
     correct: matched.has(i),

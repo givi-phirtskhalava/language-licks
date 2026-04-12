@@ -6,21 +6,21 @@ import RecordButton from "@/components/organisms/LanguageCard/RecordButton";
 import WritingInput from "@/components/organisms/LanguageCard/WritingInput";
 import useWritingCheck from "@/components/organisms/LanguageCard/hooks/useWritingCheck";
 import useSpeakingCheck from "@/components/organisms/LanguageCard/hooks/useSpeakingCheck";
-import { Lesson } from "@lib/types";
+import { ILesson } from "@lib/types";
 import styles from "./Test.module.css";
 
 const MAX_ATTEMPTS = 3;
 
 interface Props {
-  lesson: Lesson;
+  lesson: ILesson;
   onPass: () => void;
   onFail: () => void;
 }
 
-type TestStep = "writing" | "speaking";
+type TTestStep = "writing" | "speaking";
 
 export default function Test({ lesson, onPass, onFail }: Props) {
-  const [step, setStep] = useState<TestStep>("writing");
+  const [step, setStep] = useState<TTestStep>("writing");
   const [attempts, setAttempts] = useState(0);
   const [passed, setPassed] = useState(false);
   const [lastCorrect, setLastCorrect] = useState<boolean | null>(null);

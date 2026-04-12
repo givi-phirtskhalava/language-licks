@@ -2,68 +2,116 @@
 
 import { useRef, useState } from "react";
 
-export type WriteWordStatus = "correct" | "warning" | "error" | "missing";
+export type TWriteWordStatus = "correct" | "warning" | "error" | "missing" | "extra";
 
-export interface WriteWordResult {
+export interface IWriteWordResult {
   expected: string;
   actual: string | null;
-  status: WriteWordStatus;
+  status: TWriteWordStatus;
 }
 
 function stripPunctuation(word: string): string {
   return word.replace(/[^a-zA-ZàâäéèêëïîôùûüÿçœæÀÂÄÉÈÊËÏÎÔÙÛÜŸÇŒÆ']/g, "");
 }
 
+function classifyWord(exp: string, act: string): TWriteWordStatus {
+  if (exp === act) return "correct";
+  const expStripped = stripPunctuation(exp);
+  const actStripped = stripPunctuation(act);
+  if (expStripped === actStripped) return "warning";
+  if (expStripped.toLowerCase() === actStripped.toLowerCase()) return "warning";
+  return "error";
+}
+
+function wordsMatch(exp: string, act: string): boolean {
+  const status = classifyWord(exp, act);
+  return status === "correct" || status === "warning";
+}
+
 export function compareWriting(
   expected: string,
   actual: string,
-): WriteWordResult[] {
+): IWriteWordResult[] {
   const expTrimmed = expected.replace(/[.,!?;:…]+$/, "");
   const actTrimmed = actual.replace(/[.,!?;:…]+$/, "");
 
   const expWords = expTrimmed.split(/\s+/).filter(Boolean);
   const actWords = actTrimmed.split(/\s+/).filter(Boolean);
 
-  const results: WriteWordResult[] = [];
-  const len = Math.max(expWords.length, actWords.length);
+  const m = expWords.length;
+  const n = actWords.length;
 
-  for (let i = 0; i < len; i++) {
-    const exp = expWords[i];
-    const act = actWords[i];
+  const dp: number[][] = Array.from({ length: m + 1 }, () =>
+    Array(n + 1).fill(0),
+  );
 
-    if (!exp) continue;
+  for (let i = 0; i <= m; i++) dp[i][0] = i;
+  for (let j = 0; j <= n; j++) dp[0][j] = j;
 
-    if (!act) {
-      results.push({ expected: exp, actual: null, status: "missing" });
-      continue;
+  for (let i = 1; i <= m; i++) {
+    for (let j = 1; j <= n; j++) {
+      if (wordsMatch(expWords[i - 1], actWords[j - 1])) {
+        dp[i][j] = dp[i - 1][j - 1];
+      } else {
+        dp[i][j] =
+          1 +
+          Math.min(dp[i - 1][j - 1], dp[i - 1][j], dp[i][j - 1]);
+      }
     }
+  }
 
-    if (exp === act) {
-      results.push({ expected: exp, actual: act, status: "correct" });
-      continue;
+  const results: IWriteWordResult[] = [];
+  let i = m;
+  let j = n;
+
+  while (i > 0 || j > 0) {
+    if (
+      i > 0 &&
+      j > 0 &&
+      wordsMatch(expWords[i - 1], actWords[j - 1])
+    ) {
+      const status = classifyWord(expWords[i - 1], actWords[j - 1]);
+      results.unshift({
+        expected: expWords[i - 1],
+        actual: actWords[j - 1],
+        status,
+      });
+      i--;
+      j--;
+    } else if (
+      i > 0 &&
+      j > 0 &&
+      dp[i][j] === dp[i - 1][j - 1] + 1
+    ) {
+      results.unshift({
+        expected: expWords[i - 1],
+        actual: actWords[j - 1],
+        status: "error",
+      });
+      i--;
+      j--;
+    } else if (i > 0 && dp[i][j] === dp[i - 1][j] + 1) {
+      results.unshift({
+        expected: expWords[i - 1],
+        actual: null,
+        status: "missing",
+      });
+      i--;
+    } else {
+      results.unshift({
+        expected: "",
+        actual: actWords[j - 1],
+        status: "extra",
+      });
+      j--;
     }
-
-    const expStripped = stripPunctuation(exp);
-    const actStripped = stripPunctuation(act);
-
-    if (expStripped === actStripped) {
-      results.push({ expected: exp, actual: act, status: "warning" });
-      continue;
-    }
-
-    if (expStripped.toLowerCase() === actStripped.toLowerCase()) {
-      results.push({ expected: exp, actual: act, status: "warning" });
-      continue;
-    }
-
-    results.push({ expected: exp, actual: act, status: "error" });
   }
 
   return results;
 }
 
-interface UseWritingCheckReturn {
-  result: WriteWordResult[] | null;
+interface IUseWritingCheckReturn {
+  result: IWriteWordResult[] | null;
   hasErrors: boolean;
   hasWarnings: boolean;
   isPass: boolean;
@@ -71,16 +119,16 @@ interface UseWritingCheckReturn {
   clear: () => void;
 }
 
-export default function useWritingCheck(): UseWritingCheckReturn {
-  const [result, setResult] = useState<WriteWordResult[] | null>(null);
-  const resultRef = useRef<WriteWordResult[] | null>(null);
+export default function useWritingCheck(): IUseWritingCheckReturn {
+  const [result, setResult] = useState<IWriteWordResult[] | null>(null);
+  const resultRef = useRef<IWriteWordResult[] | null>(null);
 
   function check(expected: string, input: string): boolean {
     const results = compareWriting(expected, input);
     setResult(results);
     resultRef.current = results;
     const hasErrors = results.some(
-      (r) => r.status === "error" || r.status === "missing",
+      (r) => r.status === "error" || r.status === "missing" || r.status === "extra",
     );
     return !hasErrors;
   }
@@ -91,7 +139,7 @@ export default function useWritingCheck(): UseWritingCheckReturn {
   }
 
   const hasErrors =
-    result?.some((r) => r.status === "error" || r.status === "missing") ??
+    result?.some((r) => r.status === "error" || r.status === "missing" || r.status === "extra") ??
     false;
   const hasWarnings = result?.some((r) => r.status === "warning") ?? false;
   const isPass = result !== null && !hasErrors;

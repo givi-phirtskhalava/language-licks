@@ -3,15 +3,15 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import toast from "react-hot-toast";
 import { useSpeechRecognition } from "@/lib/useSpeechRecognition";
-import { compareWords, WordComparison } from "@/lib/compareText";
+import { compareWords, IWordComparison } from "@/lib/compareText";
 
-interface SpeakResult {
+interface ISpeakResult {
   correct: boolean;
-  words: WordComparison[];
+  words: IWordComparison[];
 }
 
-interface UseSpeakingCheckReturn {
-  result: SpeakResult | null;
+interface IUseSpeakingCheckReturn {
+  result: ISpeakResult | null;
   isListening: boolean;
   isProcessing: boolean;
   isSupported: boolean;
@@ -25,7 +25,7 @@ export default function useSpeakingCheck(
   sentence: string,
   onCorrect?: () => void,
   onWrong?: () => void,
-): UseSpeakingCheckReturn {
+): IUseSpeakingCheckReturn {
   const {
     transcript,
     resultId,
@@ -37,7 +37,7 @@ export default function useSpeakingCheck(
     stop,
   } = useSpeechRecognition(lang);
 
-  const [result, setResult] = useState<SpeakResult | null>(null);
+  const [result, setResult] = useState<ISpeakResult | null>(null);
   const processedResultId = useRef(0);
 
   useEffect(() => {

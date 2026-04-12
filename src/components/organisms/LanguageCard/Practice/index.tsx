@@ -12,11 +12,11 @@ import useStreak from "@/components/organisms/LanguageCard/useStreak";
 import useBestTime from "@/components/organisms/LanguageCard/useBestTime";
 import useWritingCheck from "@/components/organisms/LanguageCard/hooks/useWritingCheck";
 import useSpeakingCheck from "@/components/organisms/LanguageCard/hooks/useSpeakingCheck";
-import { Lesson } from "@lib/types";
+import { ILesson } from "@lib/types";
 import styles from "./Practice.module.css";
 
 interface Props {
-  lesson: Lesson;
+  lesson: ILesson;
   onReady: () => void;
 }
 
@@ -114,7 +114,7 @@ export default function Practice({ lesson, onReady }: Props) {
           isPass={writing.isPass}
           onRetry={handleWriteRetry}
         >
-          {writing.result !== null && !writing.hasErrors && !writing.hasWarnings && (
+          {writing.result !== null && writing.isPass && (
             <div
               className={`${styles.alert} ${styles.feedbackCorrect}`}
               style={{ marginTop: "0.75rem" }}

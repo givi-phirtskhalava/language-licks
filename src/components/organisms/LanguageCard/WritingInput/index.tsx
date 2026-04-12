@@ -3,13 +3,13 @@
 import { useRef, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPen, faRotateLeft } from "@fortawesome/free-solid-svg-icons";
-import { WriteWordResult } from "@/components/organisms/LanguageCard/hooks/useWritingCheck";
+import { IWriteWordResult } from "@/components/organisms/LanguageCard/hooks/useWritingCheck";
 import styles from "./WritingInput.module.css";
 
 interface Props {
   onSubmit: (input: string) => void;
   onInputChange?: () => void;
-  result?: WriteWordResult[] | null;
+  result?: IWriteWordResult[] | null;
   hasErrors?: boolean;
   hasWarnings?: boolean;
   isPass?: boolean;
@@ -92,17 +92,25 @@ export default function WritingInput({
         <div style={{ marginTop: "0.75rem" }}>
           <div className={styles.wordList}>
             {result.map((r, i) => (
-              <span
-                key={i}
-                className={
-                  r.status === "correct"
-                    ? styles.wordCorrect
-                    : r.status === "warning"
-                      ? styles.wordWarning
-                      : styles.wordError
-                }
-              >
-                {r.expected}
+              <span key={i} className={styles.wordGroup}>
+                {r.status === "correct" && (
+                  <span className={styles.wordCorrect}>{r.expected}</span>
+                )}
+                {r.status === "warning" && (
+                  <span className={styles.wordWarning}>{r.expected}</span>
+                )}
+                {r.status === "error" && (
+                  <>
+                    <span className={styles.wordStruck}>{r.actual}</span>
+                    <span className={styles.wordCorrection}>{r.expected}</span>
+                  </>
+                )}
+                {r.status === "missing" && (
+                  <span className={styles.wordCorrection}>{r.expected}</span>
+                )}
+                {r.status === "extra" && (
+                  <span className={styles.wordStruck}>{r.actual}</span>
+                )}
               </span>
             ))}
           </div>

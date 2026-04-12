@@ -5,6 +5,24 @@
   gap: 1.5rem;
 }
 
+.sectionHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.sectionMeta {
+  display: flex;
+  align-items: center;
+  gap: 0.75em;
+}
+
+.bestTime {
+  font-size: 0.75rem;
+  color: #9ca3af;
+  font-weight: 500;
+}
+
 .sectionLabel {
   font-size: 0.75rem;
   font-weight: 600;
@@ -13,28 +31,28 @@
   color: #9ca3af;
 }
 
-.grammarList {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-}
-
-.grammarItem {
+.alert {
   border-radius: 0.5rem;
-  background: #f9fafb;
   padding: 0.75rem 1rem;
+  font-size: 0.875rem;
+  text-align: center;
 }
 
-.grammarLabel {
+.feedbackCorrect {
+  background: #ecfdf5;
+  color: #047857;
+  font-weight: 500;
+}
+
+.timeInfo {
+  margin-left: 0.5em;
+  font-weight: 400;
+  opacity: 0.7;
+}
+
+.newBest {
   font-weight: 600;
-  color: #4338ca;
-  font-size: 0.875rem;
-}
-
-.grammarExplanation {
-  color: #4b5563;
-  font-size: 0.875rem;
-  margin-top: 0.125rem;
+  color: #059669;
 }
 
 .primaryBtn {

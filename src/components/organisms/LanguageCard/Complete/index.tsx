@@ -2,11 +2,11 @@
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCircleCheck, faArrowRight } from "@fortawesome/free-solid-svg-icons";
-import { Lesson } from "@lib/types";
+import { ILesson } from "@lib/types";
 import styles from "./Complete.module.css";
 
 interface Props {
-  lesson: Lesson;
+  lesson: ILesson;
   onNext: (() => void) | null;
 }
 
