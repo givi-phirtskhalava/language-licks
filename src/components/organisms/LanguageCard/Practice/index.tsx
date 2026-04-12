@@ -2,7 +2,7 @@
 
 import SentenceDisplay from "@/components/organisms/LanguageCard/SentenceDisplay";
 import WordResult from "@/components/organisms/LanguageCard/WordResult";
-import StreakDots from "@/components/organisms/LanguageCard/StreakDots";
+import SectionHeader from "@/components/atoms/SectionHeader";
 import RecordButton from "@/components/organisms/LanguageCard/RecordButton";
 import WritingInput from "@/components/organisms/LanguageCard/WritingInput";
 import useStreak from "@/components/organisms/LanguageCard/useStreak";
@@ -70,15 +70,12 @@ export default function Practice({ lesson, onReady }: Props) {
 
       {/* Writing practice */}
       <div>
-        <div className={styles.sectionHeader}>
-          <p className={styles.sectionLabel}>Writing Practice</p>
-          <div className={styles.sectionMeta}>
-            <span className={styles.bestTime}>
-              Best: {writeTimer.bestTime !== null ? writeTimer.bestTime.toFixed(1) + "s" : "\u2014"}
-            </span>
-            <StreakDots streak={writeStreak.streak} goal={writeStreak.goal} />
-          </div>
-        </div>
+        <SectionHeader
+          label="Writing Practice"
+          bestTime={writeTimer.bestTime}
+          streak={writeStreak.streak}
+          streakGoal={writeStreak.goal}
+        />
 
         <WritingInput
           onSubmit={handleWriteSubmit}
@@ -110,15 +107,12 @@ export default function Practice({ lesson, onReady }: Props) {
 
       {/* Speaking practice */}
       <div>
-        <div className={styles.sectionHeader}>
-          <p className={styles.sectionLabel}>Speaking Practice</p>
-          <div className={styles.sectionMeta}>
-            <span className={styles.bestTime}>
-              Best: {speakTimer.bestTime !== null ? speakTimer.bestTime.toFixed(1) + "s" : "\u2014"}
-            </span>
-            <StreakDots streak={speakStreak.streak} goal={speakStreak.goal} />
-          </div>
-        </div>
+        <SectionHeader
+          label="Speaking Practice"
+          bestTime={speakTimer.bestTime}
+          streak={speakStreak.streak}
+          streakGoal={speakStreak.goal}
+        />
 
         <RecordButton
           isListening={speaking.isListening}

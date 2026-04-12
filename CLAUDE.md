@@ -16,6 +16,11 @@
 - **Molecules**: AVOID USING — use wrapper atoms with children instead
 - **Organisms**: Stateful components consisting of atoms or custom sub components
 
+## Component Extraction
+
+- If a component is repeated in its exact state in multiple places, extract it to a separate atom — a stateless visual component that receives props
+- If the component is complex, has different use cases, or is heavily customized per usage, leave the instances individual — don't force a shared abstraction
+
 ## Naming Conventions
 
 - React component files: `MyComponent`

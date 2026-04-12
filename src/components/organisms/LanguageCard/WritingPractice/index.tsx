@@ -3,7 +3,7 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faChevronRight } from "@fortawesome/free-solid-svg-icons";
 import SentenceDisplay from "@/components/organisms/LanguageCard/SentenceDisplay";
-import StreakDots from "@/components/organisms/LanguageCard/StreakDots";
+import SectionHeader from "@/components/atoms/SectionHeader";
 import WritingInput from "@/components/organisms/LanguageCard/WritingInput";
 import useStreak from "@/components/organisms/LanguageCard/useStreak";
 import useBestTime from "@/components/organisms/LanguageCard/useBestTime";
@@ -47,15 +47,12 @@ export default function WritingPractice({ lesson, onReady }: Props) {
       <SentenceDisplay lesson={lesson} blurrable />
 
       <div>
-        <div className={styles.sectionHeader}>
-          <p className={styles.sectionLabel}>Writing Practice</p>
-          <div className={styles.sectionMeta}>
-            <span className={styles.bestTime}>
-              Best: {writeTimer.bestTime !== null ? writeTimer.bestTime.toFixed(1) + "s" : "\u2014"}
-            </span>
-            <StreakDots streak={writeStreak.streak} goal={writeStreak.goal} />
-          </div>
-        </div>
+        <SectionHeader
+          label="Writing Practice"
+          bestTime={writeTimer.bestTime}
+          streak={writeStreak.streak}
+          streakGoal={writeStreak.goal}
+        />
 
         <WritingInput
           onSubmit={handleWriteSubmit}

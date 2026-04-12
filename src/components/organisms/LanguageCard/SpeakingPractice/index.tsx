@@ -4,7 +4,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faChevronRight } from "@fortawesome/free-solid-svg-icons";
 import SentenceDisplay from "@/components/organisms/LanguageCard/SentenceDisplay";
 import WordResult from "@/components/organisms/LanguageCard/WordResult";
-import StreakDots from "@/components/organisms/LanguageCard/StreakDots";
+import SectionHeader from "@/components/atoms/SectionHeader";
 import RecordButton from "@/components/organisms/LanguageCard/RecordButton";
 import useStreak from "@/components/organisms/LanguageCard/useStreak";
 import useBestTime from "@/components/organisms/LanguageCard/useBestTime";
@@ -43,15 +43,12 @@ export default function SpeakingPractice({ lesson, onReady }: Props) {
       <SentenceDisplay lesson={lesson} blurrable />
 
       <div>
-        <div className={styles.sectionHeader}>
-          <p className={styles.sectionLabel}>Speaking Practice</p>
-          <div className={styles.sectionMeta}>
-            <span className={styles.bestTime}>
-              Best: {speakTimer.bestTime !== null ? speakTimer.bestTime.toFixed(1) + "s" : "\u2014"}
-            </span>
-            <StreakDots streak={speakStreak.streak} goal={speakStreak.goal} />
-          </div>
-        </div>
+        <SectionHeader
+          label="Speaking Practice"
+          bestTime={speakTimer.bestTime}
+          streak={speakStreak.streak}
+          streakGoal={speakStreak.goal}
+        />
 
         <RecordButton
           isListening={speaking.isListening}

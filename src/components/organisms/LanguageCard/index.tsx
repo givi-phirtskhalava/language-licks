@@ -20,8 +20,11 @@ interface Props {
 export default function LanguageCard({ lessonIndex, onBack }: Props) {
   const { getLesson, updatePhase } = useProgress();
   const saved = getLesson(lessonIndex);
-  const savedPhase = saved?.phase === "practice" ? "practice-writing" : saved?.phase;
-  const initialPhase: TPhase = saved?.completed ? "lesson" : (savedPhase ?? "lesson");
+  const savedPhase =
+    saved?.phase === "practice" ? "practice-writing" : saved?.phase;
+  const initialPhase: TPhase = saved?.completed
+    ? "lesson"
+    : (savedPhase ?? "lesson");
   const [phase, setPhase] = useState<TPhase>(initialPhase);
 
   const lesson = LESSONS[lessonIndex];
@@ -39,6 +42,23 @@ export default function LanguageCard({ lessonIndex, onBack }: Props) {
     changePhase("practice-writing");
   }, []);
 
+  const phases: TPhase[] = [
+    "lesson",
+    "practice-writing",
+    "practice-speaking",
+    "test",
+    "complete",
+  ];
+
+  function handleBack() {
+    const currentIndex = phases.indexOf(phase);
+    if (currentIndex <= 0) {
+      onBack();
+      return;
+    }
+    changePhase(phases[currentIndex - 1]);
+  }
+
   const phaseLabel =
     phase === "lesson"
       ? "Study"
@@ -55,20 +75,29 @@ export default function LanguageCard({ lessonIndex, onBack }: Props) {
       <Toaster position="top-center" />
       <div className={styles.card}>
         <div className={styles.header}>
-          <button className={styles.backBtn} onClick={onBack}>
+          <button className={styles.backBtn} onClick={handleBack}>
             {"< Back"}
           </button>
           <p className={styles.headerTitle}>{phaseLabel}</p>
         </div>
 
         {phase === "lesson" && (
-          <LessonPhase lesson={lesson} onReady={() => changePhase("practice-writing")} />
+          <LessonPhase
+            lesson={lesson}
+            onReady={() => changePhase("practice-writing")}
+          />
         )}
         {phase === "practice-writing" && (
-          <WritingPractice lesson={lesson} onReady={() => changePhase("practice-speaking")} />
+          <WritingPractice
+            lesson={lesson}
+            onReady={() => changePhase("practice-speaking")}
+          />
         )}
         {phase === "practice-speaking" && (
-          <SpeakingPractice lesson={lesson} onReady={() => changePhase("test")} />
+          <SpeakingPractice
+            lesson={lesson}
+            onReady={() => changePhase("test")}
+          />
         )}
         {phase === "test" && (
           <Test
@@ -77,9 +106,7 @@ export default function LanguageCard({ lessonIndex, onBack }: Props) {
             onFail={handleTestFail}
           />
         )}
-        {phase === "complete" && (
-          <Complete lesson={lesson} onNext={onBack} />
-        )}
+        {phase === "complete" && <Complete lesson={lesson} onNext={onBack} />}
       </div>
     </>
   );
