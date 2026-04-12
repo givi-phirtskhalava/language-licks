@@ -1,4 +1,4 @@
-# Language Training
+# Language Licks
 
 A language learning app for practicing sentence comprehension, writing, and speaking. Built with Next.js, PostgreSQL, and Drizzle ORM.
 
@@ -29,7 +29,7 @@ npm install
 2. Create a local database:
 
 ```bash
-createdb language_training
+createdb language_licks
 ```
 
 3. Create a `.env.local` file:
@@ -65,16 +65,16 @@ Open [http://localhost:3000](http://localhost:3000).
 
 ## Scripts
 
-| Script | Description |
-|---|---|
-| `npm run dev` | Start development server |
-| `npm run build` | Build for production |
-| `npm run start` | Start production server |
-| `npm run lint` | Run ESLint |
+| Script                | Description                                  |
+| --------------------- | -------------------------------------------- |
+| `npm run dev`         | Start development server                     |
+| `npm run build`       | Build for production                         |
+| `npm run start`       | Start production server                      |
+| `npm run lint`        | Run ESLint                                   |
 | `npm run db:generate` | Generate migration files from schema changes |
-| `npm run db:migrate` | Apply pending migrations |
-| `npm run db:seed` | Seed the database with lesson data |
-| `npm run db:studio` | Open Drizzle Studio (DB browser) |
+| `npm run db:migrate`  | Apply pending migrations                     |
+| `npm run db:seed`     | Seed the database with lesson data           |
+| `npm run db:studio`   | Open Drizzle Studio (DB browser)             |
 
 ## Database
 
@@ -120,10 +120,10 @@ Users authenticate via a one-time code sent to their email. There are no passwor
 
 ### Token Strategy
 
-| Token | Storage | Lifetime | Purpose |
-|-------|---------|----------|---------|
-| Access token | httpOnly cookie | 15 minutes | Authenticates API requests |
-| Refresh token | httpOnly cookie | 90 days | Silently renews access tokens |
+| Token         | Storage         | Lifetime   | Purpose                       |
+| ------------- | --------------- | ---------- | ----------------------------- |
+| Access token  | httpOnly cookie | 15 minutes | Authenticates API requests    |
+| Refresh token | httpOnly cookie | 90 days    | Silently renews access tokens |
 
 When the access token expires, the refresh token is used to issue a new one without user interaction. The user stays logged in until the refresh token expires or is revoked.
 
@@ -144,12 +144,12 @@ Certain actions (changing email, deleting account) require a fresh OTP challenge
 
 All auth cookies are set with:
 
-| Flag | Value | Purpose |
-|------|-------|---------|
-| `httpOnly` | `true` | Prevents JavaScript from reading the token — mitigates XSS |
-| `secure` | `true` | Cookie is only sent over HTTPS |
-| `sameSite` | `lax` | Cookie is not sent on cross-site POST requests — mitigates CSRF |
-| `path` | `/` | Cookie is available to all routes |
+| Flag       | Value  | Purpose                                                         |
+| ---------- | ------ | --------------------------------------------------------------- |
+| `httpOnly` | `true` | Prevents JavaScript from reading the token — mitigates XSS      |
+| `secure`   | `true` | Cookie is only sent over HTTPS                                  |
+| `sameSite` | `lax`  | Cookie is not sent on cross-site POST requests — mitigates CSRF |
+| `path`     | `/`    | Cookie is available to all routes                               |
 
 ### CSRF Protection
 

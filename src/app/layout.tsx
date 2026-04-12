@@ -7,7 +7,7 @@ import QueryProvider from "@lib/providers/QueryProvider";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Language Training",
+  title: "Language Licks",
   description: "Practice French pronunciation",
 };
 

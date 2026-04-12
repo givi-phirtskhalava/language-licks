@@ -5,7 +5,7 @@ See [CLAUDE.md](./CLAUDE.md) for full coding conventions. Below is a quick refer
 ## Setup
 
 1. `npm install`
-2. Create a local Postgres database: `createdb language_training`
+2. Create a local Postgres database: `createdb language_licks`
 3. Copy `.env.example` to `.env.local` and set your `DATABASE_URL`
 4. `npm run db:generate && npm run db:migrate && npm run db:seed`
 5. `npm run dev`
