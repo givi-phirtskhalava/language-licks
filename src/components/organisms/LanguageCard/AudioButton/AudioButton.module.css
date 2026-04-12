@@ -2,7 +2,7 @@
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  border-radius: 9999px;
+  border-radius: 9999em;
   background: #eef2ff;
   padding: 0.625rem 1.25rem;
   color: #4338ca;

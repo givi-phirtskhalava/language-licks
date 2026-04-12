@@ -6,7 +6,7 @@
 }
 
 .topSectionBlurred {
-  filter: blur(8px);
+  filter: blur(0.5em);
   pointer-events: none;
   user-select: none;
 }
@@ -37,7 +37,7 @@
 
 .revealBtn {
   background: none;
-  border: 2px solid #e5e7eb;
+  border: 0.125em solid #e5e7eb;
   border-radius: 50%;
   width: 2.5rem;
   height: 2.5rem;

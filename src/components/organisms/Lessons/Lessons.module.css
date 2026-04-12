@@ -27,13 +27,13 @@
   padding: 1rem 1.25rem;
   border-radius: 0.75rem;
   background: #fff;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 0.0625em 0.1875em rgba(0, 0, 0, 0.1);
   text-align: left;
   transition: box-shadow 0.2s;
 }
 
 .item:hover {
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+  box-shadow: 0 0.25em 0.75em rgba(0, 0, 0, 0.12);
 }
 
 .itemContent {
@@ -67,7 +67,7 @@
 }
 
 .review {
-  border-left: 3px solid #f59e0b;
+  border-left: 0.1875em solid #f59e0b;
 }
 
 .numberReview {
@@ -75,7 +75,7 @@
 }
 
 .upcoming {
-  border-left: 3px solid #4f46e5;
+  border-left: 0.1875em solid #4f46e5;
 }
 
 .numberUpcoming {
@@ -83,7 +83,7 @@
 }
 
 .retiredItem {
-  border-left: 3px solid #22c55e;
+  border-left: 0.1875em solid #22c55e;
   opacity: 0.7;
 }
 
