@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import classNames from "classnames";
-import { getLessons } from "@lib/lessons";
+import useLessons from "@lib/hooks/useLessons";
 import useLanguage from "@lib/useLanguage";
 import useProgress from "@lib/useProgress";
 import style from "./Header.module.css";
@@ -20,7 +20,7 @@ export default function Header() {
   const pathname = usePathname();
   const { language } = useLanguage();
   const { getLesson, pausedAt } = useProgress(language);
-  const lessons = getLessons(language);
+  const { data: lessons } = useLessons(language);
   const [now, setNow] = useState(Date.now());
 
   useEffect(() => {
@@ -29,8 +29,8 @@ export default function Header() {
   }, []);
 
   const effectiveNow = pausedAt ?? now;
-  const hasDueReviews = lessons.some((_, index) => {
-    const p = getLesson(index);
+  const hasDueReviews = lessons?.some((lesson) => {
+    const p = getLesson(lesson.id);
     return (
       p &&
       p.completed &&

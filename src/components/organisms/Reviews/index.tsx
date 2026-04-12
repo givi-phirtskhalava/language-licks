@@ -4,8 +4,8 @@ import { useState, useEffect } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faRotateLeft } from "@fortawesome/free-solid-svg-icons";
 import toast from "react-hot-toast";
-import { getLessons } from "@lib/lessons";
 import useLanguage from "@lib/useLanguage";
+import useLessons from "@lib/hooks/useLessons";
 import useProgress, { getMasteryLevel } from "@lib/useProgress";
 import MasteryBar from "@/components/atoms/MasteryBar";
 import Modal from "@/components/atoms/Modal";
@@ -25,11 +25,11 @@ function formatTimeUntil(ms: number): string {
 }
 
 export default function Reviews() {
-  const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
-  const [resetIndex, setResetIndex] = useState<number | null>(null);
+  const [selectedId, setSelectedId] = useState<number | null>(null);
+  const [resetId, setResetId] = useState<number | null>(null);
   const { language } = useLanguage();
   const { getLesson, resetLesson, pausedAt } = useProgress(language);
-  const lessons = getLessons(language);
+  const { data: lessons, isLoading } = useLessons(language);
   const [now, setNow] = useState(Date.now());
 
   useEffect(() => {
@@ -39,36 +39,41 @@ export default function Reviews() {
 
   useEffect(() => {
     function handleNavReset() {
-      setSelectedIndex(null);
+      setSelectedId(null);
     }
     window.addEventListener("nav-reset", handleNavReset);
     return () => window.removeEventListener("nav-reset", handleNavReset);
   }, []);
 
-  if (selectedIndex !== null) {
+  if (selectedId !== null) {
     return (
       <LanguageCard
-        lessonIndex={selectedIndex}
+        lessonId={selectedId}
         mode="review"
-        onBack={() => setSelectedIndex(null)}
+        onBack={() => setSelectedId(null)}
       />
     );
   }
 
-  const effectiveNow = pausedAt ?? now;
-  const ready: { index: number; level: number }[] = [];
-  const comingUp: { index: number; timeLeft: number; level: number }[] = [];
+  if (isLoading || !lessons) {
+    return null;
+  }
 
-  lessons.forEach((_, index) => {
-    const p = getLesson(index);
+  const effectiveNow = pausedAt ?? now;
+  const ready: { id: number; translation: string; level: number }[] = [];
+  const comingUp: { id: number; translation: string; timeLeft: number; level: number }[] = [];
+
+  lessons.forEach((lesson) => {
+    const p = getLesson(lesson.id);
     if (!p || !p.completed || p.retired) return;
     const level = getMasteryLevel(p);
 
     if (p.nextReview && p.nextReview <= effectiveNow) {
-      ready.push({ index, level });
+      ready.push({ id: lesson.id, translation: lesson.translation, level });
     } else if (p.nextReview && p.nextReview > effectiveNow) {
       comingUp.push({
-        index,
+        id: lesson.id,
+        translation: lesson.translation,
         timeLeft: p.nextReview - effectiveNow,
         level,
       });
@@ -83,25 +88,23 @@ export default function Reviews() {
         <section>
           <h2 className={styles.sectionTitle}>Ready</h2>
           <div className={styles.list}>
-            {ready.map(({ index, level }) => (
-              <div key={index} className={styles.itemRow}>
+            {ready.map(({ id, translation, level }) => (
+              <div key={id} className={styles.itemRow}>
                 <button
                   className={`${styles.item} ${styles.ready}`}
-                  onClick={() => setSelectedIndex(index)}
+                  onClick={() => setSelectedId(id)}
                 >
                   <span className={`${styles.number} ${styles.numberReady}`}>
                     !
                   </span>
                   <div className={styles.itemContent}>
-                    <p className={styles.sentence}>
-                      {lessons[index].translation}
-                    </p>
+                    <p className={styles.sentence}>{translation}</p>
                     <MasteryBar level={level} />
                   </div>
                 </button>
                 <button
                   className={styles.resetBtn}
-                  onClick={() => setResetIndex(index)}
+                  onClick={() => setResetId(id)}
                 >
                   <FontAwesomeIcon icon={faRotateLeft} />
                 </button>
@@ -115,8 +118,8 @@ export default function Reviews() {
         <section>
           <h2 className={styles.sectionTitle}>Coming Up</h2>
           <div className={styles.list}>
-            {comingUp.map(({ index, timeLeft, level }) => (
-              <div key={index} className={styles.itemRow}>
+            {comingUp.map(({ id, translation, timeLeft, level }) => (
+              <div key={id} className={styles.itemRow}>
                 <button
                   className={`${styles.item} ${styles.comingUp}`}
                   onClick={() => {
@@ -133,9 +136,7 @@ export default function Reviews() {
                     {"\u2713"}
                   </span>
                   <div className={styles.itemContent}>
-                    <p className={styles.sentence}>
-                      {lessons[index].translation}
-                    </p>
+                    <p className={styles.sentence}>{translation}</p>
                     <div className={styles.tagRow}>
                       <MasteryBar level={level} />
                       <p className={styles.tag}>
@@ -148,7 +149,7 @@ export default function Reviews() {
                 </button>
                 <button
                   className={styles.resetBtn}
-                  onClick={() => setResetIndex(index)}
+                  onClick={() => setResetId(id)}
                 >
                   <FontAwesomeIcon icon={faRotateLeft} />
                 </button>
@@ -162,8 +163,8 @@ export default function Reviews() {
         <p className={styles.tag}>No reviews yet. Complete some lessons first.</p>
       )}
 
-      {resetIndex !== null && (
-        <Modal onClose={() => setResetIndex(null)}>
+      {resetId !== null && (
+        <Modal onClose={() => setResetId(null)}>
           <p className={styles.resetTitle}>Reset progress?</p>
           <p className={styles.resetMessage}>
             This will reset your progress back to zero for this lesson. You can
@@ -172,15 +173,15 @@ export default function Reviews() {
           <div className={styles.resetActions}>
             <button
               className={styles.resetCancel}
-              onClick={() => setResetIndex(null)}
+              onClick={() => setResetId(null)}
             >
               Cancel
             </button>
             <button
               className={styles.resetConfirm}
               onClick={() => {
-                resetLesson(resetIndex);
-                setResetIndex(null);
+                resetLesson(resetId);
+                setResetId(null);
               }}
             >
               Reset

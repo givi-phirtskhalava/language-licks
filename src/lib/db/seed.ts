@@ -1,14 +1,9 @@
-import { TLanguageId } from "./projectConfig";
+import { Pool } from "pg";
+import { drizzle } from "drizzle-orm/node-postgres";
+import * as schema from "./schema";
+import { lessons } from "./schema";
 
-interface ILegacyLesson {
-  sentence: string;
-  translation: string;
-  audio: string;
-  grammar: { label: string; explanation: string }[];
-  liaisonTips: { phrase: string; explanation: string }[];
-}
-
-const FRENCH_LESSONS: ILegacyLesson[] = [
+const FRENCH_LESSONS = [
   {
     sentence: "Nos amis les animaux ne sont pas admis dans ce magasin.",
     translation: "Our animal friends are not allowed in this store.",
@@ -111,7 +106,7 @@ const FRENCH_LESSONS: ILegacyLesson[] = [
   },
 ];
 
-const ITALIAN_LESSONS: ILegacyLesson[] = [
+const ITALIAN_LESSONS = [
   {
     sentence: "Non cercare amore più grande di quella della mamma.",
     translation: "Don't look for love greater than that of a mother.",
@@ -142,11 +137,44 @@ const ITALIAN_LESSONS: ILegacyLesson[] = [
   },
 ];
 
-const LESSONS_BY_LANGUAGE: Record<TLanguageId, ILegacyLesson[]> = {
-  french: FRENCH_LESSONS,
-  italian: ITALIAN_LESSONS,
-};
+async function seed() {
+  const pool = new Pool({
+    connectionString: process.env.DATABASE_URL,
+  });
+  const db = drizzle(pool, { schema });
 
-export function getLessons(language: TLanguageId): ILegacyLesson[] {
-  return LESSONS_BY_LANGUAGE[language];
+  console.log("Seeding lessons...");
+
+  const frenchLessons = FRENCH_LESSONS.map((lesson, index) => ({
+    language: "french",
+    sentence: lesson.sentence,
+    translation: lesson.translation,
+    audio: lesson.audio,
+    grammar: lesson.grammar,
+    liaisonTips: lesson.liaisonTips,
+    order: index + 1,
+  }));
+
+  const italianLessons = ITALIAN_LESSONS.map((lesson, index) => ({
+    language: "italian",
+    sentence: lesson.sentence,
+    translation: lesson.translation,
+    audio: lesson.audio,
+    grammar: lesson.grammar,
+    liaisonTips: lesson.liaisonTips,
+    order: index + 1,
+  }));
+
+  await db.insert(lessons).values([...frenchLessons, ...italianLessons]);
+
+  console.log(
+    `Seeded ${frenchLessons.length} French and ${italianLessons.length} Italian lessons.`
+  );
+
+  await pool.end();
 }
+
+seed().catch((error) => {
+  console.error("Seed failed:", error);
+  process.exit(1);
+});

@@ -1,36 +1,133 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Language Training
+
+A language learning app for practicing sentence comprehension, writing, and speaking. Built with Next.js, PostgreSQL, and Drizzle ORM.
+
+Each lesson presents a sentence in the target language with grammar breakdowns, liaison/pronunciation tips, writing practice, speaking practice, and a review test. Progress is tracked with a spaced repetition system.
+
+## Tech Stack
+
+- **Framework**: Next.js 16 (App Router)
+- **Database**: PostgreSQL (Heroku Postgres)
+- **ORM**: Drizzle
+- **Data Fetching**: React Query
+- **Styling**: CSS Modules
+- **Animations**: Motion (Framer Motion)
+
+## Prerequisites
+
+- Node.js 20+
+- PostgreSQL (recommended: [Postgres.app](https://postgresapp.com/) on Mac)
 
 ## Getting Started
 
-First, run the development server:
+1. Install dependencies:
+
+```bash
+npm install
+```
+
+2. Create a local database:
+
+```bash
+createdb language_training
+```
+
+3. Create a `.env.local` file:
+
+```
+DATABASE_URL=postgresql://localhost:5432/language_training
+```
+
+4. Generate and run migrations:
+
+```bash
+npm run db:generate
+npm run db:migrate
+```
+
+5. Seed the database with lesson data:
+
+```bash
+npm run db:seed
+```
+
+6. Start the dev server:
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Scripts
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+| Script | Description |
+|---|---|
+| `npm run dev` | Start development server |
+| `npm run build` | Build for production |
+| `npm run start` | Start production server |
+| `npm run lint` | Run ESLint |
+| `npm run db:generate` | Generate migration files from schema changes |
+| `npm run db:migrate` | Apply pending migrations |
+| `npm run db:seed` | Seed the database with lesson data |
+| `npm run db:studio` | Open Drizzle Studio (DB browser) |
 
-## Learn More
+## Database
 
-To learn more about Next.js, take a look at the following resources:
+### Schema
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- **users** - User accounts with email, name, and selected language
+- **lessons** - Lesson content per language (sentence, translation, grammar, liaison tips) stored with JSON columns
+- **progress** - Per-user lesson progress tracking (phase, completion, SRS intervals)
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+### Migrations
 
-## Deploy on Vercel
+Schema is defined in `src/lib/db/schema.ts`. After changing the schema:
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+```bash
+npm run db:generate   # generates SQL migration in ./drizzle/
+npm run db:migrate    # applies it to the database
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Project Structure
+
+```
+src/
+  app/
+    api/lessons/          # API routes for lesson data
+    settings/             # Settings page
+    reviews/              # Reviews page
+    profile/              # Profile page
+    page.tsx              # Home page (lesson list)
+    layout.tsx            # Root layout
+  components/
+    atoms/                # Stateless, reusable UI components
+    organisms/            # Stateful, composed components
+  lib/
+    db/                   # Database connection, schema, seed
+    hooks/                # React Query hooks (useLessons, useLesson)
+    providers/            # React Query provider
+    types.ts              # Shared TypeScript interfaces
+    projectConfig.ts      # Language configuration
+    useProgress.ts        # SRS progress tracking (localStorage)
+    useLanguage.ts        # Language selection state
+```
+
+## Deployment (Heroku)
+
+The app runs on a single Heroku dyno with Heroku Postgres.
+
+1. Create a Heroku app and add the Heroku Postgres addon
+2. Set the `DATABASE_URL` config var (Heroku does this automatically with the addon)
+3. Deploy via git push
+
+The `Procfile` handles migrations automatically on each deploy:
+
+```
+release: npm run db:migrate
+web: npm run start
+```
+
+## Contributing
+
+See [CONTRIBUTING.md](./CONTRIBUTING.md) for coding conventions and [CLAUDE.md](./CLAUDE.md) for full AI assistant instructions.

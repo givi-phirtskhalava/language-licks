@@ -74,6 +74,23 @@
 - If any element/block spans multiple lines, add line breaks before and after it
 - Add line breaks around multi-line JSX elements to separate them from single-line elements
 
+## Database
+
+- Schema is defined in `src/lib/db/schema.ts` using Drizzle ORM
+- Use `npm run db:generate` after schema changes, then `npm run db:migrate`
+- Languages are configured in `src/lib/projectConfig.ts`, not stored in the database
+- Lesson grammar and liaison tips are stored as JSON columns
+- Use the `db` instance from `src/lib/db/index.ts` for all queries
+
+## Data Fetching
+
+- Lesson data is fetched client-side via React Query hooks in `src/lib/hooks/`
+- `useLessons(language)` fetches the lightweight list (id, sentence, translation)
+- `useLesson(id)` fetches full lesson detail on demand
+- API routes live in `src/app/api/`
+- Progress tracking uses localStorage via `useProgress` (keyed by lesson ID)
+- React Query is configured with `staleTime: Infinity` — data is fetched once per session per key
+
 ## Communication
 
 - Keep responses concise — user reviews code directly

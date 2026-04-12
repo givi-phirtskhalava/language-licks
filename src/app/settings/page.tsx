@@ -1,7 +1,7 @@
 "use client";
 
 import { LANGUAGES, TLanguageId } from "@lib/projectConfig";
-import { getLessons } from "@lib/lessons";
+import useLessons from "@lib/hooks/useLessons";
 import useLanguage from "@lib/useLanguage";
 import useProgress from "@lib/useProgress";
 import styles from "./Settings.module.css";
@@ -10,10 +10,10 @@ import pageStyles from "../page.module.css";
 function useReviewStats(language: TLanguageId) {
   const { progress, pausedAt, pauseReviews, unpauseReviews } =
     useProgress(language);
-  const lessons = getLessons(language);
+  const { data: lessons } = useLessons(language);
   let reviewCount = 0;
-  lessons.forEach((_, index) => {
-    const p = progress[index];
+  lessons?.forEach((lesson) => {
+    const p = progress[lesson.id];
     if (p && p.completed && !p.retired && p.nextReview) {
       reviewCount++;
     }

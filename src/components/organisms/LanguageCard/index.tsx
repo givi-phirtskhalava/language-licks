@@ -8,7 +8,7 @@ import WritingPractice from "./WritingPractice";
 import SpeakingPractice from "./SpeakingPractice";
 import Review from "./Review";
 import Complete from "./Complete";
-import { getLessons } from "@lib/lessons";
+import useLesson from "@lib/hooks/useLesson";
 import { TPhase } from "@lib/types";
 import useLanguage from "@lib/useLanguage";
 import { LANGUAGES } from "@lib/projectConfig";
@@ -16,16 +16,16 @@ import useProgress from "@lib/useProgress";
 import styles from "./LanguageCard.module.css";
 
 interface Props {
-  lessonIndex: number;
+  lessonId: number;
   onBack: () => void;
   mode?: "lesson" | "review";
 }
 
-export default function LanguageCard({ lessonIndex, onBack, mode = "lesson" }: Props) {
+export default function LanguageCard({ lessonId, onBack, mode = "lesson" }: Props) {
   const { language } = useLanguage();
   const { getLesson, updatePhase } = useProgress(language);
-  const lessons = getLessons(language);
-  const saved = getLesson(lessonIndex);
+  const { data: lesson, isLoading } = useLesson(lessonId);
+  const saved = getLesson(lessonId);
   const savedPhase =
     saved?.phase === "practice" ? "practice-writing" : saved?.phase;
 
@@ -39,11 +39,10 @@ export default function LanguageCard({ lessonIndex, onBack, mode = "lesson" }: P
 
   const langConfig = LANGUAGES.find((l) => l.id === language);
   const locale = langConfig?.locale ?? "fr-FR";
-  const lesson = lessons[lessonIndex];
 
   function changePhase(next: TPhase, isReview = false) {
     setPhase(next);
-    updatePhase(lessonIndex, next, isReview);
+    updatePhase(lessonId, next, isReview);
   }
 
   const handleTestPass = useCallback(() => {
@@ -80,6 +79,10 @@ export default function LanguageCard({ lessonIndex, onBack, mode = "lesson" }: P
     if (currentIndex < phases.length - 1) {
       changePhase(phases[currentIndex + 1]);
     }
+  }
+
+  if (isLoading || !lesson) {
+    return null;
   }
 
   const isFirstPhase = phase === "lesson";

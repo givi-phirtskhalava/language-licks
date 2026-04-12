@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Header from "@/components/atoms/Header";
 import NavigationProgress from "@/components/atoms/NavigationProgress";
 import ToastProvider from "@/components/atoms/ToastProvider";
+import QueryProvider from "@lib/providers/QueryProvider";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -17,10 +18,12 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        <NavigationProgress />
-        <Header />
-        <ToastProvider />
-        {children}
+        <QueryProvider>
+          <NavigationProgress />
+          <Header />
+          <ToastProvider />
+          {children}
+        </QueryProvider>
       </body>
     </html>
   );

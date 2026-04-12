@@ -1,8 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { getLessons } from "@lib/lessons";
 import useLanguage from "@lib/useLanguage";
+import useLessons from "@lib/hooks/useLessons";
 import useProgress, { getMasteryLevel } from "@lib/useProgress";
 import MasteryBar from "@/components/atoms/MasteryBar";
 import classNames from "classnames";
@@ -10,18 +10,22 @@ import LanguageCard from "@/components/organisms/LanguageCard";
 import styles from "./Lessons.module.css";
 
 export default function Lessons() {
-  const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
+  const [selectedId, setSelectedId] = useState<number | null>(null);
   const { language } = useLanguage();
   const { progress, getLesson, unretire } = useProgress(language);
-  const lessons = getLessons(language);
+  const { data: lessons, isLoading } = useLessons(language);
 
-  if (selectedIndex !== null) {
+  if (selectedId !== null) {
     return (
       <LanguageCard
-        lessonIndex={selectedIndex}
-        onBack={() => setSelectedIndex(null)}
+        lessonId={selectedId}
+        onBack={() => setSelectedId(null)}
       />
     );
+  }
+
+  if (isLoading || !lessons) {
+    return null;
   }
 
   return (
@@ -30,14 +34,14 @@ export default function Lessons() {
         <h2 className={styles.sectionTitle}>Lessons</h2>
         <div className={styles.list}>
           {lessons.map((lesson, index) => {
-            const p = getLesson(index);
+            const p = getLesson(lesson.id);
             const completed = p?.completed && !p.retired;
             const retired = p?.retired;
             const level = getMasteryLevel(p);
 
             return (
               <button
-                key={index}
+                key={lesson.id}
                 className={classNames(
                   styles.item,
                   completed && styles.completedItem,
@@ -45,9 +49,9 @@ export default function Lessons() {
                 )}
                 onClick={() => {
                   if (retired) {
-                    unretire(index);
+                    unretire(lesson.id);
                   } else {
-                    setSelectedIndex(index);
+                    setSelectedId(lesson.id);
                   }
                 }}
               >

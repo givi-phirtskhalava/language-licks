@@ -1,4 +1,11 @@
+export interface ILessonListItem {
+  id: number;
+  sentence: string;
+  translation: string;
+}
+
 export interface ILesson {
+  id: number;
   sentence: string;
   translation: string;
   audio: string;

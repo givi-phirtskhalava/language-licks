@@ -103,9 +103,9 @@ export default function useProgress(language: TLanguageId) {
   );
 
   const updatePhase = useCallback(
-    (lessonIndex: number, phase: TPhase, isReview = false) => {
+    (lessonId: number, phase: TPhase, isReview = false) => {
       const current = getSnapshot(key);
-      const existing = current[lessonIndex] ?? defaultProgress();
+      const existing = current[lessonId] ?? defaultProgress();
       const now = Date.now();
 
       if (phase === "complete") {
@@ -113,7 +113,7 @@ export default function useProgress(language: TLanguageId) {
         if (!isReview && existing.completed) {
           save(key, {
             ...current,
-            [lessonIndex]: { ...existing, phase },
+            [lessonId]: { ...existing, phase },
           });
           return;
         }
@@ -125,7 +125,7 @@ export default function useProgress(language: TLanguageId) {
 
         save(key, {
           ...current,
-          [lessonIndex]: {
+          [lessonId]: {
             phase,
             completed: true,
             completedAt: now,
@@ -137,7 +137,7 @@ export default function useProgress(language: TLanguageId) {
       } else {
         save(key, {
           ...current,
-          [lessonIndex]: {
+          [lessonId]: {
             ...existing,
             phase,
           },
@@ -148,21 +148,21 @@ export default function useProgress(language: TLanguageId) {
   );
 
   const getLesson = useCallback(
-    (lessonIndex: number): ILessonProgress | null => {
-      return progress[lessonIndex] ?? null;
+    (lessonId: number): ILessonProgress | null => {
+      return progress[lessonId] ?? null;
     },
     [progress]
   );
 
   const unretire = useCallback(
-    (lessonIndex: number) => {
+    (lessonId: number) => {
       const current = getSnapshot(key);
-      const existing = current[lessonIndex];
+      const existing = current[lessonId];
       if (!existing) return;
 
       save(key, {
         ...current,
-        [lessonIndex]: {
+        [lessonId]: {
           ...existing,
           retired: false,
           interval: INITIAL_INTERVAL_MS,
@@ -174,9 +174,9 @@ export default function useProgress(language: TLanguageId) {
   );
 
   const resetLesson = useCallback(
-    (lessonIndex: number) => {
+    (lessonId: number) => {
       const current = getSnapshot(key);
-      const { [lessonIndex]: _, ...rest } = current;
+      const { [lessonId]: _, ...rest } = current;
       save(key, rest);
     },
     [key]
