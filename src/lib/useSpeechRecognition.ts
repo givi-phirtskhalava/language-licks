@@ -44,24 +44,32 @@ export function useSpeechRecognition(lang: string): SpeechRecognitionResult {
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const recognitionRef = useRef<SpeechRecognition | null>(null);
+  const busyRef = useRef(false);
+  const gotResultRef = useRef(false);
 
   const isSupported =
     typeof window !== "undefined" &&
     ("SpeechRecognition" in window || "webkitSpeechRecognition" in window);
 
   const start = useCallback(async (): Promise<boolean> => {
-    if (!isSupported) {
-      setError("Speech recognition is not supported in this browser.");
-      return false;
+    if (!isSupported || busyRef.current) return false;
+    busyRef.current = true;
+
+    // Abort any lingering instance
+    if (recognitionRef.current) {
+      try { recognitionRef.current.abort(); } catch { /* already dead */ }
+      recognitionRef.current = null;
     }
 
     const permission = await checkMicPermission();
     if (permission === "denied") {
+      busyRef.current = false;
       return false;
     }
     if (permission === "prompt") {
       const granted = await requestMicAccess();
       if (!granted) {
+        busyRef.current = false;
         return false;
       }
     }
@@ -69,6 +77,7 @@ export function useSpeechRecognition(lang: string): SpeechRecognitionResult {
     setError(null);
     setTranscript("");
     setIsProcessing(false);
+    gotResultRef.current = false;
 
     const SpeechRecognitionAPI =
       window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -79,12 +88,14 @@ export function useSpeechRecognition(lang: string): SpeechRecognitionResult {
     recognition.maxAlternatives = 1;
 
     recognition.onresult = (event: SpeechRecognitionEvent) => {
+      gotResultRef.current = true;
       const text = event.results[0][0].transcript;
       setTranscript(text);
       setResultId((id) => id + 1);
     };
 
     recognition.onerror = (event: SpeechRecognitionErrorEvent) => {
+      if (event.error === "aborted") return;
       if (event.error === "no-speech") {
         setError("No speech detected. Please try again.");
       } else if (event.error === "not-allowed") {
@@ -92,25 +103,40 @@ export function useSpeechRecognition(lang: string): SpeechRecognitionResult {
       } else {
         setError(`Error: ${event.error}`);
       }
-      setIsListening(false);
-      setIsProcessing(false);
     };
 
     recognition.onend = () => {
+      recognitionRef.current = null;
+      busyRef.current = false;
       setIsListening(false);
-      setIsProcessing(false);
+      // Only clear processing after result has arrived or on error
+      if (gotResultRef.current) {
+        setIsProcessing(false);
+      } else {
+        // No result came — error path already handled, just clean up
+        setIsProcessing(false);
+      }
     };
 
     recognitionRef.current = recognition;
-    recognition.start();
+
+    try {
+      recognition.start();
+    } catch {
+      busyRef.current = false;
+      recognitionRef.current = null;
+      return false;
+    }
+
     setIsListening(true);
     return true;
   }, [isSupported, lang]);
 
   const stop = useCallback(() => {
     if (recognitionRef.current) {
-      recognitionRef.current.stop();
+      setIsListening(false);
       setIsProcessing(true);
+      recognitionRef.current.stop();
     }
   }, []);
 
