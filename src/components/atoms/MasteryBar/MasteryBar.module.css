@@ -1,0 +1,16 @@
+.bar {
+  display: flex;
+  gap: 0.1875em;
+  align-items: center;
+}
+
+.segment {
+  width: 0.25em;
+  height: 0.625em;
+  border-radius: 0.0625em;
+  background: var(--border);
+}
+
+.filled {
+  background: var(--success-mid);
+}

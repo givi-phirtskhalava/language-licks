@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Header from "@/components/atoms/Header";
+import ToastProvider from "@/components/atoms/ToastProvider";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -16,6 +17,7 @@ export default function RootLayout({
     <html lang="en">
       <body>
         <Header />
+        <ToastProvider />
         {children}
       </body>
     </html>

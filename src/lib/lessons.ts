@@ -1,6 +1,7 @@
 import { ILesson } from "./types";
+import { TLanguageId } from "./projectConfig";
 
-export const LESSONS: ILesson[] = [
+const FRENCH_LESSONS: ILesson[] = [
   {
     sentence: "Nos amis les animaux ne sont pas admis dans ce magasin.",
     translation: "Our animal friends are not allowed in this store.",
@@ -9,10 +10,10 @@ export const LESSONS: ILesson[] = [
       {
         label: "Nos amis les animaux",
         explanation:
-          'Literally "Our friends the animals" \u2014 a warm, slightly formal way to refer to pets/animals. "Les animaux" is in apposition to "nos amis."',
+          'Literally "Our friends the animals" — a warm, slightly formal way to refer to pets/animals. "Les animaux" is in apposition to "nos amis."',
       },
       {
-        label: "ne \u2026 pas",
+        label: "ne … pas",
         explanation:
           'The standard French negation wraps around the verb: "ne sont pas" = "are not."',
       },
@@ -102,3 +103,43 @@ export const LESSONS: ILesson[] = [
     ],
   },
 ];
+
+const ITALIAN_LESSONS: ILesson[] = [
+  {
+    sentence: "Non cercare amore più grande di quella della mamma.",
+    translation: "Don't look for love greater than that of a mother.",
+    audio: "/sentence.mp3",
+    grammar: [
+      {
+        label: "Non cercare",
+        explanation:
+          '"Don\'t look for." "Non" + infinitive is the informal negative imperative in Italian. "Cercare" = to look for / to search.',
+      },
+      {
+        label: "amore più grande",
+        explanation:
+          '"Greater love." "Più" = more, used before adjectives to form comparatives. "Grande" = great/big.',
+      },
+      {
+        label: "di quella",
+        explanation:
+          '"Than that (one)." "Di" = than (in comparisons), "quella" = that one (feminine demonstrative pronoun, referring to "amore" in the abstract sense of love).',
+      },
+      {
+        label: "della mamma",
+        explanation:
+          '"Of the mother." "Della" = "di" + "la" (of the). "Mamma" = mom/mother — an affectionate, everyday term.',
+      },
+    ],
+    liaisonTips: [],
+  },
+];
+
+const LESSONS_BY_LANGUAGE: Record<TLanguageId, ILesson[]> = {
+  french: FRENCH_LESSONS,
+  italian: ITALIAN_LESSONS,
+};
+
+export function getLessons(language: TLanguageId): ILesson[] {
+  return LESSONS_BY_LANGUAGE[language];
+}

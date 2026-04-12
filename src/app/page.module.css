@@ -1,6 +1,6 @@
 .main {
   display: flex;
-  min-height: 100vh;
+  min-height: calc(100svh - var(--header-height));
   justify-content: center;
   align-items: flex-start;
   background: linear-gradient(135deg, var(--primary-bg), var(--primary-light));

@@ -1,0 +1,126 @@
+.container {
+  width: 100%;
+  max-width: 32em;
+  display: flex;
+  flex-direction: column;
+  gap: 2em;
+}
+
+.title {
+  font-size: 1em;
+  font-weight: 700;
+  color: var(--text-dark);
+}
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5em;
+  background: var(--bg-white);
+  padding: 1.25em;
+  border-radius: 0.75em;
+  box-shadow: 0 0.0625em 0.1875em var(--shadow);
+}
+
+.label {
+  font-size: 0.875em;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.select {
+  font: inherit;
+  font-size: 0.9375em;
+  padding: 0.625em 0.75em;
+  border: 0.0625em solid var(--border);
+  border-radius: 0.5em;
+  background: var(--bg-white);
+  color: var(--text-body);
+  cursor: pointer;
+}
+
+.select:focus {
+  outline: 0.125em solid var(--primary);
+  outline-offset: 0.0625em;
+}
+
+.sectionHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.toggleAllBtn {
+  font-size: 0.75em;
+  font-weight: 600;
+  color: var(--primary);
+  padding: 0.375em 0.75em;
+  border-radius: 0.375em;
+}
+
+.toggleAllBtn:hover {
+  background: var(--primary-lighter);
+}
+
+.pauseList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.625em;
+}
+
+.pauseRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.625em 0.75em;
+  border-radius: 0.5em;
+  background: var(--bg-subtle);
+}
+
+.pauseInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 0.125em;
+}
+
+.pauseLabel {
+  font-size: 0.875em;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.pauseCount {
+  font-size: 0.75em;
+  color: var(--text-light);
+}
+
+.pauseBtn {
+  font-size: 0.75em;
+  font-weight: 600;
+  color: var(--warning-mid);
+  padding: 0.375em 0.75em;
+  border-radius: 0.375em;
+  border: 0.0625em solid var(--warning-mid);
+}
+
+.pauseBtn:hover {
+  background: var(--warning-bg);
+}
+
+.unpauseBtn {
+  font-size: 0.75em;
+  font-weight: 600;
+  color: var(--primary);
+  padding: 0.375em 0.75em;
+  border-radius: 0.375em;
+  border: 0.0625em solid var(--primary);
+}
+
+.unpauseBtn:hover {
+  background: var(--primary-lighter);
+}
+
+.emptyMessage {
+  font-size: 0.875em;
+  color: var(--text-light);
+}

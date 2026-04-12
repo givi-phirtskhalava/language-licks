@@ -66,38 +66,18 @@
   margin-top: 0.25em;
 }
 
-.review {
-  border-left: 0.1875em solid var(--warning);
+.completedItem {
+  opacity: 0.5;
 }
 
-.numberReview {
-  background: var(--warning);
-}
-
-.upcoming {
-  border-left: 0.1875em solid var(--primary);
-}
-
-.numberUpcoming {
-  background: var(--primary);
+.numberCompleted {
+  background: var(--primary-soft);
 }
 
 .retiredItem {
-  border-left: 0.1875em solid var(--success-bright);
-  opacity: 0.7;
+  opacity: 0.5;
 }
 
 .numberRetired {
   background: var(--success-bright);
-}
-
-.restartBtn {
-  font-size: 0.75em;
-  color: var(--primary);
-  font-weight: 500;
-  margin-top: 0.25em;
-}
-
-.restartBtn:hover {
-  text-decoration: underline;
 }

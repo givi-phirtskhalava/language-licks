@@ -1,7 +1,7 @@
 "use client";
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faCircleCheck, faArrowRight } from "@fortawesome/free-solid-svg-icons";
+import { faCircleCheck, faArrowLeft } from "@fortawesome/free-solid-svg-icons";
 import { ILesson } from "@lib/types";
 import styles from "./Complete.module.css";
 
@@ -18,23 +18,16 @@ export default function Complete({ lesson, onNext }: Props) {
       </div>
       <h2 className={styles.completeTitle}>Lesson complete!</h2>
       <p className={styles.completeSubtitle}>
-        {"You\u2019ve mastered \u201C"}
-        {lesson.sentence.slice(0, 30)}
-        {"\u2026\u201D"}
+        {`You\u2019ve mastered \u201C${lesson.sentence}\u201D`}
       </p>
       {onNext && (
         <button onClick={onNext} className={styles.primaryBtn}>
           <FontAwesomeIcon
-            icon={faArrowRight}
-            style={{ marginRight: "0.5rem" }}
+            icon={faArrowLeft}
+            style={{ marginRight: "0.5em" }}
           />
-          Next lesson
+          Back to lessons
         </button>
-      )}
-      {!onNext && (
-        <p className={styles.doneText}>
-          {"No more lessons \u2014 you\u2019re done for now!"}
-        </p>
       )}
     </div>
   );

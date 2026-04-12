@@ -2,29 +2,51 @@
 
 import { useCallback, useSyncExternalStore } from "react";
 import { ILessonProgress, TPhase } from "./types";
+import { TLanguageId } from "./projectConfig";
 
-const STORAGE_KEY = "lesson-progress";
-const INITIAL_INTERVAL_MS = 24 * 60 * 60 * 1000; // 1 day
-const RETIRE_THRESHOLD_MS = 180 * 24 * 60 * 60 * 1000; // ~6 months
+function storageKey(language: TLanguageId): string {
+  return `lesson-progress-${language}`;
+}
+
+function pauseKey(language: TLanguageId): string {
+  return `reviews-paused-${language}`;
+}
+
+const IS_DEV = process.env.NODE_ENV === "development";
+const INITIAL_INTERVAL_MS = IS_DEV ? 30000 : 24 * 60 * 60 * 1000;
+const RETIRE_THRESHOLD_MS = IS_DEV ? 120000 : 180 * 24 * 60 * 60 * 1000;
+
+export const MAX_MASTERY_LEVEL = 9;
+
+export function getMasteryLevel(p: ILessonProgress | null): number {
+  if (!p || !p.completed) return 0;
+  if (p.retired) return MAX_MASTERY_LEVEL;
+  return Math.min(
+    Math.floor(Math.log2(p.interval / INITIAL_INTERVAL_MS)) + 1,
+    MAX_MASTERY_LEVEL
+  );
+}
 
 type TProgressMap = Record<number, ILessonProgress>;
 
 let listeners: (() => void)[] = [];
-let cachedRaw: string | null = null;
-let cachedSnapshot: TProgressMap = {};
+const snapshotCache = new Map<
+  string,
+  { raw: string | null; data: TProgressMap }
+>();
 const SERVER_SNAPSHOT: TProgressMap = {};
 
 function emitChange() {
   listeners.forEach((l) => l());
 }
 
-function getSnapshot(): TProgressMap {
-  const raw = localStorage.getItem(STORAGE_KEY);
-  if (raw !== cachedRaw) {
-    cachedRaw = raw;
-    cachedSnapshot = raw ? (JSON.parse(raw) as TProgressMap) : {};
-  }
-  return cachedSnapshot;
+function getSnapshot(key: string): TProgressMap {
+  const raw = localStorage.getItem(key);
+  const cached = snapshotCache.get(key);
+  if (cached && cached.raw === raw) return cached.data;
+  const data = raw ? (JSON.parse(raw) as TProgressMap) : {};
+  snapshotCache.set(key, { raw, data });
+  return data;
 }
 
 function subscribe(listener: () => void) {
@@ -34,11 +56,10 @@ function subscribe(listener: () => void) {
   };
 }
 
-function save(progress: TProgressMap) {
+function save(key: string, progress: TProgressMap) {
   const json = JSON.stringify(progress);
-  cachedRaw = json;
-  cachedSnapshot = progress;
-  localStorage.setItem(STORAGE_KEY, json);
+  snapshotCache.set(key, { raw: json, data: progress });
+  localStorage.setItem(key, json);
   emitChange();
 }
 
@@ -53,64 +74,148 @@ function defaultProgress(): ILessonProgress {
   };
 }
 
-export default function useProgress() {
-  const progress = useSyncExternalStore(subscribe, getSnapshot, () => SERVER_SNAPSHOT);
+const pauseCache = new Map<
+  string,
+  { raw: string | null; value: number | null }
+>();
 
-  const updatePhase = useCallback((lessonIndex: number, phase: TPhase) => {
-    const current = getSnapshot();
-    const existing = current[lessonIndex] ?? defaultProgress();
-    const now = Date.now();
+function getPauseSnapshot(language: TLanguageId): number | null {
+  const pk = pauseKey(language);
+  const raw = localStorage.getItem(pk);
+  const cached = pauseCache.get(pk);
+  if (cached && cached.raw === raw) return cached.value;
+  const value = raw ? Number(raw) : null;
+  pauseCache.set(pk, { raw, value });
+  return value;
+}
 
-    if (phase === "complete") {
-      const nextInterval = existing.completed
-        ? existing.interval * 2
-        : INITIAL_INTERVAL_MS;
-      const retired = nextInterval >= RETIRE_THRESHOLD_MS;
+export default function useProgress(language: TLanguageId) {
+  const key = storageKey(language);
+  const progress = useSyncExternalStore(
+    subscribe,
+    () => getSnapshot(key),
+    () => SERVER_SNAPSHOT
+  );
+  const pausedAt = useSyncExternalStore(
+    subscribe,
+    () => getPauseSnapshot(language),
+    () => null
+  );
 
-      save({
-        ...current,
-        [lessonIndex]: {
-          phase,
-          completed: true,
-          completedAt: now,
-          interval: nextInterval,
-          nextReview: retired ? null : now + nextInterval,
-          retired,
-        },
-      });
-    } else {
-      save({
-        ...current,
-        [lessonIndex]: {
-          ...existing,
-          phase,
-        },
-      });
-    }
-  }, []);
+  const updatePhase = useCallback(
+    (lessonIndex: number, phase: TPhase, isReview = false) => {
+      const current = getSnapshot(key);
+      const existing = current[lessonIndex] ?? defaultProgress();
+      const now = Date.now();
+
+      if (phase === "complete") {
+        // Lesson test on an already-completed lesson — don't touch the review schedule
+        if (!isReview && existing.completed) {
+          save(key, {
+            ...current,
+            [lessonIndex]: { ...existing, phase },
+          });
+          return;
+        }
+
+        const nextInterval = isReview
+          ? existing.interval * 2
+          : INITIAL_INTERVAL_MS;
+        const retired = nextInterval >= RETIRE_THRESHOLD_MS;
+
+        save(key, {
+          ...current,
+          [lessonIndex]: {
+            phase,
+            completed: true,
+            completedAt: now,
+            interval: nextInterval,
+            nextReview: retired ? null : now + nextInterval,
+            retired,
+          },
+        });
+      } else {
+        save(key, {
+          ...current,
+          [lessonIndex]: {
+            ...existing,
+            phase,
+          },
+        });
+      }
+    },
+    [key]
+  );
 
   const getLesson = useCallback(
     (lessonIndex: number): ILessonProgress | null => {
       return progress[lessonIndex] ?? null;
     },
-    [progress],
+    [progress]
   );
 
-  const unretire = useCallback((lessonIndex: number) => {
-    const current = getSnapshot();
-    const existing = current[lessonIndex];
-    if (!existing) return;
+  const unretire = useCallback(
+    (lessonIndex: number) => {
+      const current = getSnapshot(key);
+      const existing = current[lessonIndex];
+      if (!existing) return;
 
-    save({
-      ...current,
-      [lessonIndex]: {
-        ...existing,
-        retired: false,
-        interval: INITIAL_INTERVAL_MS,
-        nextReview: Date.now() + INITIAL_INTERVAL_MS,
-      },
-    });
-  }, []);
+      save(key, {
+        ...current,
+        [lessonIndex]: {
+          ...existing,
+          retired: false,
+          interval: INITIAL_INTERVAL_MS,
+          nextReview: Date.now() + INITIAL_INTERVAL_MS,
+        },
+      });
+    },
+    [key]
+  );
 
-  return { progress, updatePhase, getLesson, unretire };
+  const resetLesson = useCallback(
+    (lessonIndex: number) => {
+      const current = getSnapshot(key);
+      const { [lessonIndex]: _, ...rest } = current;
+      save(key, rest);
+    },
+    [key]
+  );
+
+  const pauseReviews = useCallback(() => {
+    localStorage.setItem(pauseKey(language), String(Date.now()));
+    emitChange();
+  }, [language]);
+
+  const unpauseReviews = useCallback(() => {
+    const raw = localStorage.getItem(pauseKey(language));
+    if (!raw) return;
+    const pausedTimestamp = Number(raw);
+    const duration = Date.now() - pausedTimestamp;
+    const current = getSnapshot(key);
+    const updated = { ...current };
+    for (const idx of Object.keys(updated)) {
+      const lesson = updated[Number(idx)];
+      if (lesson.nextReview && !lesson.retired) {
+        updated[Number(idx)] = {
+          ...lesson,
+          nextReview: lesson.nextReview + duration,
+        };
+      }
+    }
+    save(key, updated);
+    localStorage.removeItem(pauseKey(language));
+    emitChange();
+  }, [key, language]);
+
+  return {
+    progress,
+    updatePhase,
+    getLesson,
+    unretire,
+    resetLesson,
+    pausedAt,
+    pauseReviews,
+    unpauseReviews,
+  };
 }

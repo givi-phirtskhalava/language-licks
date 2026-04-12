@@ -46,6 +46,9 @@
   --text-light: #9ca3af;
   --text-placeholder: #d1d5db;
 
+  /* Layout */
+  --header-height: 3em;
+
   /* Borders & Backgrounds */
   --border: #e5e7eb;
   --bg-white: #ffffff;

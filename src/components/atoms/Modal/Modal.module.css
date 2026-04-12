@@ -1,0 +1,19 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(0.25em);
+  z-index: 100;
+}
+
+.content {
+  background: var(--bg-white);
+  border-radius: 1em;
+  padding: 2em;
+  max-width: 24em;
+  width: calc(100% - 2em);
+  box-shadow: 0 1.25em 1.5625em -0.3125em var(--shadow);
+}

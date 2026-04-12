@@ -14,14 +14,15 @@ import styles from "./SpeakingPractice.module.css";
 
 interface Props {
   lesson: ILesson;
+  locale: string;
   onReady: () => void;
 }
 
-export default function SpeakingPractice({ lesson, onReady }: Props) {
+export default function SpeakingPractice({ lesson, locale, onReady }: Props) {
   const speakStreak = useStreak("I think you\u2019re ready for the test! \uD83C\uDF99\uFE0F");
   const speakTimer = useBestTime();
   const speaking = useSpeakingCheck(
-    "fr-FR",
+    locale,
     lesson.sentence,
     () => {
       speakTimer.stopTimer();

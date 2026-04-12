@@ -1,0 +1,162 @@
+.container {
+  width: 100%;
+  max-width: 32em;
+  display: flex;
+  flex-direction: column;
+  gap: 2em;
+}
+
+.sectionTitle {
+  font-size: 1em;
+  font-weight: 700;
+  color: var(--text-dark);
+  margin-bottom: 0.75em;
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75em;
+}
+
+.item {
+  display: flex;
+  align-items: center;
+  gap: 1em;
+  width: 100%;
+  padding: 1em 1.25em;
+  border-radius: 0.75em;
+  background: var(--bg-white);
+  box-shadow: 0 0.0625em 0.1875em var(--shadow);
+  text-align: left;
+  transition: box-shadow 0.2s;
+}
+
+.item:hover {
+  box-shadow: 0 0.25em 0.75em var(--shadow-hover);
+}
+
+.itemContent {
+  min-width: 0;
+}
+
+.number {
+  flex-shrink: 0;
+  width: 2em;
+  height: 2em;
+  border-radius: 50%;
+  color: var(--bg-white);
+  font-weight: 600;
+  font-size: 0.875em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.sentence {
+  font-size: 0.9375em;
+  color: var(--text-secondary);
+  line-height: 1.4;
+}
+
+.tag {
+  font-size: 0.75em;
+  color: var(--text-light);
+  margin-top: 0.25em;
+}
+
+.ready {
+  border-left: 0.1875em solid var(--warning);
+}
+
+.numberReady {
+  background: var(--warning);
+}
+
+.comingUp {
+  border-left: 0.1875em solid var(--primary);
+}
+
+.numberComingUp {
+  background: var(--primary);
+}
+
+.tagRow {
+  display: flex;
+  align-items: center;
+  gap: 0.5em;
+  margin-top: 0.25em;
+}
+
+.itemRow {
+  display: flex;
+  align-items: center;
+  gap: 0.5em;
+}
+
+.itemRow .item {
+  flex: 1;
+  min-width: 0;
+}
+
+.resetBtn {
+  flex-shrink: 0;
+  width: 2em;
+  height: 2em;
+  border-radius: 50%;
+  color: var(--text-light);
+  font-size: 0.75em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.resetBtn:hover {
+  color: var(--text-muted);
+  background: var(--bg-subtle);
+}
+
+.resetTitle {
+  font-size: 1.125em;
+  font-weight: 700;
+  color: var(--text-dark);
+  margin-bottom: 0.5em;
+}
+
+.resetMessage {
+  font-size: 0.875em;
+  color: var(--text-muted);
+  line-height: 1.5;
+  margin-bottom: 1.5em;
+}
+
+.resetActions {
+  display: flex;
+  gap: 0.75em;
+  justify-content: flex-end;
+}
+
+.resetCancel {
+  font-size: 0.875em;
+  font-weight: 600;
+  color: var(--text-muted);
+  padding: 0.5em 1em;
+  border-radius: 0.5em;
+}
+
+.resetCancel:hover {
+  background: var(--bg-subtle);
+}
+
+.resetConfirm {
+  font-size: 0.875em;
+  font-weight: 600;
+  color: var(--bg-white);
+  background: var(--error);
+  padding: 0.5em 1em;
+  border-radius: 0.5em;
+}
+
+.resetConfirm:hover {
+  background: var(--error-mid);
+}

@@ -6,9 +6,11 @@
   padding: 0.75em 1.5em;
   background: var(--bg-white);
   border-bottom: 0.0625em solid var(--border);
+  height: var(--header-height);
 }
 
 .link {
+  position: relative;
   font-size: 0.875em;
   font-weight: 500;
   color: var(--text-muted);
@@ -26,4 +28,14 @@
 .active {
   color: var(--primary);
   background: var(--primary-lighter);
+}
+
+.dot {
+  position: absolute;
+  top: 0.25em;
+  right: 0.25em;
+  width: 0.5em;
+  height: 0.5em;
+  border-radius: 50%;
+  background: var(--error);
 }

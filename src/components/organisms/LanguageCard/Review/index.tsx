@@ -1,27 +1,28 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import SentenceDisplay from "@/components/organisms/LanguageCard/SentenceDisplay";
-import CorrectionDisplay from "@/components/atoms/CorrectionDisplay";
 import RecordButton from "@/components/organisms/LanguageCard/RecordButton";
 import WritingInput from "@/components/organisms/LanguageCard/WritingInput";
 import useWritingCheck from "@/components/organisms/LanguageCard/hooks/useWritingCheck";
 import useSpeakingCheck from "@/components/organisms/LanguageCard/hooks/useSpeakingCheck";
+import Hearts from "@/components/atoms/Hearts";
 import { ILesson } from "@lib/types";
-import styles from "./Test.module.css";
+import styles from "./Review.module.css";
 
 const MAX_ATTEMPTS = 3;
 
 interface Props {
   lesson: ILesson;
+  locale: string;
+  languageLabel: string;
   onPass: () => void;
   onFail: () => void;
 }
 
-type TTestStep = "writing" | "speaking";
+type TReviewStep = "writing" | "speaking";
 
-export default function Test({ lesson, onPass, onFail }: Props) {
-  const [step, setStep] = useState<TTestStep>("writing");
+export default function Review({ lesson, locale, languageLabel, onPass, onFail }: Props) {
+  const [step, setStep] = useState<TReviewStep>("writing");
   const [attempts, setAttempts] = useState(0);
   const [passed, setPassed] = useState(false);
   const [lastCorrect, setLastCorrect] = useState<boolean | null>(null);
@@ -29,12 +30,10 @@ export default function Test({ lesson, onPass, onFail }: Props) {
   const writing = useWritingCheck();
 
   const speaking = useSpeakingCheck(
-    "fr-FR",
+    locale,
     lesson.sentence,
     () => {
       setLastCorrect(true);
-      const newAttempts = attempts + 1;
-      setAttempts(newAttempts);
       setPassed(true);
       setTimeout(onPass, 1200);
     },
@@ -48,7 +47,6 @@ export default function Test({ lesson, onPass, onFail }: Props) {
     }
   );
 
-  // Auto-advance from writing to speaking on pass
   useEffect(() => {
     if (step === "writing" && passed) {
       const timer = setTimeout(() => {
@@ -64,13 +62,15 @@ export default function Test({ lesson, onPass, onFail }: Props) {
   function handleWriteSubmit(input: string) {
     const correct = writing.check(lesson.sentence, input);
     setLastCorrect(correct);
-    const newAttempts = attempts + 1;
-    setAttempts(newAttempts);
 
     if (correct) {
       setPassed(true);
-    } else if (newAttempts >= MAX_ATTEMPTS) {
-      setTimeout(onFail, 1500);
+    } else {
+      const newAttempts = attempts + 1;
+      setAttempts(newAttempts);
+      if (newAttempts >= MAX_ATTEMPTS) {
+        setTimeout(onFail, 1500);
+      }
     }
   }
 
@@ -86,29 +86,19 @@ export default function Test({ lesson, onPass, onFail }: Props) {
 
   return (
     <div className={styles.body}>
-      {/* Sentence — always blurred */}
-      <SentenceDisplay
-        lesson={lesson}
-        showAudio={false}
-        alwaysBlurred
-        hint={
-          step === "writing" ? "Write it from memory!" : "Say it from memory!"
-        }
-      />
-
-      {/* Attempts remaining */}
-      <div className={styles.streakWrap}>
-        <p className={styles.streakLabel}>
-          {failed
-            ? "No attempts remaining"
-            : attemptsLeft +
-              " attempt" +
-              (attemptsLeft !== 1 ? "s" : "") +
-              " remaining"}
+      <div className={styles.translationWrap}>
+        <p className={styles.translation}>
+          {"\u201C" + lesson.translation + "\u201D"}
+        </p>
+        <p className={styles.hint}>
+          {step === "writing" ? `Write it in ${languageLabel}!` : `Say it in ${languageLabel}!`}
         </p>
       </div>
 
-      {/* Writing test */}
+      <div className={styles.streakWrap}>
+        <Hearts total={MAX_ATTEMPTS} remaining={attemptsLeft} />
+      </div>
+
       {step === "writing" && !writingDone && !failed && (
         <div>
           <p className={styles.sectionLabel}>Write the sentence</p>
@@ -121,7 +111,6 @@ export default function Test({ lesson, onPass, onFail }: Props) {
         </div>
       )}
 
-      {/* Speaking test */}
       {step === "speaking" && !speakingDone && !failed && (
         <div>
           <p className={styles.sectionLabel}>Say the sentence</p>
@@ -136,7 +125,6 @@ export default function Test({ lesson, onPass, onFail }: Props) {
         </div>
       )}
 
-      {/* Feedback */}
       {lastCorrect !== null && !speaking.isProcessing && (
         <div
           className={`${styles.alert} ${lastCorrect ? styles.feedbackCorrect : styles.feedbackWrong}`}
@@ -151,10 +139,6 @@ export default function Test({ lesson, onPass, onFail }: Props) {
         </div>
       )}
 
-      {/* Wrong words for speaking */}
-      {step === "speaking" && speaking.result && !speaking.result.correct && (
-        <CorrectionDisplay words={speaking.result.words} />
-      )}
     </div>
   );
 }

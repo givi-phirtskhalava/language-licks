@@ -1,0 +1,16 @@
+.container {
+  display: flex;
+  gap: 0.25em;
+  align-items: center;
+}
+
+.heart {
+  width: 1.25em;
+  height: 1.25em;
+  transition: opacity 0.3s, transform 0.3s;
+}
+
+.lost {
+  opacity: 0.2;
+  transform: scale(0.9);
+}

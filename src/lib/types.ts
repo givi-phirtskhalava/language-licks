@@ -6,7 +6,7 @@ export interface ILesson {
   liaisonTips: { phrase: string; explanation: string }[];
 }
 
-export type TPhase = "lesson" | "practice" | "practice-writing" | "practice-speaking" | "test" | "complete";
+export type TPhase = "lesson" | "practice" | "practice-writing" | "practice-speaking" | "test" | "review" | "complete";
 
 export interface ILessonProgress {
   phase: TPhase;
