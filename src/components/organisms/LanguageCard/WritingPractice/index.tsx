@@ -31,7 +31,8 @@ export default function WritingPractice({
 }: Props) {
   const [textVisible, setTextVisible] = useState(false);
   const writeStreak = useStreak({
-    readyMessage: "I think you\u2019re ready for the speaking test! \uD83C\uDF99\uFE0F",
+    readyMessage:
+      "I think you\u2019re ready for the speaking test! \uD83C\uDF99\uFE0F",
     initialStreak,
     onStreakChange,
   });
@@ -39,7 +40,7 @@ export default function WritingPractice({
   const writing = useWritingCheck();
 
   function handleWriteSubmit(input: string) {
-    const passed = writing.check(lesson.sentence, input);
+    const { passed } = writing.check(lesson.sentence, input);
     if (passed) {
       writeTimer.stopTimer();
       writeStreak.hit();
@@ -85,6 +86,8 @@ export default function WritingPractice({
           hasErrors={writing.hasErrors}
           hasWarnings={writing.hasWarnings}
           isPass={writing.isPass}
+          onlyAccentIssues={writing.onlyAccentIssues}
+          hideCorrectionsOnAccentHint
           onRetry={handleWriteRetry}
           disabled={textVisible}
         >
@@ -99,9 +102,10 @@ export default function WritingPractice({
                   {writeTimer.elapsed.toFixed(1)}s
                 </span>
               )}
-              {writeTimer.bestTime !== null && writeTimer.elapsed === writeTimer.bestTime && (
-                <span className={styles.newBest}>&nbsp;New best!</span>
-              )}
+              {writeTimer.bestTime !== null &&
+                writeTimer.elapsed === writeTimer.bestTime && (
+                  <span className={styles.newBest}>&nbsp;New best!</span>
+                )}
             </div>
           )}
         </WritingInput>
@@ -109,7 +113,10 @@ export default function WritingPractice({
 
       <button onClick={onReady} className={styles.primaryBtn}>
         Speaking Practice
-        <FontAwesomeIcon icon={faChevronRight} style={{ marginLeft: "0.5rem" }} />
+        <FontAwesomeIcon
+          icon={faChevronRight}
+          style={{ marginLeft: "0.5rem" }}
+        />
       </button>
     </div>
   );

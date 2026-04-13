@@ -59,6 +59,13 @@
 }
 
 
+.accentHint {
+  color: var(--warning);
+  font-size: 0.875em;
+  font-style: italic;
+  margin: 0;
+}
+
 .retryBtn {
   margin-top: 0.75em;
   border-radius: 0.5em;

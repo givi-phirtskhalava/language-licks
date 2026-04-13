@@ -44,7 +44,8 @@ export default function Review({ lesson, locale, languageLabel, onPass, onFail }
       if (newAttempts >= MAX_ATTEMPTS) {
         setTimeout(onFail, 1500);
       }
-    }
+    },
+    "testing",
   );
 
   useEffect(() => {
@@ -59,19 +60,24 @@ export default function Review({ lesson, locale, languageLabel, onPass, onFail }
     }
   }, [step, passed]);
 
-  function handleWriteSubmit(input: string) {
-    const correct = writing.check(lesson.sentence, input);
+  function handleWriteSubmit(input: string): boolean {
+    const { passed: correct, onlyAccentIssues } = writing.check(
+      lesson.sentence,
+      input,
+    );
     setLastCorrect(correct);
 
     if (correct) {
       setPassed(true);
-    } else {
+    } else if (!onlyAccentIssues) {
       const newAttempts = attempts + 1;
       setAttempts(newAttempts);
       if (newAttempts >= MAX_ATTEMPTS) {
         setTimeout(onFail, 1500);
       }
     }
+
+    return onlyAccentIssues;
   }
 
   function handleRecordToggle() {
@@ -106,7 +112,10 @@ export default function Review({ lesson, locale, languageLabel, onPass, onFail }
             onSubmit={handleWriteSubmit}
             onInputChange={() => {
               if (lastCorrect !== null) setLastCorrect(null);
+              if (writing.result !== null) writing.clear();
             }}
+            onlyAccentIssues={writing.onlyAccentIssues}
+            hideCorrectionsOnAccentHint
           />
         </div>
       )}
@@ -117,7 +126,6 @@ export default function Review({ lesson, locale, languageLabel, onPass, onFail }
           <RecordButton
             isListening={speaking.isListening}
             isProcessing={speaking.isProcessing}
-            isSupported={speaking.isSupported}
             error={speaking.error}
             onToggle={handleRecordToggle}
             showHint={lastCorrect === null}
@@ -125,7 +133,7 @@ export default function Review({ lesson, locale, languageLabel, onPass, onFail }
         </div>
       )}
 
-      {lastCorrect !== null && !speaking.isProcessing && (
+      {lastCorrect !== null && !speaking.isProcessing && !writing.onlyAccentIssues && (
         <div
           className={`${styles.alert} ${lastCorrect ? styles.feedbackCorrect : styles.feedbackWrong}`}
         >

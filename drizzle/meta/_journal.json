@@ -29,6 +29,20 @@
       "when": 1776022443627,
       "tag": "0003_steep_gamora",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1776071812752,
+      "tag": "0004_mean_boomer",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1776079587746,
+      "tag": "0005_friendly_captain_britain",
+      "breakpoints": true
     }
   ]
 }

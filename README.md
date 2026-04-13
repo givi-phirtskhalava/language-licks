@@ -40,6 +40,8 @@ JWT_ACCESS_SECRET=     # openssl rand -base64 64
 JWT_REFRESH_SECRET=    # openssl rand -base64 64 (must be different from access)
 RESEND_API_KEY=        # from resend.com
 EMAIL_FROM=            # verified sender in Resend
+AZURE_SPEECH_KEY=      # from Azure Portal → Speech service → Keys and Endpoint
+AZURE_SPEECH_REGION=   # e.g. westeurope, eastus
 ```
 
 4. Generate and run migrations:
@@ -83,6 +85,7 @@ Open [http://localhost:3000](http://localhost:3000).
 - **users** - User accounts with email, name, and selected language
 - **lessons** - Lesson content per language (sentence, translation, grammar, liaison tips) stored with JSON columns
 - **progress** - Per-user lesson progress tracking (phase, completion, SRS intervals)
+- **speech_usage** - Monthly speech recognition usage per user (training and testing seconds)
 
 ### Migrations
 
@@ -163,6 +166,70 @@ All auth cookies are set with:
 - Failed verification attempts are rate-limited
 - Tokens contain minimal claims (user ID, token version) — no PII in the payload
 
+## Speech Recognition & Pronunciation Assessment
+
+Speech recognition is powered by Azure Speech SDK with Pronunciation Assessment. This replaces the browser's Web Speech API, which was unreliable across browsers and devices.
+
+### Architecture
+
+The Azure Speech SDK runs in the browser and streams audio directly to Azure via WebSocket for real-time processing. The API key is never exposed to the client.
+
+1. The client calls `POST /api/speech/token` (requires authentication)
+2. The server checks monthly usage limits, then uses the API key to request a short-lived token (10-min TTL) from Azure
+3. The client receives the temporary token and uses it with the Azure Speech SDK to stream audio
+4. After each recognition session, the client reports the audio duration to `POST /api/speech/usage`
+
+This design serves two purposes: keeping the Azure API key on the server, and enforcing per-user usage limits before issuing tokens.
+
+### Usage Limits
+
+Each authenticated user gets per month:
+
+| Mode | Limit | Use case |
+|---|---|---|
+| Training | 1 hour (3600s) | Writing/speaking practice sessions |
+| Testing | 15 minutes (900s) | Review and test sessions |
+
+Usage is tracked in the `speech_usage` table, keyed by user ID and month (`YYYY-MM` format). Limits are checked before issuing a token — once a user exceeds their allowance, the token endpoint returns 403.
+
+### Pronunciation Feedback
+
+Azure Pronunciation Assessment returns four scores with each recognition:
+
+| Score | What it measures |
+|---|---|
+| Accuracy | How closely phonemes match native pronunciation |
+| Fluency | Smoothness and natural pacing |
+| Completeness | Ratio of pronounced words to expected words |
+| Prosody | Stress, intonation, and rhythm |
+
+Word-level accuracy scores are also returned. Words scoring below 60% are highlighted in the UI as needing work.
+
+### Azure Setup
+
+1. Go to [Azure Portal](https://portal.azure.com)
+2. Search for "Speech" and create a Speech service resource (S0 / Standard tier)
+3. Go to **Keys and Endpoint**, copy **Key 1** and the **Region**
+4. Add `AZURE_SPEECH_KEY` and `AZURE_SPEECH_REGION` to your `.env`
+
+### Cost
+
+Azure Speech real-time transcription with pronunciation assessment costs **$1 per audio hour**. At the current per-user limits (1h 15min/month), maximum cost per active user is approximately **$1.25/month**.
+
+| Active users | Max monthly cost |
+|---|---|
+| 100 | $125 |
+| 1,000 | $1,250 |
+| 10,000 | $12,500 |
+
+### Speech API Routes
+
+| Route | Method | Description |
+|---|---|---|
+| `/api/speech/token` | POST | Issues a short-lived Azure token (checks auth + usage limits) |
+| `/api/speech/usage` | GET | Returns current month's usage and limits |
+| `/api/speech/usage` | POST | Reports audio duration after a session |
+
 ## Project Structure
 
 ```
@@ -171,6 +238,7 @@ src/
     api/
       auth/               # Auth API routes (send-code, verify, refresh, logout, me)
       lessons/            # API routes for lesson data
+      speech/             # Speech token issuance and usage tracking
     login/                # Login page
     settings/             # Settings page
     reviews/              # Reviews page

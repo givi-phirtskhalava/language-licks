@@ -5,7 +5,7 @@ interface ILegacyLesson {
   translation: string;
   audio: string;
   grammar: { label: string; explanation: string }[];
-  liaisonTips: { phrase: string; explanation: string }[];
+  liaisonTips?: { phrase: string; explanation: string }[];
 }
 
 const FRENCH_LESSONS: ILegacyLesson[] = [
@@ -138,7 +138,45 @@ const ITALIAN_LESSONS: ILegacyLesson[] = [
           '"Of the mother." "Della" = "di" + "la" (of the). "Mamma" = mom/mother — an affectionate, everyday term.',
       },
     ],
-    liaisonTips: [],
+  },
+  {
+    sentence:
+      "Potresti rispondere ad Elena sul gruppo per rassicurarla e vedere con loro quando hanno disponibilità?",
+    translation:
+      "Could you reply to Elena on the group to reassure her and see with them when they are available?",
+    audio: "/sentence.mp3",
+    grammar: [
+      {
+        label: "Potresti",
+        explanation:
+          '"Could you." Conditional present of "potere" (can/to be able to), 2nd person singular. Used for polite requests.',
+      },
+      {
+        label: "rispondere ad Elena",
+        explanation:
+          '"Reply to Elena." "Rispondere" takes the preposition "a" (to). Before a vowel, "a" becomes "ad" for euphony.',
+      },
+      {
+        label: "sul gruppo",
+        explanation:
+          '"On the group." "Sul" = "su" + "il" (on the). Refers to a group chat.',
+      },
+      {
+        label: "per rassicurarla",
+        explanation:
+          '"To reassure her." "Per" + infinitive expresses purpose. The pronoun "-la" (her) is attached to the infinitive.',
+      },
+      {
+        label: "vedere con loro",
+        explanation:
+          '"See with them." "Loro" = them. "Vedere" here means to check/find out.',
+      },
+      {
+        label: "quando hanno disponibilità",
+        explanation:
+          '"When they are available." Literally "when they have availability." "Hanno" = 3rd person plural present of "avere" (to have).',
+      },
+    ],
   },
 ];
 

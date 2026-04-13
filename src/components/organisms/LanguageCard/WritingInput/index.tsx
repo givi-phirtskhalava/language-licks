@@ -8,12 +8,14 @@ import { IWriteWordResult } from "@/components/organisms/LanguageCard/hooks/useW
 import styles from "./WritingInput.module.css";
 
 interface Props {
-  onSubmit: (input: string) => void;
+  onSubmit: (input: string) => boolean | void;
   onInputChange?: () => void;
   result?: IWriteWordResult[] | null;
   hasErrors?: boolean;
   hasWarnings?: boolean;
   isPass?: boolean;
+  onlyAccentIssues?: boolean;
+  hideCorrectionsOnAccentHint?: boolean;
   onRetry?: () => void;
   placeholder?: string;
   disabled?: boolean;
@@ -27,6 +29,8 @@ export default function WritingInput({
   hasErrors,
   hasWarnings,
   isPass,
+  onlyAccentIssues,
+  hideCorrectionsOnAccentHint,
   onRetry,
   placeholder = "Type the sentence here\u2026",
   disabled,
@@ -42,8 +46,8 @@ export default function WritingInput({
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!input.trim()) return;
-    onSubmit(input);
-    setInput("");
+    const keepInput = onSubmit(input);
+    if (!keepInput) setInput("");
   }
 
   function handleRetry() {
@@ -97,7 +101,13 @@ export default function WritingInput({
 
       {children}
 
-      {result && (hasErrors || hasWarnings) && (
+      {onlyAccentIssues && (
+        <p className={styles.accentHint} style={{ marginTop: "0.75rem" }}>
+          Hint: check for missing accents or special characters.
+        </p>
+      )}
+
+      {result && (hasErrors || (hasWarnings && !(onlyAccentIssues && hideCorrectionsOnAccentHint))) && (
         <div style={{ marginTop: "0.75rem" }}>
           <CorrectionDisplay words={result} />
 

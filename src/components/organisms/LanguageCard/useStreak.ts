@@ -1,7 +1,7 @@
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import toast from "react-hot-toast";
 
-const GOAL = 5;
+const GOAL = 3;
 
 interface Props {
   readyMessage: string;
@@ -23,6 +23,15 @@ export default function useStreak({
 }: Props): UseStreakReturn {
   const [streak, setStreak] = useState(initialStreak);
   const firedRef = useRef(initialStreak >= GOAL);
+  const isInitialRef = useRef(true);
+
+  useEffect(() => {
+    if (isInitialRef.current) {
+      isInitialRef.current = false;
+      return;
+    }
+    onStreakChange?.(streak);
+  }, [streak]);
 
   const hit = useCallback(() => {
     setStreak((prev) => {
@@ -31,16 +40,14 @@ export default function useStreak({
         firedRef.current = true;
         setTimeout(() => toast.success(readyMessage, { duration: 4000 }), 600);
       }
-      onStreakChange?.(next);
       return next;
     });
-  }, [readyMessage, onStreakChange]);
+  }, [readyMessage]);
 
   const miss = useCallback(() => {
     setStreak(0);
     firedRef.current = false;
-    onStreakChange?.(0);
-  }, [onStreakChange]);
+  }, []);
 
   return { streak, goal: GOAL, hit, miss };
 }

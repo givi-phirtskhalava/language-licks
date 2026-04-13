@@ -2,11 +2,37 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import toast from "react-hot-toast";
-import { useSpeechRecognition } from "@/lib/useSpeechRecognition";
+import { useAzureSpeech } from "@/lib/useAzureSpeech";
 import {
   compareWriting,
   IWriteWordResult,
 } from "@/components/organisms/LanguageCard/hooks/useWritingCheck";
+import type { TSpeechMode } from "@lib/types";
+
+// Strip leading hesitations/restarts from speech.
+// If the user stutters "Nos... nos amis les animaux..." we find the
+// latest point where the correct sequence begins and trim before it.
+function stripHesitation(expected: string, actual: string): string {
+  const expWords = expected.replace(/[.,!?;:…]+$/, "").split(/\s+/).filter(Boolean);
+  const actWords = actual.replace(/[.,!?;:…]+$/, "").split(/\s+/).filter(Boolean);
+
+  if (expWords.length === 0 || actWords.length === 0) return actual;
+
+  const firstExpected = expWords[0].toLowerCase().replace(/[^a-zA-ZàâäéèêëïîôùûüÿçœæÀÂÄÉÈÊËÏÎÔÙÛÜŸÇŒÆ']/g, "");
+
+  // Find the latest index where the first expected word appears
+  let bestStart = 0;
+  for (let i = actWords.length - expWords.length; i >= 0; i--) {
+    const actWord = actWords[i].toLowerCase().replace(/[^a-zA-ZàâäéèêëïîôùûüÿçœæÀÂÄÉÈÊËÏÎÔÙÛÜŸÇŒÆ']/g, "");
+    if (actWord === firstExpected) {
+      bestStart = i;
+      break;
+    }
+  }
+
+  if (bestStart === 0) return actual;
+  return actWords.slice(bestStart).join(" ");
+}
 
 interface ISpeakResult {
   correct: boolean;
@@ -17,7 +43,6 @@ interface IUseSpeakingCheckReturn {
   result: ISpeakResult | null;
   isListening: boolean;
   isProcessing: boolean;
-  isSupported: boolean;
   error: string | null;
   toggle: () => Promise<void>;
   clearResult: () => void;
@@ -28,6 +53,7 @@ export default function useSpeakingCheck(
   sentence: string,
   onCorrect?: () => void,
   onWrong?: () => void,
+  mode: TSpeechMode = "training",
 ): IUseSpeakingCheckReturn {
   const {
     transcript,
@@ -35,10 +61,9 @@ export default function useSpeakingCheck(
     isListening,
     isProcessing,
     error,
-    isSupported,
     start,
     stop,
-  } = useSpeechRecognition(lang);
+  } = useAzureSpeech(lang, mode);
 
   const [result, setResult] = useState<ISpeakResult | null>(null);
   const processedResultId = useRef(0);
@@ -46,7 +71,8 @@ export default function useSpeakingCheck(
   useEffect(() => {
     if (resultId > processedResultId.current && transcript) {
       processedResultId.current = resultId;
-      const results = compareWriting(sentence, transcript);
+      const cleaned = stripHesitation(sentence, transcript);
+      const results = compareWriting(sentence, cleaned);
       const passed = !results.some(
         (r) =>
           r.status === "error" ||
@@ -72,13 +98,13 @@ export default function useSpeakingCheck(
 
     setResult(null);
     const started = await start();
-    if (!started) {
+    if (!started && !error) {
       toast.error(
         "Microphone access is blocked. Please allow it in your browser settings.",
         { duration: 4000 },
       );
     }
-  }, [isProcessing, isListening, start, stop]);
+  }, [isProcessing, isListening, start, stop, error]);
 
   function clearResult() {
     setResult(null);
@@ -88,7 +114,6 @@ export default function useSpeakingCheck(
     result,
     isListening,
     isProcessing,
-    isSupported,
     error,
     toggle,
     clearResult,

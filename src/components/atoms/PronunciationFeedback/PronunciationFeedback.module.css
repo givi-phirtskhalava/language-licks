@@ -1,0 +1,61 @@
+.container {
+  margin-top: 0.75em;
+}
+
+.overallScore {
+  display: flex;
+  align-items: center;
+  gap: 0.5em;
+}
+
+.scoreLabel {
+  font-size: 0.8125em;
+  color: var(--text-light);
+}
+
+.scoreValue {
+  font-size: 0.875em;
+  font-weight: 600;
+}
+
+.good {
+  color: var(--success);
+}
+
+.fair {
+  color: var(--warning);
+}
+
+.poor {
+  color: var(--error);
+}
+
+.wordFeedback {
+  margin-top: 0.5em;
+}
+
+.wordList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.375em;
+}
+
+.wordChip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375em;
+  padding: 0.25em 0.5em;
+  border-radius: 0.375em;
+  background: var(--error-bg);
+  font-size: 0.875em;
+}
+
+.wordText {
+  font-family: var(--font-serif);
+  font-weight: 500;
+  color: var(--text-dark);
+}
+
+.wordScore {
+  font-size: 0.75em;
+}

@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 interface Props {
   initialBestTime?: number | null;
@@ -20,6 +20,15 @@ export default function useBestTime({
   const startRef = useRef<number | null>(null);
   const [elapsed, setElapsed] = useState<number | null>(null);
   const [bestTime, setBestTime] = useState<number | null>(initialBestTime);
+  const pendingBestRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    if (pendingBestRef.current !== null) {
+      const time = pendingBestRef.current;
+      pendingBestRef.current = null;
+      onBestTimeChange?.(time);
+    }
+  }, [bestTime]);
 
   const startTimer = useCallback(() => {
     if (startRef.current === null) {
@@ -35,12 +44,12 @@ export default function useBestTime({
     setBestTime((prev) => {
       const newBest = prev === null ? time : Math.min(prev, time);
       if (newBest === time) {
-        onBestTimeChange?.(time);
+        pendingBestRef.current = time;
       }
       return newBest;
     });
     return time;
-  }, [onBestTimeChange]);
+  }, []);
 
   const resetTimer = useCallback(() => {
     startRef.current = null;

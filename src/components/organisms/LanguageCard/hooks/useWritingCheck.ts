@@ -14,12 +14,18 @@ function stripPunctuation(word: string): string {
   return word.replace(/[^a-zA-ZàâäéèêëïîôùûüÿçœæÀÂÄÉÈÊËÏÎÔÙÛÜŸÇŒÆ']/g, "");
 }
 
+function stripAccents(word: string): string {
+  return word.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+}
+
 function classifyWord(exp: string, act: string): TWriteWordStatus {
   if (exp === act) return "correct";
   const expStripped = stripPunctuation(exp);
   const actStripped = stripPunctuation(act);
   if (expStripped === actStripped) return "warning";
   if (expStripped.toLowerCase() === actStripped.toLowerCase()) return "warning";
+  if (stripAccents(expStripped).toLowerCase() === stripAccents(actStripped).toLowerCase())
+    return "warning";
   return "error";
 }
 
@@ -110,12 +116,18 @@ export function compareWriting(
   return results;
 }
 
+interface ICheckResult {
+  passed: boolean;
+  onlyAccentIssues: boolean;
+}
+
 interface IUseWritingCheckReturn {
   result: IWriteWordResult[] | null;
   hasErrors: boolean;
   hasWarnings: boolean;
   isPass: boolean;
-  check: (expected: string, input: string) => boolean;
+  onlyAccentIssues: boolean;
+  check: (expected: string, input: string) => ICheckResult;
   clear: () => void;
 }
 
@@ -123,14 +135,19 @@ export default function useWritingCheck(): IUseWritingCheckReturn {
   const [result, setResult] = useState<IWriteWordResult[] | null>(null);
   const resultRef = useRef<IWriteWordResult[] | null>(null);
 
-  function check(expected: string, input: string): boolean {
+  function check(expected: string, input: string): ICheckResult {
     const results = compareWriting(expected, input);
     setResult(results);
     resultRef.current = results;
     const hasErrors = results.some(
-      (r) => r.status === "error" || r.status === "missing" || r.status === "extra",
+      (r) =>
+        r.status === "error" ||
+        r.status === "missing" ||
+        r.status === "extra",
     );
-    return !hasErrors;
+    const hasWarnings = results.some((r) => r.status === "warning");
+    const onlyAccentIssues = !hasErrors && hasWarnings;
+    return { passed: !hasErrors && !hasWarnings, onlyAccentIssues };
   }
 
   function clear() {
@@ -139,10 +156,23 @@ export default function useWritingCheck(): IUseWritingCheckReturn {
   }
 
   const hasErrors =
-    result?.some((r) => r.status === "error" || r.status === "missing" || r.status === "extra") ??
-    false;
+    result?.some(
+      (r) =>
+        r.status === "error" ||
+        r.status === "missing" ||
+        r.status === "extra",
+    ) ?? false;
   const hasWarnings = result?.some((r) => r.status === "warning") ?? false;
-  const isPass = result !== null && !hasErrors;
+  const isPass = result !== null && !hasErrors && !hasWarnings;
+  const onlyAccentIssues = result !== null && !hasErrors && hasWarnings;
 
-  return { result, hasErrors, hasWarnings, isPass, check, clear };
+  return {
+    result,
+    hasErrors,
+    hasWarnings,
+    isPass,
+    onlyAccentIssues,
+    check,
+    clear,
+  };
 }

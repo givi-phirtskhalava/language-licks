@@ -48,6 +48,7 @@ export default function SpeakingPractice({
       speakTimer.resetTimer();
       speakStreak.miss();
     },
+    "training",
   );
 
   function handleRecordToggle() {
@@ -76,7 +77,6 @@ export default function SpeakingPractice({
         <RecordButton
           isListening={speaking.isListening}
           isProcessing={speaking.isProcessing}
-          isSupported={speaking.isSupported}
           error={speaking.error}
           onToggle={handleRecordToggle}
           showHint={!speaking.result}
@@ -104,6 +104,7 @@ export default function SpeakingPractice({
             <CorrectionDisplay words={speaking.result.words} />
           </div>
         )}
+
       </div>
 
       <button onClick={onReady} className={styles.primaryBtn}>

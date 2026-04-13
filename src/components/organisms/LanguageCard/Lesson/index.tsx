@@ -28,17 +28,19 @@ export default function LessonPhase({ lesson, onReady }: Props) {
         </div>
       </div>
 
-      <div>
-        <p className={styles.sectionLabel}>Liaison Tips</p>
-        <div className={styles.grammarList} style={{ marginTop: "0.5rem" }}>
-          {lesson.liaisonTips.map((tip) => (
-            <div key={tip.phrase} className={styles.grammarItem}>
-              <span className={styles.grammarLabel}>{tip.phrase}</span>
-              <p className={styles.grammarExplanation}>{tip.explanation}</p>
-            </div>
-          ))}
+      {lesson.liaisonTips && lesson.liaisonTips.length > 0 && (
+        <div>
+          <p className={styles.sectionLabel}>Liaison Tips</p>
+          <div className={styles.grammarList} style={{ marginTop: "0.5rem" }}>
+            {lesson.liaisonTips.map((tip) => (
+              <div key={tip.phrase} className={styles.grammarItem}>
+                <span className={styles.grammarLabel}>{tip.phrase}</span>
+                <p className={styles.grammarExplanation}>{tip.explanation}</p>
+              </div>
+            ))}
+          </div>
         </div>
-      </div>
+      )}
 
       <button onClick={onReady} className={styles.primaryBtn}>
         Writing Practice

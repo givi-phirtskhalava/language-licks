@@ -6,7 +6,6 @@ import styles from "./RecordButton.module.css";
 interface Props {
   isListening: boolean;
   isProcessing: boolean;
-  isSupported: boolean;
   error: string | null;
   onToggle: () => void;
   showHint?: boolean;
@@ -15,7 +14,6 @@ interface Props {
 export default function RecordButton({
   isListening,
   isProcessing,
-  isSupported,
   error,
   onToggle,
   showHint,
@@ -28,17 +26,10 @@ export default function RecordButton({
 
   return (
     <>
-      {!isSupported && (
-        <p className={styles.unsupported}>
-          Speech recognition is not supported in your browser. Try Chrome or
-          Edge.
-        </p>
-      )}
-
       <div className={styles.wrap}>
         <button
           onClick={onToggle}
-          disabled={!isSupported || isProcessing}
+          disabled={isProcessing}
           className={`${styles.btn} ${btnClass}`}
         >
           {isProcessing ? (

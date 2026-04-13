@@ -35,7 +35,7 @@ export const lessons = pgTable("lessons", {
   translation: text("translation").notNull(),
   audio: varchar("audio", { length: 255 }).notNull(),
   grammar: jsonb("grammar").notNull().$type<{ label: string; explanation: string }[]>(),
-  liaisonTips: jsonb("liaison_tips").notNull().$type<{ phrase: string; explanation: string }[]>(),
+  liaisonTips: jsonb("liaison_tips").$type<{ phrase: string; explanation: string }[]>(),
   order: integer("order").notNull(),
 });
 
@@ -61,4 +61,18 @@ export const progress = pgTable(
     speakingStreak: integer("speaking_streak").notNull().default(0),
   },
   (table) => [uniqueIndex("progress_user_lesson_idx").on(table.userId, table.lessonId)]
+);
+
+export const speechUsage = pgTable(
+  "speech_usage",
+  {
+    id: serial("id").primaryKey(),
+    userId: integer("user_id")
+      .notNull()
+      .references(() => users.id),
+    month: varchar("month", { length: 7 }).notNull(),
+    trainingSeconds: real("training_seconds").notNull().default(0),
+    testingSeconds: real("testing_seconds").notNull().default(0),
+  },
+  (table) => [uniqueIndex("speech_usage_user_month_idx").on(table.userId, table.month)]
 );

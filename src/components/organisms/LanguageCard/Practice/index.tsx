@@ -38,11 +38,12 @@ export default function Practice({ lesson, onReady }: Props) {
     () => {
       speakTimer.resetTimer();
       speakStreak.miss();
-    }
+    },
+    "training",
   );
 
   function handleWriteSubmit(input: string) {
-    const passed = writing.check(lesson.sentence, input);
+    const { passed } = writing.check(lesson.sentence, input);
     if (passed) {
       writeTimer.stopTimer();
       writeStreak.hit();
@@ -98,6 +99,7 @@ export default function Practice({ lesson, onReady }: Props) {
           hasErrors={writing.hasErrors}
           hasWarnings={writing.hasWarnings}
           isPass={writing.isPass}
+          onlyAccentIssues={writing.onlyAccentIssues}
           onRetry={handleWriteRetry}
           disabled={textVisible}
         >
@@ -133,7 +135,6 @@ export default function Practice({ lesson, onReady }: Props) {
         <RecordButton
           isListening={speaking.isListening}
           isProcessing={speaking.isProcessing}
-          isSupported={speaking.isSupported}
           error={speaking.error}
           onToggle={handleRecordToggle}
           showHint={!speaking.result}
@@ -167,6 +168,7 @@ export default function Practice({ lesson, onReady }: Props) {
             <CorrectionDisplay words={speaking.result.words} />
           </div>
         )}
+
       </div>
 
       <button onClick={onReady} className={styles.primaryBtn}>

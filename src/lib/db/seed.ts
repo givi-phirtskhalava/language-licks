@@ -1,9 +1,18 @@
 import { Pool } from "pg";
 import { drizzle } from "drizzle-orm/node-postgres";
+import { eq, and, notInArray } from "drizzle-orm";
 import * as schema from "./schema";
 import { lessons } from "./schema";
 
-const FRENCH_LESSONS = [
+interface ISeedLesson {
+  sentence: string;
+  translation: string;
+  audio: string;
+  grammar: { label: string; explanation: string }[];
+  liaisonTips?: { phrase: string; explanation: string }[];
+}
+
+const FRENCH_LESSONS: ISeedLesson[] = [
   {
     sentence: "Nos amis les animaux ne sont pas admis dans ce magasin.",
     translation: "Our animal friends are not allowed in this store.",
@@ -106,9 +115,9 @@ const FRENCH_LESSONS = [
   },
 ];
 
-const ITALIAN_LESSONS = [
+const ITALIAN_LESSONS: ISeedLesson[] = [
   {
-    sentence: "Non cercare amore più grande di quella della mamma.",
+    sentence: "Non cercare amore più grande di quello della mamma.",
     translation: "Don't look for love greater than that of a mother.",
     audio: "/sentence.mp3",
     grammar: [
@@ -123,9 +132,9 @@ const ITALIAN_LESSONS = [
           '"Greater love." "Più" = more, used before adjectives to form comparatives. "Grande" = great/big.',
       },
       {
-        label: "di quella",
+        label: "di quello",
         explanation:
-          '"Than that (one)." "Di" = than (in comparisons), "quella" = that one (feminine demonstrative pronoun, referring to "amore" in the abstract sense of love).',
+          '"Than that (one)." "Di" = than (in comparisons), "quello" = that one (masculine demonstrative pronoun, referring to "amore" in the abstract sense of love).',
       },
       {
         label: "della mamma",
@@ -133,7 +142,45 @@ const ITALIAN_LESSONS = [
           '"Of the mother." "Della" = "di" + "la" (of the). "Mamma" = mom/mother — an affectionate, everyday term.',
       },
     ],
-    liaisonTips: [],
+  },
+  {
+    sentence:
+      "Potresti rispondere ad Elena sul gruppo per rassicurarla e vedere con loro quando hanno disponibilità?",
+    translation:
+      "Could you reply to Elena on the group to reassure her and see with them when they are available?",
+    audio: "/sentence.mp3",
+    grammar: [
+      {
+        label: "Potresti",
+        explanation:
+          '"Could you." Conditional present of "potere" (can/to be able to), 2nd person singular. Used for polite requests.',
+      },
+      {
+        label: "rispondere ad Elena",
+        explanation:
+          '"Reply to Elena." "Rispondere" takes the preposition "a" (to). Before a vowel, "a" becomes "ad" for euphony.',
+      },
+      {
+        label: "sul gruppo",
+        explanation:
+          '"On the group." "Sul" = "su" + "il" (on the). Refers to a group chat.',
+      },
+      {
+        label: "per rassicurarla",
+        explanation:
+          '"To reassure her." "Per" + infinitive expresses purpose. The pronoun "-la" (her) is attached to the infinitive.',
+      },
+      {
+        label: "vedere con loro",
+        explanation:
+          '"See with them." "Loro" = them. "Vedere" here means to check/find out.',
+      },
+      {
+        label: "quando hanno disponibilità",
+        explanation:
+          '"When they are available." Literally "when they have availability." "Hanno" = 3rd person plural present of "avere" (to have).',
+      },
+    ],
   },
 ];
 
@@ -145,30 +192,83 @@ async function seed() {
 
   console.log("Seeding lessons...");
 
-  const frenchLessons = FRENCH_LESSONS.map((lesson, index) => ({
-    language: "french",
-    sentence: lesson.sentence,
-    translation: lesson.translation,
-    audio: lesson.audio,
-    grammar: lesson.grammar,
-    liaisonTips: lesson.liaisonTips,
-    order: index + 1,
-  }));
+  const allLessons = [
+    ...FRENCH_LESSONS.map((lesson, index) => ({
+      language: "french",
+      ...lesson,
+      order: index + 1,
+    })),
+    ...ITALIAN_LESSONS.map((lesson, index) => ({
+      language: "italian",
+      ...lesson,
+      order: index + 1,
+    })),
+  ];
 
-  const italianLessons = ITALIAN_LESSONS.map((lesson, index) => ({
-    language: "italian",
-    sentence: lesson.sentence,
-    translation: lesson.translation,
-    audio: lesson.audio,
-    grammar: lesson.grammar,
-    liaisonTips: lesson.liaisonTips,
-    order: index + 1,
-  }));
+  let updated = 0;
+  let inserted = 0;
 
-  await db.insert(lessons).values([...frenchLessons, ...italianLessons]);
+  for (const lesson of allLessons) {
+    const existing = await db
+      .select({ id: lessons.id })
+      .from(lessons)
+      .where(
+        and(
+          eq(lessons.language, lesson.language),
+          eq(lessons.sentence, lesson.sentence)
+        )
+      )
+      .limit(1);
+
+    if (existing.length > 0) {
+      await db
+        .update(lessons)
+        .set({
+          translation: lesson.translation,
+          audio: lesson.audio,
+          grammar: lesson.grammar,
+          liaisonTips: lesson.liaisonTips ?? null,
+          order: lesson.order,
+        })
+        .where(eq(lessons.id, existing[0].id));
+      updated++;
+    } else {
+      await db.insert(lessons).values({
+        language: lesson.language,
+        sentence: lesson.sentence,
+        translation: lesson.translation,
+        audio: lesson.audio,
+        grammar: lesson.grammar,
+        liaisonTips: lesson.liaisonTips ?? null,
+        order: lesson.order,
+      });
+      inserted++;
+    }
+  }
+
+  const keepIds = (
+    await db
+      .select({ id: lessons.id })
+      .from(lessons)
+      .where(
+        notInArray(
+          lessons.sentence,
+          allLessons.map((l) => l.sentence)
+        )
+      )
+  ).map((r) => r.id);
+
+  let removed = 0;
+  if (keepIds.length > 0) {
+    for (const id of keepIds) {
+      await db.delete(schema.progress).where(eq(schema.progress.lessonId, id));
+      await db.delete(lessons).where(eq(lessons.id, id));
+      removed++;
+    }
+  }
 
   console.log(
-    `Seeded ${frenchLessons.length} French and ${italianLessons.length} Italian lessons.`
+    `Seed complete: ${updated} updated, ${inserted} inserted, ${removed} removed.`
   );
 
   await pool.end();
