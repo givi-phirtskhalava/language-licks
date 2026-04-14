@@ -27,13 +27,15 @@ interface Props {
 export default function LanguageCard({ lessonId, onBack, mode = "lesson", isFree = true }: Props) {
   const { language } = useLanguage();
   const { isPremium } = useAuth();
-  const { getLesson, updatePhase, updateStreak, updateBestTime } = useProgress(language);
+  const { getLesson, updatePhase, failReview, updateStreak, updateBestTime } = useProgress(language);
   const hasWritingAccess = isFree || isPremium;
   const hasVoiceAccess = isPremium;
   const { data: lesson, isLoading } = useLesson(lessonId);
   const saved = getLesson(lessonId);
   const savedPhase =
-    saved?.phase === "practice" ? "practice-writing" : saved?.phase;
+    saved?.phase === "practice" || saved?.phase === "test"
+      ? "practice-writing"
+      : saved?.phase;
 
   function getInitialPhase(): TPhase {
     if (mode === "review") return "review";
@@ -49,21 +51,23 @@ export default function LanguageCard({ lessonId, onBack, mode = "lesson", isFree
   function changePhase(next: TPhase, isReview = false) {
     setPhase(next);
     updatePhase(lessonId, next, isReview);
+    window.scrollTo(0, 0);
   }
 
-  const handleTestPass = useCallback(() => {
-    changePhase("complete", mode === "review");
-  }, [mode]);
-
-  const handleTestFail = useCallback(() => {
-    changePhase("practice-writing");
+  const handleReviewPass = useCallback(() => {
+    changePhase("complete", true);
   }, []);
+
+  const handleReviewFail = useCallback(() => {
+    failReview(lessonId);
+    setPhase("practice-writing");
+    window.scrollTo(0, 0);
+  }, [lessonId, failReview]);
 
   const phases: TPhase[] = [
     "lesson",
     "practice-writing",
     "practice-speaking",
-    "test",
     "complete",
   ];
 
@@ -93,9 +97,8 @@ export default function LanguageCard({ lessonId, onBack, mode = "lesson", isFree
 
   const isFirstPhase = phase === "lesson";
   const isLastPhase = phases.indexOf(phase) >= phases.length - 1;
-  const isTest = phase === "test";
   const showBack = mode !== "review" && !isFirstPhase && hasWritingAccess;
-  const showNext = mode !== "review" && !isLastPhase && !isTest && hasWritingAccess;
+  const showNext = mode !== "review" && !isLastPhase && hasWritingAccess;
 
   const phaseLabel =
     phase === "lesson"
@@ -104,11 +107,9 @@ export default function LanguageCard({ lessonId, onBack, mode = "lesson", isFree
         ? "Writing Practice"
         : phase === "practice-speaking"
           ? "Speaking Practice"
-          : phase === "test"
-            ? "Test"
-            : phase === "review"
-              ? "Review"
-              : "Complete";
+          : phase === "review"
+            ? "Review"
+            : "Complete";
 
   return (
     <div className={styles.wrapper}>
@@ -180,7 +181,7 @@ export default function LanguageCard({ lessonId, onBack, mode = "lesson", isFree
               if (mode === "lesson" && saved?.completed) {
                 onBack();
               } else {
-                changePhase("test");
+                changePhase("complete");
               }
             }}
             initialStreak={saved?.speakingStreak ?? 0}
@@ -189,16 +190,27 @@ export default function LanguageCard({ lessonId, onBack, mode = "lesson", isFree
             onBestTimeChange={(time) => updateBestTime(lessonId, "speaking", time)}
           />
         )}
-        {(phase === "test" || phase === "review") && hasVoiceAccess && (
+        {phase === "review" && hasVoiceAccess && (
           <Review
             lesson={lesson}
             locale={locale}
             languageLabel={langConfig?.label ?? "French"}
-            onPass={handleTestPass}
-            onFail={handleTestFail}
+            onPass={handleReviewPass}
+            onFail={handleReviewFail}
           />
         )}
-        {phase === "complete" && <Complete lesson={lesson} onNext={onBack} />}
+        {phase === "complete" && (
+          <Complete
+            lesson={lesson}
+            onNext={onBack}
+            onPractice={() => {
+              changePhase(
+                hasVoiceAccess ? "practice-speaking" : "practice-writing"
+              );
+            }}
+            nextReview={saved?.nextReview}
+          />
+        )}
       </div>
 
     </div>

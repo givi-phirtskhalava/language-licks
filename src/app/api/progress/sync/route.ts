@@ -31,35 +31,47 @@ export async function POST(request: NextRequest) {
       const lessonId = Number(lessonIdStr);
       if (Number.isNaN(lessonId)) continue;
 
+      const values = {
+        userId,
+        lessonId,
+        phase: data.phase ?? "lesson",
+        completed: data.completed ?? false,
+        completedAt: data.completedAt ? new Date(data.completedAt) : null,
+        firstCompletedAt: data.firstCompletedAt
+          ? new Date(data.firstCompletedAt)
+          : null,
+        interval: data.interval ?? 86400000,
+        nextReview: data.nextReview ? new Date(data.nextReview) : null,
+        retired: data.retired ?? false,
+        writingBestTime: data.writingBestTime ?? null,
+        speakingBestTime: data.speakingBestTime ?? null,
+        writingStreak: data.writingStreak ?? 0,
+        speakingStreak: data.speakingStreak ?? 0,
+        reviewPassCount: data.reviewPassCount ?? 0,
+        reviewFailCount: data.reviewFailCount ?? 0,
+        consecutiveFails: data.consecutiveFails ?? 0,
+      };
+
       await db
         .insert(progress)
-        .values({
-          userId,
-          lessonId,
-          phase: data.phase ?? "lesson",
-          completed: data.completed ?? false,
-          completedAt: data.completedAt ? new Date(data.completedAt) : null,
-          interval: data.interval ?? 86400000,
-          nextReview: data.nextReview ? new Date(data.nextReview) : null,
-          retired: data.retired ?? false,
-          writingBestTime: data.writingBestTime ?? null,
-          speakingBestTime: data.speakingBestTime ?? null,
-          writingStreak: data.writingStreak ?? 0,
-          speakingStreak: data.speakingStreak ?? 0,
-        })
+        .values(values)
         .onConflictDoUpdate({
           target: [progress.userId, progress.lessonId],
           set: {
-            phase: data.phase ?? "lesson",
-            completed: data.completed ?? false,
-            completedAt: data.completedAt ? new Date(data.completedAt) : null,
-            interval: data.interval ?? 86400000,
-            nextReview: data.nextReview ? new Date(data.nextReview) : null,
-            retired: data.retired ?? false,
-            writingBestTime: data.writingBestTime ?? null,
-            speakingBestTime: data.speakingBestTime ?? null,
-            writingStreak: data.writingStreak ?? 0,
-            speakingStreak: data.speakingStreak ?? 0,
+            phase: values.phase,
+            completed: values.completed,
+            completedAt: values.completedAt,
+            firstCompletedAt: values.firstCompletedAt,
+            interval: values.interval,
+            nextReview: values.nextReview,
+            retired: values.retired,
+            writingBestTime: values.writingBestTime,
+            speakingBestTime: values.speakingBestTime,
+            writingStreak: values.writingStreak,
+            speakingStreak: values.speakingStreak,
+            reviewPassCount: values.reviewPassCount,
+            reviewFailCount: values.reviewFailCount,
+            consecutiveFails: values.consecutiveFails,
           },
         });
     }

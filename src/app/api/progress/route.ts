@@ -24,6 +24,7 @@ export async function GET(request: NextRequest) {
         phase: progress.phase,
         completed: progress.completed,
         completedAt: progress.completedAt,
+        firstCompletedAt: progress.firstCompletedAt,
         interval: progress.interval,
         nextReview: progress.nextReview,
         retired: progress.retired,
@@ -31,6 +32,9 @@ export async function GET(request: NextRequest) {
         speakingBestTime: progress.speakingBestTime,
         writingStreak: progress.writingStreak,
         speakingStreak: progress.speakingStreak,
+        reviewPassCount: progress.reviewPassCount,
+        reviewFailCount: progress.reviewFailCount,
+        consecutiveFails: progress.consecutiveFails,
       })
       .from(progress)
       .innerJoin(lessons, eq(progress.lessonId, lessons.id))
@@ -44,6 +48,9 @@ export async function GET(request: NextRequest) {
         phase: row.phase,
         completed: row.completed,
         completedAt: row.completedAt ? row.completedAt.getTime() : null,
+        firstCompletedAt: row.firstCompletedAt
+          ? row.firstCompletedAt.getTime()
+          : null,
         interval: row.interval,
         nextReview: row.nextReview ? row.nextReview.getTime() : null,
         retired: row.retired,
@@ -51,6 +58,9 @@ export async function GET(request: NextRequest) {
         speakingBestTime: row.speakingBestTime,
         writingStreak: row.writingStreak,
         speakingStreak: row.speakingStreak,
+        reviewPassCount: row.reviewPassCount,
+        reviewFailCount: row.reviewFailCount,
+        consecutiveFails: row.consecutiveFails,
       };
     }
 
@@ -76,35 +86,47 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    const values = {
+      userId,
+      lessonId,
+      phase: data.phase ?? "lesson",
+      completed: data.completed ?? false,
+      completedAt: data.completedAt ? new Date(data.completedAt) : null,
+      firstCompletedAt: data.firstCompletedAt
+        ? new Date(data.firstCompletedAt)
+        : null,
+      interval: data.interval ?? 86400000,
+      nextReview: data.nextReview ? new Date(data.nextReview) : null,
+      retired: data.retired ?? false,
+      writingBestTime: data.writingBestTime ?? null,
+      speakingBestTime: data.speakingBestTime ?? null,
+      writingStreak: data.writingStreak ?? 0,
+      speakingStreak: data.speakingStreak ?? 0,
+      reviewPassCount: data.reviewPassCount ?? 0,
+      reviewFailCount: data.reviewFailCount ?? 0,
+      consecutiveFails: data.consecutiveFails ?? 0,
+    };
+
     await db
       .insert(progress)
-      .values({
-        userId,
-        lessonId,
-        phase: data.phase ?? "lesson",
-        completed: data.completed ?? false,
-        completedAt: data.completedAt ? new Date(data.completedAt) : null,
-        interval: data.interval ?? 86400000,
-        nextReview: data.nextReview ? new Date(data.nextReview) : null,
-        retired: data.retired ?? false,
-        writingBestTime: data.writingBestTime ?? null,
-        speakingBestTime: data.speakingBestTime ?? null,
-        writingStreak: data.writingStreak ?? 0,
-        speakingStreak: data.speakingStreak ?? 0,
-      })
+      .values(values)
       .onConflictDoUpdate({
         target: [progress.userId, progress.lessonId],
         set: {
-          phase: data.phase ?? "lesson",
-          completed: data.completed ?? false,
-          completedAt: data.completedAt ? new Date(data.completedAt) : null,
-          interval: data.interval ?? 86400000,
-          nextReview: data.nextReview ? new Date(data.nextReview) : null,
-          retired: data.retired ?? false,
-          writingBestTime: data.writingBestTime ?? null,
-          speakingBestTime: data.speakingBestTime ?? null,
-          writingStreak: data.writingStreak ?? 0,
-          speakingStreak: data.speakingStreak ?? 0,
+          phase: values.phase,
+          completed: values.completed,
+          completedAt: values.completedAt,
+          firstCompletedAt: values.firstCompletedAt,
+          interval: values.interval,
+          nextReview: values.nextReview,
+          retired: values.retired,
+          writingBestTime: values.writingBestTime,
+          speakingBestTime: values.speakingBestTime,
+          writingStreak: values.writingStreak,
+          speakingStreak: values.speakingStreak,
+          reviewPassCount: values.reviewPassCount,
+          reviewFailCount: values.reviewFailCount,
+          consecutiveFails: values.consecutiveFails,
         },
       });
 

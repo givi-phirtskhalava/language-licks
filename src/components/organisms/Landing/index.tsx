@@ -27,6 +27,11 @@ const FEATURES = [
       "Every sentence recorded by native speakers at both natural and slow speeds. No robotic TTS.",
   },
   {
+    title: "Learn Words in Context",
+    description:
+      "Instead of memorizing vocabulary in isolation, learn how words connect inside real sentences — the way native speakers actually use them.",
+  },
+  {
     title: "Lessons with Explanations",
     description:
       "Grammar breakdowns, liaison rules, and pronunciation tips alongside each sentence.",
@@ -63,6 +68,10 @@ export default function Landing() {
           through listening, writing, and speaking &mdash; until they become
           second nature. No multiple choice or passive scrolling &mdash; just
           active recall, the most effective way to build fluency.
+        </p>
+
+        <p className={style.tagline}>
+          One phrase a day is all it takes.
         </p>
       </section>
 

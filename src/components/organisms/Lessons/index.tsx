@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import useLanguage from "@lib/useLanguage";
 import useLessons from "@lib/hooks/useLessons";
 import useAuth from "@lib/hooks/useAuth";
@@ -9,6 +9,7 @@ import { FREE_LESSON_COUNT } from "@lib/projectConfig";
 import MasteryBar from "@/components/atoms/MasteryBar";
 import classNames from "classnames";
 import LanguageCard from "@/components/organisms/LanguageCard";
+import StatsPanel from "@/components/atoms/StatsPanel";
 import styles from "./Lessons.module.css";
 
 export default function Lessons() {
@@ -16,8 +17,16 @@ export default function Lessons() {
   const [selectedIndex, setSelectedIndex] = useState<number>(0);
   const { language } = useLanguage();
   const { isPremium } = useAuth();
-  const { progress, getLesson, unretire } = useProgress(language);
+  const { progress, dailyLog, dailyTarget, getLesson, unretire } = useProgress(language);
   const { data: lessons, isLoading } = useLessons(language);
+
+  useEffect(() => {
+    function handleNavReset() {
+      setSelectedId(null);
+    }
+    window.addEventListener("nav-reset", handleNavReset);
+    return () => window.removeEventListener("nav-reset", handleNavReset);
+  }, []);
 
   if (selectedId !== null) {
     const isFree = selectedIndex < FREE_LESSON_COUNT || isPremium;
@@ -36,6 +45,12 @@ export default function Lessons() {
 
   return (
     <div className={styles.container}>
+      <StatsPanel
+        progress={progress}
+        dailyLog={dailyLog}
+        dailyTarget={dailyTarget}
+      />
+
       <section>
         <h2 className={styles.sectionTitle}>Lessons</h2>
         <div className={styles.list}>

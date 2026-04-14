@@ -3,7 +3,14 @@
   max-width: 32em;
   display: flex;
   flex-direction: column;
-  gap: 2em;
+  gap: 2.5em;
+}
+
+.sectionHeader {
+  display: flex;
+  align-items: center;
+  gap: 0.5em;
+  margin-bottom: 0.75em;
 }
 
 .sectionTitle {
@@ -11,6 +18,31 @@
   font-weight: 700;
   color: var(--text-dark);
   margin-bottom: 0.75em;
+}
+
+.infoBtn {
+  color: var(--text-light);
+  font-size: 0.875em;
+}
+
+.infoBtn:hover {
+  color: var(--text-muted);
+}
+
+.emptyText {
+  font-size: 0.875em;
+  color: var(--text-light);
+}
+
+.infoMessage {
+  font-size: 0.875em;
+  color: var(--text-muted);
+  line-height: 1.5;
+  margin-bottom: 0.75em;
+}
+
+.infoMessage:last-child {
+  margin-bottom: 0;
 }
 
 .list {
@@ -66,10 +98,18 @@
 }
 
 .ready {
-  border-left: 0.1875em solid var(--warning);
+  border-left: 0.1875em solid var(--primary);
 }
 
 .numberReady {
+  background: var(--primary);
+}
+
+.problematic {
+  border-left: 0.1875em solid var(--warning);
+}
+
+.numberProblematic {
   background: var(--warning);
 }
 

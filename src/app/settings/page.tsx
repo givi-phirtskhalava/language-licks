@@ -23,6 +23,7 @@ function useReviewStats(language: TLanguageId) {
 
 export default function SettingsPage() {
   const { language, setLanguage } = useLanguage();
+  const { dailyTarget, setDailyTarget } = useProgress(language);
 
   const stats = LANGUAGES.map(({ id, label }) => ({
     id,
@@ -49,6 +50,29 @@ export default function SettingsPage() {
     <main className={pageStyles.main}>
       <div className={styles.container}>
         <h2 className={styles.title}>Settings</h2>
+
+        <section className={styles.section}>
+          <label className={styles.label} htmlFor="daily-target">
+            Daily Lesson Goal
+          </label>
+          <div className={styles.targetRow}>
+            <input
+              id="daily-target"
+              type="number"
+              min={1}
+              max={50}
+              className={styles.targetInput}
+              value={dailyTarget}
+              onChange={(e) => {
+                const val = parseInt(e.target.value, 10);
+                if (val >= 1 && val <= 50) {
+                  setDailyTarget(val);
+                }
+              }}
+            />
+            <span className={styles.targetHint}>lessons per day</span>
+          </div>
+        </section>
 
         <section className={styles.section}>
           <label className={styles.label} htmlFor="language-select">

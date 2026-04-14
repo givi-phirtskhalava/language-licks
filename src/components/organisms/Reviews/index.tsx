@@ -2,7 +2,12 @@
 
 import { useState, useEffect } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faRotateLeft } from "@fortawesome/free-solid-svg-icons";
+import {
+  faRotateLeft,
+  faCircleQuestion,
+  faPen,
+  faTriangleExclamation,
+} from "@fortawesome/free-solid-svg-icons";
 import toast from "react-hot-toast";
 import useLanguage from "@lib/useLanguage";
 import useLessons from "@lib/hooks/useLessons";
@@ -30,6 +35,7 @@ function formatTimeUntil(ms: number): string {
 export default function Reviews() {
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const [resetId, setResetId] = useState<number | null>(null);
+  const [showInfo, setShowInfo] = useState(false);
   const { language } = useLanguage();
   const { isPremium } = useAuth();
   const { getLesson, resetLesson, pausedAt } = useProgress(language);
@@ -48,6 +54,17 @@ export default function Reviews() {
     window.addEventListener("nav-reset", handleNavReset);
     return () => window.removeEventListener("nav-reset", handleNavReset);
   }, []);
+
+  const [relearningId, setRelearningId] = useState<number | null>(null);
+
+  if (relearningId !== null) {
+    return (
+      <LanguageCard
+        lessonId={relearningId}
+        onBack={() => setRelearningId(null)}
+      />
+    );
+  }
 
   if (selectedId !== null) {
     return (
@@ -74,6 +91,7 @@ export default function Reviews() {
     timeLeft: number;
     level: number;
   }[] = [];
+  const problematic: { id: number; translation: string; level: number }[] = [];
   let hasLockedReviews = false;
 
   lessons.forEach((lesson) => {
@@ -85,8 +103,19 @@ export default function Reviews() {
       return;
     }
     const level = getMasteryLevel(p);
+    const passCount = p.reviewPassCount ?? 0;
+    const failCount = p.reviewFailCount ?? 0;
+    const consec = p.consecutiveFails ?? 0;
+    const isProblematic =
+      consec >= 2 || (failCount > passCount && passCount + failCount >= 3);
 
-    if (p.nextReview && p.nextReview <= effectiveNow) {
+    if (isProblematic) {
+      problematic.push({
+        id: lesson.id,
+        translation: lesson.translation,
+        level,
+      });
+    } else if (p.nextReview && p.nextReview <= effectiveNow) {
       ready.push({ id: lesson.id, translation: lesson.translation, level });
     } else if (p.nextReview && p.nextReview > effectiveNow) {
       comingUp.push({
@@ -102,9 +131,9 @@ export default function Reviews() {
 
   return (
     <div className={styles.container}>
-      {ready.length > 0 && (
-        <section>
-          <h2 className={styles.sectionTitle}>Ready for review</h2>
+      <section>
+        <h2 className={styles.sectionTitle}>Ready for review</h2>
+        {ready.length > 0 && (
           <div className={styles.list}>
             {ready.map(({ id, translation, level }) => (
               <div key={id} className={styles.itemRow}>
@@ -113,7 +142,7 @@ export default function Reviews() {
                   onClick={() => setSelectedId(id)}
                 >
                   <span className={`${styles.number} ${styles.numberReady}`}>
-                    !
+                    <FontAwesomeIcon icon={faPen} />
                   </span>
                   <div className={styles.itemContent}>
                     <p className={styles.sentence}>{translation}</p>
@@ -129,12 +158,56 @@ export default function Reviews() {
               </div>
             ))}
           </div>
+        )}
+        {ready.length === 0 && (
+          <p className={styles.emptyText}>Nothing to review yet...</p>
+        )}
+      </section>
+
+      {problematic.length > 0 && (
+        <section>
+          <h2 className={styles.sectionTitle}>Needs Attention</h2>
+          <div className={styles.list}>
+            {problematic.map(({ id, translation, level }) => (
+              <div key={id} className={styles.itemRow}>
+                <button
+                  className={`${styles.item} ${styles.problematic}`}
+                  onClick={() => setRelearningId(id)}
+                >
+                  <span className={`${styles.number} ${styles.numberProblematic}`}>
+                    <FontAwesomeIcon icon={faTriangleExclamation} />
+                  </span>
+                  <div className={styles.itemContent}>
+                    <p className={styles.sentence}>{translation}</p>
+                    <div className={styles.tagRow}>
+                      <MasteryBar level={level} />
+                      <p className={styles.tag}>Go back to learn</p>
+                    </div>
+                  </div>
+                </button>
+                <button
+                  className={styles.resetBtn}
+                  onClick={() => setResetId(id)}
+                >
+                  <FontAwesomeIcon icon={faRotateLeft} />
+                </button>
+              </div>
+            ))}
+          </div>
         </section>
       )}
 
-      {comingUp.length > 0 && (
-        <section>
+      <section>
+        <div className={styles.sectionHeader}>
           <h2 className={styles.sectionTitle}>Coming Up</h2>
+          <button
+            className={styles.infoBtn}
+            onClick={() => setShowInfo(true)}
+          >
+            <FontAwesomeIcon icon={faCircleQuestion} />
+          </button>
+        </div>
+        {comingUp.length > 0 && (
           <div className={styles.list}>
             {comingUp.map(({ id, translation, timeLeft, level }) => (
               <div key={id} className={styles.itemRow}>
@@ -174,17 +247,32 @@ export default function Reviews() {
               </div>
             ))}
           </div>
-        </section>
-      )}
+        )}
+        {comingUp.length === 0 && (
+          <p className={styles.emptyText}>Nothing coming up yet...</p>
+        )}
+      </section>
 
       {hasLockedReviews && (
         <SignUpPrompt message="Go Premium to unlock reviews for all lessons." />
       )}
 
-      {ready.length === 0 && comingUp.length === 0 && !hasLockedReviews && (
-        <p className={styles.tag}>
-          No reviews yet. Complete some lessons first.
-        </p>
+      {showInfo && (
+        <Modal onClose={() => setShowInfo(false)}>
+          <p className={styles.resetTitle}>How reviews work</p>
+          <p className={styles.infoMessage}>
+            Reviews use spaced repetition to help you remember what you{"\u2019"}ve
+            learned. After completing a lesson, it moves here for review.
+          </p>
+          <p className={styles.infoMessage}>
+            Each time you pass a review, the interval before the next one doubles.
+            If you fail, you{"\u2019"}ll go back to practice before trying again.
+          </p>
+          <p className={styles.infoMessage}>
+            Over time, the intervals grow longer until the sentence is fully
+            mastered and retired.
+          </p>
+        </Modal>
       )}
 
       {resetId !== null && (

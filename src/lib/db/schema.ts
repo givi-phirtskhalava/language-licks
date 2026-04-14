@@ -21,6 +21,7 @@ export const users = pgTable("users", {
   paddleSubscriptionId: varchar("paddle_subscription_id", { length: 255 }),
   subscriptionStatus: varchar("subscription_status", { length: 50 }),
   subscriptionPlanEnd: timestamp("subscription_plan_end"),
+  dailyTarget: integer("daily_target").notNull().default(1),
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
@@ -63,6 +64,10 @@ export const progress = pgTable(
     speakingBestTime: real("speaking_best_time"),
     writingStreak: integer("writing_streak").notNull().default(0),
     speakingStreak: integer("speaking_streak").notNull().default(0),
+    firstCompletedAt: timestamp("first_completed_at"),
+    reviewPassCount: integer("review_pass_count").notNull().default(0),
+    reviewFailCount: integer("review_fail_count").notNull().default(0),
+    consecutiveFails: integer("consecutive_fails").notNull().default(0),
   },
   (table) => [uniqueIndex("progress_user_lesson_idx").on(table.userId, table.lessonId)]
 );
@@ -79,5 +84,26 @@ export const speechUsage = pgTable(
     testingSeconds: real("testing_seconds").notNull().default(0),
   },
   (table) => [uniqueIndex("speech_usage_user_month_idx").on(table.userId, table.month)]
+);
+
+export const dailyActivity = pgTable(
+  "daily_activity",
+  {
+    id: serial("id").primaryKey(),
+    userId: integer("user_id")
+      .notNull()
+      .references(() => users.id),
+    language: varchar("language", { length: 50 }).notNull(),
+    dateKey: varchar("date_key", { length: 6 }).notNull(),
+    lessons: integer("lessons").notNull().default(0),
+    reviews: integer("reviews").notNull().default(0),
+  },
+  (table) => [
+    uniqueIndex("daily_activity_user_lang_date_idx").on(
+      table.userId,
+      table.language,
+      table.dateKey
+    ),
+  ]
 );
 

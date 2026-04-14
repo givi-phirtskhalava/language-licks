@@ -43,14 +43,28 @@ export default function FaqPage() {
               vocabulary naturally.
             </p>
           </div>
+          <div className={styles.item}>
+            <h2 className={styles.question}>
+              Is this method guaranteed to work?
+            </h2>
+            <p className={styles.answer}>
+              It's not for everyone — different people learn in different ways,
+              and you should supplement your learning. But every sentence you
+              memorize and actively recall means you're one sentence and a few
+              vocabulary words ahead. As long as you keep learning new sentences
+              and reviewing them so you don't forget, you're getting closer to
+              fluency.
+            </p>
+          </div>
 
           <div className={styles.item}>
             <h2 className={styles.question}>
               Do you teach grammar and vocabulary?
             </h2>
             <p className={styles.answer}>
-              We don&apos;t teach grammar or vocabulary in isolation, but you
-              learn both indirectly through the phrases. Every lesson includes a
+              We don&apos;t teach grammar or vocabulary in isolation. Instead,
+              you learn how words connect inside real sentences &mdash; the way
+              native speakers actually use them. Every lesson includes a
               breakdown of the sentence &mdash; grammar rules, word meanings,
               and pronunciation notes &mdash; so you understand what you&apos;re
               memorizing, not just how to repeat it.
@@ -87,13 +101,16 @@ export default function FaqPage() {
           </div>
 
           <div className={styles.item}>
-            <h2 className={styles.question}>Can I learn at my own pace?</h2>
+            <h2 className={styles.question}>
+              How many lessons should I do per day?
+            </h2>
             <p className={styles.answer}>
-              Definitely. We encourage you to learn only one or a few lessons at
-              a time, and try not to let your daily reviews grow past 20
-              &mdash; otherwise it can become overwhelming. We recommend doing
-              reviews at least once a day, and holding off on new lessons if
-              it&apos;s getting hard to keep up with the reviews.
+              We recommend 1 or 2 new lessons per day. At that pace, your daily
+              reviews will never grow past 8&ndash;16 &mdash; very manageable.
+              If you have more time, you can do more, but make sure you can keep
+              up with reviews every day. Reviews are where the real learning
+              happens, so it&apos;s better to do fewer new lessons and stay on
+              top of your reviews than to rush ahead and let them pile up.
             </p>
           </div>
 
@@ -138,9 +155,9 @@ export default function FaqPage() {
               invasive marketing tracking, we don&apos;t sell your data, and we
               don&apos;t use cookies beyond what&apos;s needed for
               authentication. Your voice recordings are processed in real time
-              by Microsoft Azure Speech Services and are never stored &mdash; not by us,
-              and not by Microsoft. We don&apos;t use your audio for training AI or
-              any other purpose. Microsoft&apos;s own{" "}
+              by Microsoft Azure Speech Services and are never stored &mdash;
+              not by us, and not by Microsoft. We don&apos;t use your audio for
+              training AI or any other purpose. Microsoft&apos;s own{" "}
               <a
                 href="https://learn.microsoft.com/en-us/azure/foundry/responsible-ai/speech-service/speech-to-text/data-privacy-security"
                 target="_blank"
@@ -158,9 +175,9 @@ export default function FaqPage() {
           <div className={styles.item}>
             <h2 className={styles.question}>Can I switch languages?</h2>
             <p className={styles.answer}>
-              Yes. You can change your language at any time from the home page or
-              settings. Your progress is saved separately for each language, so
-              you can switch back and forth without losing anything.
+              Yes. You can change your language at any time from the home page
+              or settings. Your progress is saved separately for each language,
+              so you can switch back and forth without losing anything.
             </p>
           </div>
         </div>

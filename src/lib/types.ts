@@ -43,6 +43,7 @@ export interface ILessonProgress {
   phase: TPhase;
   completed: boolean;
   completedAt: number | null;
+  firstCompletedAt: number | null;
   interval: number;
   nextReview: number | null;
   retired: boolean;
@@ -50,4 +51,9 @@ export interface ILessonProgress {
   speakingBestTime: number | null;
   writingStreak: number;
   speakingStreak: number;
+  reviewPassCount: number;
+  reviewFailCount: number;
+  consecutiveFails: number;
 }
+
+export type TDailyLog = Record<string, { l: number; r: number }>;
