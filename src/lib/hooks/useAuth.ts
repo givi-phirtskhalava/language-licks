@@ -7,6 +7,9 @@ interface IUser {
   email: string;
   name: string;
   language: string;
+  isPremium: boolean;
+  subscriptionStatus: string | null;
+  subscriptionPlanEnd: number | null;
 }
 
 async function fetchMe(): Promise<IUser | null> {
@@ -27,6 +30,7 @@ export default function useAuth() {
   return {
     user: user ?? null,
     isLoggedIn: !!user,
+    isPremium: !!user?.isPremium,
     isLoading,
   };
 }

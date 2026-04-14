@@ -4,6 +4,8 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
 import useAuth from "@lib/hooks/useAuth";
+import usePaddle from "@lib/hooks/usePaddle";
+import useSpeechUsage from "@lib/hooks/useSpeechUsage";
 import useLanguage from "@lib/useLanguage";
 import { clearDbMode, clearAllProgress } from "@lib/useProgress";
 import Modal from "@/components/atoms/Modal";
@@ -11,17 +13,68 @@ import Button from "@atoms/Button";
 import styles from "./Profile.module.css";
 import pageStyles from "../page.module.css";
 
+function formatDate(timestamp: number): string {
+  return new Date(timestamp).toLocaleDateString("en-US", {
+    month: "long",
+    day: "numeric",
+    year: "numeric",
+  });
+}
+
 type TModal = null | "change-email" | "delete-account" | "clear-progress";
 type TEmailStep = "email" | "code";
 type TDeleteStep = "send" | "confirm";
 
+function formatMinutes(seconds: number): string {
+  const mins = Math.floor(seconds / 60);
+  const secs = Math.round(seconds % 60);
+  if (mins === 0) return `${secs}s`;
+  if (secs === 0) return `${mins}m`;
+  return `${mins}m ${secs}s`;
+}
+
+interface IUsageCardProps {
+  label: string;
+  usedSeconds: number;
+  limitSeconds: number;
+}
+
+function UsageCard({ label, usedSeconds, limitSeconds }: IUsageCardProps) {
+  const percentage = Math.min((usedSeconds / limitSeconds) * 100, 100);
+  const remaining = Math.max(limitSeconds - usedSeconds, 0);
+
+  return (
+    <div className={styles.usageCard}>
+      <div className={styles.usageHeader}>
+        <span className={styles.usageLabel}>{label}</span>
+        <span className={styles.usageTime}>
+          {formatMinutes(remaining)} left
+        </span>
+      </div>
+      <div className={styles.usageBarTrack}>
+        <div
+          className={styles.usageBarFill}
+          style={{ width: `${percentage}%` }}
+        />
+      </div>
+      <p className={styles.usageDetail}>
+        {formatMinutes(usedSeconds)} / {formatMinutes(limitSeconds)}
+      </p>
+    </div>
+  );
+}
+
 export default function ProfilePage() {
   const router = useRouter();
   const queryClient = useQueryClient();
-  const { user, isLoggedIn, isLoading } = useAuth();
+  const { user, isLoggedIn, isPremium, isLoading } = useAuth();
+  const { openCheckout } = usePaddle();
   const { language } = useLanguage();
+  const { data: speechUsage } = useSpeechUsage();
 
   const [modal, setModal] = useState<TModal>(null);
+  const [billingLoading, setBillingLoading] = useState(false);
+  const [billingError, setBillingError] = useState("");
   const [clearLoading, setClearLoading] = useState(false);
   const [clearError, setClearError] = useState("");
 
@@ -193,6 +246,49 @@ export default function ProfilePage() {
     }
   }
 
+  async function handleCancelSubscription() {
+    setBillingError("");
+    setBillingLoading(true);
+    try {
+      const res = await fetch("/api/billing/cancel", { method: "POST" });
+      if (!res.ok) {
+        const data = await res.json();
+        setBillingError(data.error || "Failed to cancel subscription");
+        return;
+      }
+      queryClient.invalidateQueries({ queryKey: ["auth", "me"] });
+    } catch {
+      setBillingError("Something went wrong");
+    } finally {
+      setBillingLoading(false);
+    }
+  }
+
+  async function handleResumeSubscription() {
+    setBillingError("");
+    setBillingLoading(true);
+    try {
+      const res = await fetch("/api/billing/resume", { method: "POST" });
+      if (!res.ok) {
+        const data = await res.json();
+        setBillingError(data.error || "Failed to resume subscription");
+        return;
+      }
+      queryClient.invalidateQueries({ queryKey: ["auth", "me"] });
+    } catch {
+      setBillingError("Something went wrong");
+    } finally {
+      setBillingLoading(false);
+    }
+  }
+
+  function handleSubscribe() {
+    if (!user) return;
+    openCheckout(user.email, user.id, () => {
+      queryClient.invalidateQueries({ queryKey: ["auth", "me"] });
+    });
+  }
+
   useEffect(() => {
     if (!isLoading && !isLoggedIn) {
       router.push("/login?redirect=/profile");
@@ -203,37 +299,150 @@ export default function ProfilePage() {
     return null;
   }
 
+  const isCanceled = user?.subscriptionStatus === "canceled";
+  const isPastDue = user?.subscriptionStatus === "past_due";
+  const isActive = user?.subscriptionStatus === "active";
+  const inGracePeriod =
+    isCanceled &&
+    !!user?.subscriptionPlanEnd &&
+    user.subscriptionPlanEnd > Date.now();
+
   return (
     <main className={pageStyles.main}>
       <div className={styles.container}>
-        <h2 className={styles.title}>Profile</h2>
+        <div className={styles.profileHeader}>
+          <div className={styles.avatarWrapper}>
+            <div className={styles.avatar}>
+              {user?.email?.charAt(0).toUpperCase()}
+            </div>
+            {isPremium && <span className={styles.premiumBadge}>★</span>}
+          </div>
+          <div>
+            <p className={styles.email}>{user?.email}</p>
+            <p className={styles.plan}>{isPremium ? "Premium" : "Free"}</p>
+          </div>
+        </div>
 
-        {user?.name && (
-          <section className={styles.section}>
-            <p className={styles.label}>Name</p>
-            <p className={styles.value}>{user.name}</p>
+        <section className={styles.group}>
+          <p className={styles.sectionTitle}>Account</p>
+          <div className={styles.section}>
+            {user?.name && (
+              <div>
+                <p className={styles.label}>Name</p>
+                <p className={styles.value}>{user.name}</p>
+              </div>
+            )}
+            <Button theme="primary" onClick={() => setModal("change-email")}>
+              Change email
+            </Button>
+            <Button theme="secondary" onClick={handleLogout}>
+              Log out
+            </Button>
+          </div>
+        </section>
+
+        <section className={styles.group}>
+          <p className={styles.sectionTitle}>Billing</p>
+
+          {isActive && (
+            <div className={styles.section}>
+              <div className={styles.statusRow}>
+                <span className={styles.badge}>Premium</span>
+              </div>
+              {user?.subscriptionPlanEnd && (
+                <p className={styles.billingDetail}>
+                  Current period ends {formatDate(user.subscriptionPlanEnd)}.
+                  You will be billed a few days before renewal.
+                </p>
+              )}
+              {billingError && <p className={styles.billingError}>{billingError}</p>}
+              <Button
+                theme="danger"
+                loading={billingLoading}
+                onClick={handleCancelSubscription}
+              >
+                Cancel subscription
+              </Button>
+            </div>
+          )}
+
+          {inGracePeriod && (
+            <div className={styles.section}>
+              <div className={styles.statusRow}>
+                <span className={styles.badge}>Premium</span>
+                <span className={styles.canceledNote}>Canceling</span>
+              </div>
+              <p className={styles.billingDetail}>
+                Your subscription was canceled, but you can still use premium
+                features until {formatDate(user.subscriptionPlanEnd!)}.
+              </p>
+              {billingError && <p className={styles.billingError}>{billingError}</p>}
+              <Button loading={billingLoading} onClick={handleResumeSubscription}>
+                Resume subscription
+              </Button>
+            </div>
+          )}
+
+          {isPastDue && (
+            <div className={styles.section}>
+              <p className={styles.billingWarning}>
+                Your payment was declined. Paddle will retry automatically, but
+                your premium access is suspended until the payment succeeds.
+              </p>
+              {billingError && <p className={styles.billingError}>{billingError}</p>}
+            </div>
+          )}
+
+          {!isPremium && !isPastDue && !inGracePeriod && (
+            <div className={styles.section}>
+              <p className={styles.planTitle}>Go Premium</p>
+              <p className={styles.price}>$10 / month</p>
+              <ul className={styles.features}>
+                <li>All lessons in every language</li>
+                <li>Spaced repetition reviews for all lessons</li>
+                <li>Speaking practice with voice recognition</li>
+                <li>Audio tests and review mode</li>
+                <li>Progress synced to the cloud</li>
+              </ul>
+              {billingError && <p className={styles.billingError}>{billingError}</p>}
+              <Button onClick={handleSubscribe}>Subscribe</Button>
+            </div>
+          )}
+        </section>
+
+        {isPremium && speechUsage && (
+          <section className={styles.group}>
+            <p className={styles.sectionTitle}>Usage</p>
+            <p className={styles.usageDescription}>
+              Voice recognition is powered by a paid service, so each account
+              has a monthly allowance. Limits reset on the 1st of every month.
+            </p>
+            <div className={styles.usageCards}>
+              <UsageCard
+                label="Practice"
+                usedSeconds={speechUsage.trainingSeconds}
+                limitSeconds={speechUsage.trainingLimit}
+              />
+              <UsageCard
+                label="Tests"
+                usedSeconds={speechUsage.testingSeconds}
+                limitSeconds={speechUsage.testingLimit}
+              />
+            </div>
           </section>
         )}
 
-        <section className={styles.section}>
-          <p className={styles.label}>Email</p>
-          <p className={styles.value}>{user?.email}</p>
+        <section className={styles.group}>
+          <p className={styles.dangerTitle}>Danger zone</p>
+          <div className={styles.dangerSection}>
+            <Button theme="danger" onClick={() => setModal("clear-progress")}>
+              Clear progress
+            </Button>
+            <Button theme="danger" onClick={() => setModal("delete-account")}>
+              Delete account
+            </Button>
+          </div>
         </section>
-
-        <div className={styles.actions}>
-          <Button theme="primary" onClick={() => setModal("change-email")}>
-            Change email
-          </Button>
-          <Button theme="secondary" onClick={handleLogout}>
-            Log out
-          </Button>
-          <Button theme="danger" onClick={() => setModal("clear-progress")}>
-            Clear progress
-          </Button>
-          <Button theme="danger" onClick={() => setModal("delete-account")}>
-            Delete account
-          </Button>
-        </div>
       </div>
 
       {modal === "change-email" && (

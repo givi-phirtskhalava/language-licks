@@ -6,6 +6,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { z } from "zod";
 import Button from "@atoms/Button";
 import useLanguage from "@lib/useLanguage";
+import usePaddle from "@lib/hooks/usePaddle";
 import { syncAndClear } from "@lib/useProgress";
 import style from "./Login.module.css";
 
@@ -18,7 +19,9 @@ export default function LoginPage() {
   const queryClient = useQueryClient();
   const searchParams = useSearchParams();
   const redirect = searchParams.get("redirect") || "/";
+  const checkout = searchParams.get("checkout") === "true";
   const { language } = useLanguage();
+  const { openCheckout } = usePaddle();
 
   const [step, setStep] = useState<TStep>("email");
   const [email, setEmail] = useState("");
@@ -82,6 +85,22 @@ export default function LoginPage() {
 
       await syncAndClear(language);
       queryClient.invalidateQueries({ queryKey: ["auth", "me"] });
+
+      if (checkout && data.user?.id) {
+        openCheckout(
+          email,
+          data.user.id,
+          () => {
+            queryClient.invalidateQueries({ queryKey: ["auth", "me"] });
+            router.push(redirect);
+          },
+          () => {
+            router.push(redirect);
+          }
+        );
+        return;
+      }
+
       router.push(redirect);
     } catch {
       setError("Something went wrong");

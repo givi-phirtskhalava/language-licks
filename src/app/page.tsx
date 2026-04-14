@@ -1,10 +1,5 @@
-import Lessons from "@/components/organisms/Lessons";
-import styles from "./page.module.css";
+import Landing from "@/components/organisms/Landing";
 
 export default function Home() {
-  return (
-    <main className={styles.main}>
-      <Lessons />
-    </main>
-  );
+  return <Landing />;
 }

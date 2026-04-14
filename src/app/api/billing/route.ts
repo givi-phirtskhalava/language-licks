@@ -9,12 +9,9 @@ export async function GET() {
 
     const user = await db
       .select({
-        id: users.id,
-        email: users.email,
-        name: users.name,
-        language: users.language,
         subscriptionStatus: users.subscriptionStatus,
         subscriptionPlanEnd: users.subscriptionPlanEnd,
+        paddleSubscriptionId: users.paddleSubscriptionId,
       })
       .from(users)
       .where(eq(users.id, userId))
@@ -22,7 +19,7 @@ export async function GET() {
       .then((rows) => rows[0]);
 
     if (!user) {
-      return Response.json({ user: null }, { status: 401 });
+      return Response.json({ error: "User not found" }, { status: 404 });
     }
 
     const isPremium =
@@ -32,17 +29,16 @@ export async function GET() {
         user.subscriptionPlanEnd.getTime() > Date.now());
 
     return Response.json({
-      user: {
-        ...user,
-        subscriptionPlanEnd: user.subscriptionPlanEnd
-          ? user.subscriptionPlanEnd.getTime()
-          : null,
-        isPremium,
-      },
+      subscriptionStatus: user.subscriptionStatus,
+      subscriptionPlanEnd: user.subscriptionPlanEnd
+        ? user.subscriptionPlanEnd.getTime()
+        : null,
+      hasSubscription: !!user.paddleSubscriptionId,
+      isPremium,
     });
   } catch (error) {
     if (error instanceof AuthError) {
-      return Response.json({ user: null }, { status: error.status });
+      return Response.json({ error: error.message }, { status: error.status });
     }
     throw error;
   }

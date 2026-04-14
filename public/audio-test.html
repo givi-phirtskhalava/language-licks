@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MediaRecorder Support</title>
+  <style>
+    body { font-family: system-ui, sans-serif; padding: 1em; }
+    .supported { color: green; }
+    .unsupported { color: red; }
+    p { margin: 0.3em 0; font-size: 0.9em; }
+    h2 { margin-top: 1.5em; }
+  </style>
+</head>
+<body>
+  <h1>MediaRecorder Supported Types</h1>
+  <div id="results"></div>
+  <script>
+    const types = [
+      "audio/ogg",
+      "audio/ogg;codecs=opus",
+      "audio/ogg;codecs=vorbis",
+      "audio/webm",
+      "audio/webm;codecs=opus",
+      "audio/webm;codecs=vorbis",
+      "audio/mp4",
+      "audio/mp4;codecs=aac",
+      "audio/mp4;codecs=mp4a.40.2",
+      "audio/wav",
+      "audio/x-wav",
+      "audio/aac",
+      "audio/mpeg",
+      "audio/flac",
+    ];
+    const el = document.getElementById("results");
+    const ua = document.createElement("p");
+    ua.textContent = navigator.userAgent;
+    ua.style.color = "#666";
+    ua.style.marginBottom = "1em";
+    el.appendChild(ua);
+
+    const supported = [];
+    const unsupported = [];
+
+    types.forEach(type => {
+      const ok = MediaRecorder.isTypeSupported(type);
+      if (ok) supported.push(type);
+      else unsupported.push(type);
+    });
+
+    const h1 = document.createElement("h2");
+    h1.textContent = "Supported";
+    el.appendChild(h1);
+    supported.forEach(t => {
+      const p = document.createElement("p");
+      p.textContent = t;
+      p.className = "supported";
+      el.appendChild(p);
+    });
+
+    const h2 = document.createElement("h2");
+    h2.textContent = "Unsupported";
+    el.appendChild(h2);
+    unsupported.forEach(t => {
+      const p = document.createElement("p");
+      p.textContent = t;
+      p.className = "unsupported";
+      el.appendChild(p);
+    });
+  </script>
+</body>
+</html>

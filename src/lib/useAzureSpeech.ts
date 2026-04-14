@@ -27,40 +27,49 @@ async function checkMicPermission(): Promise<"granted" | "denied" | "prompt"> {
   return "prompt";
 }
 
-// Cache the token for 9 minutes (TTL is 10 minutes)
-let cachedToken: { token: string; region: string; expiresAt: number } | null =
-  null;
+function encodeWav(pcm: Float32Array, sampleRate: number): Blob {
+  const numChannels = 1;
+  const bitsPerSample = 16;
+  const byteRate = sampleRate * numChannels * (bitsPerSample / 8);
+  const blockAlign = numChannels * (bitsPerSample / 8);
+  const dataSize = pcm.length * (bitsPerSample / 8);
+  const buffer = new ArrayBuffer(44 + dataSize);
+  const view = new DataView(buffer);
 
-async function fetchToken(): Promise<{
-  token: string;
-  region: string;
-} | null> {
-  if (cachedToken && Date.now() < cachedToken.expiresAt) {
-    return { token: cachedToken.token, region: cachedToken.region };
+  function writeString(offset: number, str: string) {
+    for (let i = 0; i < str.length; i++) {
+      view.setUint8(offset + i, str.charCodeAt(i));
+    }
   }
-  const res = await fetch("/api/speech/token", { method: "POST" });
-  if (!res.ok) return null;
-  const data = await res.json();
-  cachedToken = { ...data, expiresAt: Date.now() + 9 * 60 * 1000 };
-  return data;
-}
 
-function reportUsage(durationSeconds: number, mode: TSpeechMode) {
-  fetch("/api/speech/usage", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ durationSeconds, mode }),
-  });
-}
+  writeString(0, "RIFF");
+  view.setUint32(4, 36 + dataSize, true);
+  writeString(8, "WAVE");
+  writeString(12, "fmt ");
+  view.setUint32(16, 16, true);
+  view.setUint16(20, 1, true);
+  view.setUint16(22, numChannels, true);
+  view.setUint32(24, sampleRate, true);
+  view.setUint32(28, byteRate, true);
+  view.setUint16(32, blockAlign, true);
+  view.setUint16(34, bitsPerSample, true);
+  writeString(36, "data");
+  view.setUint32(40, dataSize, true);
 
-function floatTo16BitPCM(float32: Float32Array): ArrayBuffer {
-  const int16 = new Int16Array(float32.length);
-  for (let i = 0; i < float32.length; i++) {
-    const s = Math.max(-1, Math.min(1, float32[i]));
-    int16[i] = s < 0 ? s * 0x8000 : s * 0x7fff;
+  let offset = 44;
+  for (let i = 0; i < pcm.length; i++) {
+    const s = Math.max(-1, Math.min(1, pcm[i]));
+    view.setInt16(offset, s < 0 ? s * 0x8000 : s * 0x7fff, true);
+    offset += 2;
   }
-  return int16.buffer;
+
+  return new Blob([buffer], { type: "audio/wav" });
 }
+
+const SILENCE_THRESHOLD = 0.01;
+const SILENCE_DURATION = 1500;
+const MAX_RECORDING_MS = 30000;
+const SAMPLE_RATE = 16000;
 
 export function useAzureSpeech(
   lang: string,
@@ -71,25 +80,159 @@ export function useAzureSpeech(
   const [isListening, setIsListening] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const recognizerRef = useRef<unknown>(null);
   const busyRef = useRef(false);
-  const startTimeRef = useRef<number>(0);
-  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const gotResultRef = useRef(false);
   const micStreamRef = useRef<MediaStream | null>(null);
   const audioContextRef = useRef<AudioContext | null>(null);
-  const pushStreamRef = useRef<unknown>(null);
-  const micStoppedRef = useRef(false);
+  const analyserRef = useRef<AnalyserNode | null>(null);
+  const silenceStartRef = useRef<number | null>(null);
+  const speechDetectedRef = useRef(false);
+  const rafRef = useRef<number>(0);
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const stoppedRef = useRef(false);
+  const pcmChunksRef = useRef<Float32Array[]>([]);
+  const processorRef = useRef<ScriptProcessorNode | null>(null);
 
-  function cleanupMic() {
+  function cleanup() {
+    if (rafRef.current) {
+      cancelAnimationFrame(rafRef.current);
+      rafRef.current = 0;
+    }
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+      timeoutRef.current = null;
+    }
+    if (processorRef.current) {
+      processorRef.current.disconnect();
+      processorRef.current = null;
+    }
     if (audioContextRef.current) {
       audioContextRef.current.close();
       audioContextRef.current = null;
     }
+    analyserRef.current = null;
     if (micStreamRef.current) {
       micStreamRef.current.getTracks().forEach((t) => t.stop());
       micStreamRef.current = null;
     }
+  }
+
+  function finishRecording() {
+    cleanup();
+
+    // Merge PCM chunks, capped at max duration
+    const maxSamples = SAMPLE_RATE * (MAX_RECORDING_MS / 1000);
+    let totalLength = 0;
+    for (const chunk of pcmChunksRef.current) totalLength += chunk.length;
+    const cappedLength = Math.min(totalLength, maxSamples);
+    const pcm = new Float32Array(cappedLength);
+    let offset = 0;
+    for (const chunk of pcmChunksRef.current) {
+      const remaining = cappedLength - offset;
+      if (remaining <= 0) break;
+      const toCopy = Math.min(chunk.length, remaining);
+      pcm.set(chunk.subarray(0, toCopy), offset);
+      offset += toCopy;
+    }
+
+    console.log("[speech] recording finished, pcm samples:", pcm.length, "speechDetected:", speechDetectedRef.current);
+
+    if (pcm.length > 0 && speechDetectedRef.current) {
+      const wav = encodeWav(pcm, SAMPLE_RATE);
+      console.log(`[speech] WAV size: ${(wav.size / 1024).toFixed(1)} KB`);
+      sendAudio(wav);
+    } else {
+      console.log("[speech] skipping send — no speech detected or empty audio");
+      setIsListening(false);
+      busyRef.current = false;
+    }
+  }
+
+  function stopRecording() {
+    if (stoppedRef.current) return;
+    stoppedRef.current = true;
+    console.log("[speech] stopRecording called, speechDetected:", speechDetectedRef.current);
+    finishRecording();
+  }
+
+  async function sendAudio(blob: Blob) {
+    setIsListening(false);
+    setIsProcessing(true);
+
+    try {
+      console.log(`[speech] sending audio — format: ${blob.type}, size: ${(blob.size / 1024).toFixed(1)} KB`);
+
+      const formData = new FormData();
+      formData.append("audio", blob);
+      formData.append("lang", lang);
+      formData.append("mode", mode);
+
+      const res = await fetch("/api/speech/recognize", {
+        method: "POST",
+        body: formData,
+      });
+
+      console.log("[speech] server response status:", res.status);
+
+      if (!res.ok) {
+        const data = await res.json();
+        console.log("[speech] server error:", data);
+        setError(
+          data.error || "Speech recognition failed",
+        );
+        setIsProcessing(false);
+        busyRef.current = false;
+        return;
+      }
+
+      const data = await res.json();
+      console.log("[speech] server response:", data);
+
+      if (data.transcript) {
+        setTranscript(data.transcript);
+        setResultId((id) => id + 1);
+      }
+    } catch (err) {
+      console.log("[speech] fetch error:", err);
+      setError("Speech recognition failed");
+    }
+
+    setIsProcessing(false);
+    busyRef.current = false;
+  }
+
+  function monitorSilence() {
+    const analyser = analyserRef.current;
+    if (!analyser) return;
+
+    const dataArray = new Float32Array(analyser.fftSize);
+
+    function check() {
+      if (stoppedRef.current) return;
+
+      analyser!.getFloatTimeDomainData(dataArray);
+
+      let sum = 0;
+      for (let i = 0; i < dataArray.length; i++) {
+        sum += dataArray[i] * dataArray[i];
+      }
+      const rms = Math.sqrt(sum / dataArray.length);
+
+      if (rms > SILENCE_THRESHOLD) {
+        speechDetectedRef.current = true;
+        silenceStartRef.current = null;
+      } else if (speechDetectedRef.current) {
+        if (silenceStartRef.current === null) {
+          silenceStartRef.current = Date.now();
+        } else if (Date.now() - silenceStartRef.current >= SILENCE_DURATION) {
+          stopRecording();
+          return;
+        }
+      }
+
+      rafRef.current = requestAnimationFrame(check);
+    }
+
+    rafRef.current = requestAnimationFrame(check);
   }
 
   const start = useCallback(async (): Promise<boolean> => {
@@ -105,10 +248,11 @@ export function useAzureSpeech(
     setError(null);
     setTranscript("");
     setIsProcessing(false);
-    gotResultRef.current = false;
-    micStoppedRef.current = false;
+    speechDetectedRef.current = false;
+    silenceStartRef.current = null;
+    stoppedRef.current = false;
+    pcmChunksRef.current = [];
 
-    // Get mic immediately — this will prompt if permission is needed
     let micStream: MediaStream;
     try {
       micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -119,195 +263,43 @@ export function useAzureSpeech(
 
     micStreamRef.current = micStream;
 
-    // Start capturing audio at 16kHz for Azure
-    const audioContext = new AudioContext({ sampleRate: 16000 });
+    // Single AudioContext at 16kHz for both PCM capture and silence detection
+    const audioContext = new AudioContext({ sampleRate: SAMPLE_RATE });
     audioContextRef.current = audioContext;
     const source = audioContext.createMediaStreamSource(micStream);
+
+    // Analyser for silence detection
+    const analyser = audioContext.createAnalyser();
+    analyser.fftSize = 2048;
+    source.connect(analyser);
+    analyserRef.current = analyser;
+
+    // ScriptProcessor for PCM capture
     const processor = audioContext.createScriptProcessor(4096, 1, 1);
-
-    // Buffer audio until the push stream is ready
-    const buffer: ArrayBuffer[] = [];
-    let pushStream: { write: (b: ArrayBuffer) => void; close: () => void } | null =
-      null;
-
     processor.onaudioprocess = (e: AudioProcessingEvent) => {
-      const pcm = floatTo16BitPCM(e.inputBuffer.getChannelData(0));
-      if (pushStream) {
-        pushStream.write(pcm);
-      } else {
-        buffer.push(pcm);
+      if (!stoppedRef.current) {
+        pcmChunksRef.current.push(new Float32Array(e.inputBuffer.getChannelData(0)));
       }
     };
-
     source.connect(processor);
     processor.connect(audioContext.destination);
+    processorRef.current = processor;
 
-    // Listening starts immediately
     setIsListening(true);
-    startTimeRef.current = Date.now();
 
+    // Start silence monitoring
+    monitorSilence();
+
+    // Hard cap at 30 seconds
     timeoutRef.current = setTimeout(() => {
-      if (recognizerRef.current) {
-        (
-          recognizerRef.current as {
-            stopContinuousRecognitionAsync: () => void;
-          }
-        ).stopContinuousRecognitionAsync();
-      }
-    }, 60000);
-
-    // Connect to Azure in the background
-    (async () => {
-      try {
-        const [tokenData, sdk] = await Promise.all([
-          fetchToken(),
-          import("microsoft-cognitiveservices-speech-sdk"),
-        ]);
-
-        if (!tokenData) {
-          setError(
-            "Speech service unavailable. You may have reached your monthly limit.",
-          );
-          cleanupMic();
-          setIsListening(false);
-          setIsProcessing(false);
-          busyRef.current = false;
-          return;
-        }
-
-        const stream = sdk.AudioInputStream.createPushStream(
-          sdk.AudioStreamFormat.getWaveFormatPCM(16000, 16, 1),
-        );
-        pushStreamRef.current = stream;
-
-        // Flush buffered audio
-        for (const chunk of buffer) {
-          stream.write(chunk);
-        }
-        buffer.length = 0;
-
-        // Wire up for live audio
-        pushStream = stream;
-
-        // If user already stopped, close the stream so recognizer can finish
-        if (micStoppedRef.current) {
-          stream.close();
-        }
-
-        const speechConfig = sdk.SpeechConfig.fromAuthorizationToken(
-          tokenData.token,
-          tokenData.region,
-        );
-        speechConfig.speechRecognitionLanguage = lang;
-
-        const audioConfig = sdk.AudioConfig.fromStreamInput(stream);
-        const recognizer = new sdk.SpeechRecognizer(speechConfig, audioConfig);
-        recognizerRef.current = recognizer;
-
-        let text = "";
-
-        recognizer.recognized = (
-          _s: unknown,
-          e: { result: { text: string; reason: number } },
-        ) => {
-          if (e.result.reason === sdk.ResultReason.RecognizedSpeech) {
-            gotResultRef.current = true;
-            text += (text ? " " : "") + e.result.text;
-            setTranscript(text);
-          }
-        };
-
-        recognizer.canceled = (
-          _s: unknown,
-          e: { reason: number; errorDetails: string },
-        ) => {
-          if (e.reason === sdk.CancellationReason.Error) {
-            setError(e.errorDetails || "Speech recognition failed");
-          }
-        };
-
-        recognizer.sessionStopped = () => {
-          if (timeoutRef.current) {
-            clearTimeout(timeoutRef.current);
-            timeoutRef.current = null;
-          }
-
-          const durationSeconds = (Date.now() - startTimeRef.current) / 1000;
-          reportUsage(durationSeconds, mode);
-
-          setIsListening(false);
-          setIsProcessing(false);
-          busyRef.current = false;
-          recognizerRef.current = null;
-          pushStreamRef.current = null;
-
-          if (gotResultRef.current) {
-            setResultId((id) => id + 1);
-          }
-
-          try {
-            recognizer.close();
-          } catch {
-            // already closed
-          }
-        };
-
-        recognizer.startContinuousRecognitionAsync(
-          () => {
-            // Connected — if user already stopped, trigger stop on the recognizer
-            if (micStoppedRef.current) {
-              recognizer.stopContinuousRecognitionAsync();
-            }
-          },
-          (err: string) => {
-            setError(err || "Failed to start recognition");
-            cleanupMic();
-            setIsListening(false);
-            setIsProcessing(false);
-            busyRef.current = false;
-            recognizerRef.current = null;
-            pushStreamRef.current = null;
-          },
-        );
-      } catch {
-        setError("Failed to initialize speech service");
-        cleanupMic();
-        setIsListening(false);
-        setIsProcessing(false);
-        busyRef.current = false;
-      }
-    })();
+      stopRecording();
+    }, MAX_RECORDING_MS);
 
     return true;
   }, [lang, mode]);
 
   const stop = useCallback(() => {
-    if (timeoutRef.current) {
-      clearTimeout(timeoutRef.current);
-      timeoutRef.current = null;
-    }
-
-    micStoppedRef.current = true;
-    cleanupMic();
-
-    // Close push stream so Azure knows there's no more audio
-    if (pushStreamRef.current) {
-      (pushStreamRef.current as { close: () => void }).close();
-    }
-
-    if (recognizerRef.current) {
-      setIsListening(false);
-      setIsProcessing(true);
-      (
-        recognizerRef.current as {
-          stopContinuousRecognitionAsync: () => void;
-        }
-      ).stopContinuousRecognitionAsync();
-    } else {
-      // Azure hasn't connected yet — show processing while we wait
-      setIsListening(false);
-      setIsProcessing(true);
-    }
+    stopRecording();
   }, []);
 
   return {

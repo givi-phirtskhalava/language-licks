@@ -15,12 +15,12 @@ export default function Lessons() {
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const [selectedIndex, setSelectedIndex] = useState<number>(0);
   const { language } = useLanguage();
-  const { isLoggedIn } = useAuth();
+  const { isPremium } = useAuth();
   const { progress, getLesson, unretire } = useProgress(language);
   const { data: lessons, isLoading } = useLessons(language);
 
   if (selectedId !== null) {
-    const isFree = selectedIndex < FREE_LESSON_COUNT || isLoggedIn;
+    const isFree = selectedIndex < FREE_LESSON_COUNT || isPremium;
     return (
       <LanguageCard
         lessonId={selectedId}

@@ -31,7 +31,7 @@ export default function Reviews() {
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const [resetId, setResetId] = useState<number | null>(null);
   const { language } = useLanguage();
-  const { isLoggedIn } = useAuth();
+  const { isPremium } = useAuth();
   const { getLesson, resetLesson, pausedAt } = useProgress(language);
   const { data: lessons, isLoading } = useLessons(language);
   const [now, setNow] = useState(Date.now());
@@ -80,7 +80,7 @@ export default function Reviews() {
     const p = getLesson(lesson.id);
     if (!p || !p.completed || p.retired) return;
 
-    if (!isLoggedIn && !freeLessonIds.has(lesson.id)) {
+    if (!isPremium && !freeLessonIds.has(lesson.id)) {
       hasLockedReviews = true;
       return;
     }
@@ -178,7 +178,7 @@ export default function Reviews() {
       )}
 
       {hasLockedReviews && (
-        <SignUpPrompt message="Sign up to unlock reviews for all lessons." />
+        <SignUpPrompt message="Go Premium to unlock reviews for all lessons." />
       )}
 
       {ready.length === 0 && comingUp.length === 0 && !hasLockedReviews && (

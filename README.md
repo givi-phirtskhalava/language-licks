@@ -168,18 +168,29 @@ All auth cookies are set with:
 
 ## Speech Recognition & Pronunciation Assessment
 
-Speech recognition is powered by Azure Speech SDK with Pronunciation Assessment. This replaces the browser's Web Speech API, which was unreliable across browsers and devices.
+Speech recognition is powered by Azure Speech with Pronunciation Assessment. This replaces the browser's Web Speech API, which was unreliable across browsers and devices.
+
+### Audio Format & Duration
+
+Audio is captured client-side as **WAV** (16kHz, 16-bit, mono PCM). WAV was chosen because:
+
+- Azure's REST API reliably decodes it with no container/codec ambiguity
+- Browser `MediaRecorder` compressed formats (WebM, MP4) vary by browser and Azure doesn't consistently transcribe them
+- At 16kHz mono, 30 seconds of audio is ~960KB — well within the 1MB server limit
+
+Recording auto-stops after **1.5 seconds of silence** following detected speech, or after a **30-second hard cap**. The PCM buffer is capped at 30 seconds of samples before WAV encoding to prevent overruns from audio thread timing.
 
 ### Architecture
 
-The Azure Speech SDK runs in the browser and streams audio directly to Azure via WebSocket for real-time processing. The API key is never exposed to the client.
+Audio is proxied through the server — the client never talks to Azure directly. This keeps the API key private and gives the server full control over every recognition request.
 
-1. The client calls `POST /api/speech/token` (requires authentication)
-2. The server checks monthly usage limits, then uses the API key to request a short-lived token (10-min TTL) from Azure
-3. The client receives the temporary token and uses it with the Azure Speech SDK to stream audio
-4. After each recognition session, the client reports the audio duration to `POST /api/speech/usage`
+1. The client captures raw PCM audio via `AudioContext` + `ScriptProcessor` at 16kHz mono
+2. On stop, the client encodes the PCM buffer as a WAV blob and sends it to `POST /api/speech/recognize`
+3. The server validates the request (auth, file size ≤ 1MB, monthly budget remaining)
+4. The server forwards the WAV to Azure Speech REST API and returns the transcript
+5. The server records usage duration (from Azure's response) in `speech_usage`
 
-This design serves two purposes: keeping the Azure API key on the server, and enforcing per-user usage limits before issuing tokens.
+Because the server handles every call, there is no way for a client to bypass usage limits, underreport duration, or abuse Azure credentials directly.
 
 ### Usage Limits
 
@@ -190,7 +201,13 @@ Each authenticated user gets per month:
 | Training | 1 hour (3600s) | Writing/speaking practice sessions |
 | Testing | 15 minutes (900s) | Review and test sessions |
 
-Usage is tracked in the `speech_usage` table, keyed by user ID and month (`YYYY-MM` format). Limits are checked before issuing a token — once a user exceeds their allowance, the token endpoint returns 403.
+Usage is tracked in the `speech_usage` table, keyed by user ID and month (`YYYY-MM` format). Limits are checked before every recognition request — once a user exceeds their allowance, the endpoint returns 403.
+
+Duration is taken from Azure's response (`Duration` field), which reflects the actual speech duration in the audio — not the full recording length, upload time, or server processing time. A 10-second recording where the user spoke for 4 seconds is billed as 4 seconds.
+
+### Monthly Reset
+
+There is no cron job or scheduled reset. Each row in `speech_usage` is keyed by a `month` column in `YYYY-MM` format (e.g., `"2026-04"`). When a new month begins, `getCurrentMonth()` returns the new value, the query finds no matching row, and usage starts at 0. A new row is inserted on first use. Old months remain as history.
 
 ### Pronunciation Feedback
 
@@ -226,9 +243,8 @@ Azure Speech real-time transcription with pronunciation assessment costs **$1 pe
 
 | Route | Method | Description |
 |---|---|---|
-| `/api/speech/token` | POST | Issues a short-lived Azure token (checks auth + usage limits) |
+| `/api/speech/recognize` | POST | Receives audio, proxies to Azure, returns transcript, records usage |
 | `/api/speech/usage` | GET | Returns current month's usage and limits |
-| `/api/speech/usage` | POST | Reports audio duration after a session |
 
 ## Project Structure
 
@@ -238,7 +254,7 @@ src/
     api/
       auth/               # Auth API routes (send-code, verify, refresh, logout, me)
       lessons/            # API routes for lesson data
-      speech/             # Speech token issuance and usage tracking
+      speech/             # Speech recognition proxy and usage tracking
     login/                # Login page
     settings/             # Settings page
     reviews/              # Reviews page

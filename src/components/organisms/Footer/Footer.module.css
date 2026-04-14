@@ -1,0 +1,23 @@
+.footer {
+  display: flex;
+  justify-content: center;
+  padding: 1.5em;
+  border-top: 0.0625em solid var(--border);
+  background: var(--bg-white);
+}
+
+.links {
+  display: flex;
+  gap: 2em;
+}
+
+.link {
+  font-size: 0.8125em;
+  color: var(--text-muted);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.link:hover {
+  color: var(--text-secondary);
+}

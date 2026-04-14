@@ -17,6 +17,10 @@ export const users = pgTable("users", {
   name: varchar("name", { length: 255 }),
   language: varchar("language", { length: 50 }).notNull().default("french"),
   tokenVersion: integer("token_version").notNull().default(0),
+  paddleCustomerId: varchar("paddle_customer_id", { length: 255 }),
+  paddleSubscriptionId: varchar("paddle_subscription_id", { length: 255 }),
+  subscriptionStatus: varchar("subscription_status", { length: 50 }),
+  subscriptionPlanEnd: timestamp("subscription_plan_end"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
@@ -76,3 +80,4 @@ export const speechUsage = pgTable(
   },
   (table) => [uniqueIndex("speech_usage_user_month_idx").on(table.userId, table.month)]
 );
+

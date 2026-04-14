@@ -11,7 +11,8 @@ import useAuth from "@lib/hooks/useAuth";
 import style from "./Header.module.css";
 
 const NAV_ITEMS = [
-  { href: "/", label: "Lessons" },
+  { href: "/", label: "Home" },
+  { href: "/lessons", label: "Lessons" },
   { href: "/reviews", label: "Reviews" },
   { href: "/settings", label: "Settings" },
 ];

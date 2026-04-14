@@ -43,6 +43,13 @@
       "when": 1776079587746,
       "tag": "0005_friendly_captain_britain",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1776107563163,
+      "tag": "0006_illegal_vance_astro",
+      "breakpoints": true
     }
   ]
 }
