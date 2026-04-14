@@ -5,6 +5,8 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faChevronRight } from "@fortawesome/free-solid-svg-icons";
 import SentenceDisplay from "@/components/organisms/LanguageCard/SentenceDisplay";
 import SectionHeader from "@/components/atoms/SectionHeader";
+import FeedbackAlert from "@atoms/FeedbackAlert";
+import Button from "@atoms/Button";
 import WritingInput from "@/components/organisms/LanguageCard/WritingInput";
 import useStreak from "@/components/organisms/LanguageCard/useStreak";
 import useBestTime from "@/components/organisms/LanguageCard/useBestTime";
@@ -92,10 +94,7 @@ export default function WritingPractice({
           disabled={textVisible}
         >
           {writing.result !== null && writing.isPass && (
-            <div
-              className={`${styles.alert} ${styles.feedbackCorrect}`}
-              style={{ marginTop: "0.75rem" }}
-            >
+            <FeedbackAlert theme="correct">
               <span>Correct!</span>
               {writeTimer.elapsed !== null && (
                 <span className={styles.timeInfo}>
@@ -106,18 +105,18 @@ export default function WritingPractice({
                 writeTimer.elapsed === writeTimer.bestTime && (
                   <span className={styles.newBest}>&nbsp;New best!</span>
                 )}
-            </div>
+            </FeedbackAlert>
           )}
         </WritingInput>
       </div>
 
-      <button onClick={onReady} className={styles.primaryBtn}>
+      <Button onClick={onReady}>
         Speaking Practice
         <FontAwesomeIcon
           icon={faChevronRight}
-          style={{ marginLeft: "0.5rem" }}
+          style={{ marginLeft: "0.5em" }}
         />
-      </button>
+      </Button>
     </div>
   );
 }

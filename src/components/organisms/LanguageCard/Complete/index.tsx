@@ -3,6 +3,7 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCircleCheck, faArrowLeft, faRotateRight } from "@fortawesome/free-solid-svg-icons";
 import Countdown from "@/components/atoms/Countdown";
+import Button from "@atoms/Button";
 import { ILesson } from "@lib/types";
 import styles from "./Complete.module.css";
 
@@ -38,22 +39,22 @@ export default function Complete({ lesson, onNext, onPractice, nextReview }: Pro
         </p>
       )}
       {onNext && (
-        <button onClick={onNext} className={styles.primaryBtn}>
+        <Button onClick={onNext}>
           <FontAwesomeIcon
             icon={faArrowLeft}
             style={{ marginRight: "0.5em" }}
           />
           Back to lessons
-        </button>
+        </Button>
       )}
       {onPractice && (
-        <button onClick={onPractice} className={styles.secondaryBtn}>
+        <Button theme="secondary" onClick={onPractice}>
           <FontAwesomeIcon
             icon={faRotateRight}
             style={{ marginRight: "0.5em" }}
           />
           Keep practicing
-        </button>
+        </Button>
       )}
     </div>
   );

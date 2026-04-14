@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import RecordButton from "@/components/organisms/LanguageCard/RecordButton";
 import WritingInput from "@/components/organisms/LanguageCard/WritingInput";
+import FeedbackAlert from "@atoms/FeedbackAlert";
 import useWritingCheck from "@/components/organisms/LanguageCard/hooks/useWritingCheck";
 import useSpeakingCheck from "@/components/organisms/LanguageCard/hooks/useSpeakingCheck";
 import Hearts from "@/components/atoms/Hearts";
@@ -134,9 +135,7 @@ export default function Review({ lesson, locale, languageLabel, onPass, onFail }
       )}
 
       {lastCorrect !== null && !speaking.isProcessing && !writing.onlyAccentIssues && (
-        <div
-          className={`${styles.alert} ${lastCorrect ? styles.feedbackCorrect : styles.feedbackWrong}`}
-        >
+        <FeedbackAlert theme={lastCorrect ? "correct" : "wrong"}>
           {lastCorrect
             ? step === "writing"
               ? "Correct! Moving to speaking\u2026"
@@ -144,7 +143,7 @@ export default function Review({ lesson, locale, languageLabel, onPass, onFail }
             : failed
               ? "Back to practice\u2026"
               : "Not quite \u2014 try again"}
-        </div>
+        </FeedbackAlert>
       )}
 
     </div>

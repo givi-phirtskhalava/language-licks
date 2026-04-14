@@ -1,0 +1,18 @@
+.alert {
+  border-radius: 0.5em;
+  padding: 0.75em 1em;
+  font-size: 0.875em;
+  text-align: center;
+  font-weight: 500;
+  margin-top: 0.75em;
+}
+
+.correct {
+  background: var(--success-bg);
+  color: var(--success-dark);
+}
+
+.wrong {
+  background: var(--error-bg);
+  color: var(--error-dark);
+}

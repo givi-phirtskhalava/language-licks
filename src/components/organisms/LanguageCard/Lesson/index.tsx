@@ -3,6 +3,7 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faChevronRight } from "@fortawesome/free-solid-svg-icons";
 import SentenceDisplay from "@/components/organisms/LanguageCard/SentenceDisplay";
+import Button from "@atoms/Button";
 import { ILesson } from "@lib/types";
 import styles from "./Lesson.module.css";
 
@@ -42,10 +43,10 @@ export default function LessonPhase({ lesson, onReady }: Props) {
         </div>
       )}
 
-      <button onClick={onReady} className={styles.primaryBtn}>
+      <Button onClick={onReady}>
         Writing Practice
-        <FontAwesomeIcon icon={faChevronRight} style={{ marginLeft: "0.5rem" }} />
-      </button>
+        <FontAwesomeIcon icon={faChevronRight} style={{ marginLeft: "0.5em" }} />
+      </Button>
     </div>
   );
 }

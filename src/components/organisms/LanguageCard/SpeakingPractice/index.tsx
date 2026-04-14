@@ -4,6 +4,8 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faChevronRight } from "@fortawesome/free-solid-svg-icons";
 import SentenceDisplay from "@/components/organisms/LanguageCard/SentenceDisplay";
 import CorrectionDisplay from "@/components/atoms/CorrectionDisplay";
+import FeedbackAlert from "@atoms/FeedbackAlert";
+import Button from "@atoms/Button";
 import SectionHeader from "@/components/atoms/SectionHeader";
 import RecordButton from "@/components/organisms/LanguageCard/RecordButton";
 import useStreak from "@/components/organisms/LanguageCard/useStreak";
@@ -83,10 +85,7 @@ export default function SpeakingPractice({
         />
 
         {speaking.result && !speaking.isProcessing && (
-          <div
-            className={`${styles.alert} ${speaking.result.correct ? styles.feedbackCorrect : styles.feedbackWrong}`}
-            style={{ marginTop: "0.75rem" }}
-          >
+          <FeedbackAlert theme={speaking.result.correct ? "correct" : "wrong"}>
             <span>{speaking.result.correct ? "Correct!" : "Not quite \u2014 try again"}</span>
             {speaking.result.correct && speakTimer.elapsed !== null && (
               <span className={styles.timeInfo}>
@@ -96,7 +95,7 @@ export default function SpeakingPractice({
             {speaking.result.correct && speakTimer.bestTime !== null && speakTimer.elapsed === speakTimer.bestTime && (
               <span className={styles.newBest}>&nbsp;New best!</span>
             )}
-          </div>
+          </FeedbackAlert>
         )}
 
         {speaking.result && !speaking.result.correct && (
@@ -107,10 +106,10 @@ export default function SpeakingPractice({
 
       </div>
 
-      <button onClick={onReady} className={styles.primaryBtn}>
+      <Button onClick={onReady}>
         Test
-        <FontAwesomeIcon icon={faChevronRight} style={{ marginLeft: "0.5rem" }} />
-      </button>
+        <FontAwesomeIcon icon={faChevronRight} style={{ marginLeft: "0.5em" }} />
+      </Button>
     </div>
   );
 }

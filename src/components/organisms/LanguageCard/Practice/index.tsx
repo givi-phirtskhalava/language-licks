@@ -3,6 +3,8 @@
 import { useState } from "react";
 import SentenceDisplay from "@/components/organisms/LanguageCard/SentenceDisplay";
 import CorrectionDisplay from "@/components/atoms/CorrectionDisplay";
+import FeedbackAlert from "@atoms/FeedbackAlert";
+import Button from "@atoms/Button";
 import SectionHeader from "@/components/atoms/SectionHeader";
 import RecordButton from "@/components/organisms/LanguageCard/RecordButton";
 import WritingInput from "@/components/organisms/LanguageCard/WritingInput";
@@ -104,10 +106,7 @@ export default function Practice({ lesson, onReady }: Props) {
           disabled={textVisible}
         >
           {writing.result !== null && writing.isPass && (
-            <div
-              className={`${styles.alert} ${styles.feedbackCorrect}`}
-              style={{ marginTop: "0.75rem" }}
-            >
+            <FeedbackAlert theme="correct">
               <span>Correct!</span>
               {writeTimer.elapsed !== null && (
                 <span className={styles.timeInfo}>
@@ -118,7 +117,7 @@ export default function Practice({ lesson, onReady }: Props) {
                 writeTimer.elapsed === writeTimer.bestTime && (
                   <span className={styles.newBest}>&nbsp;New best!</span>
                 )}
-            </div>
+            </FeedbackAlert>
           )}
         </WritingInput>
       </div>
@@ -141,10 +140,7 @@ export default function Practice({ lesson, onReady }: Props) {
         />
 
         {speaking.result && !speaking.isProcessing && (
-          <div
-            className={`${styles.alert} ${speaking.result.correct ? styles.feedbackCorrect : styles.feedbackWrong}`}
-            style={{ marginTop: "0.75rem" }}
-          >
+          <FeedbackAlert theme={speaking.result.correct ? "correct" : "wrong"}>
             <span>
               {speaking.result.correct
                 ? "Correct!"
@@ -160,7 +156,7 @@ export default function Practice({ lesson, onReady }: Props) {
               speakTimer.elapsed === speakTimer.bestTime && (
                 <span className={styles.newBest}>&nbsp;New best!</span>
               )}
-          </div>
+          </FeedbackAlert>
         )}
 
         {speaking.result && !speaking.result.correct && (
@@ -171,9 +167,9 @@ export default function Practice({ lesson, onReady }: Props) {
 
       </div>
 
-      <button onClick={onReady} className={styles.primaryBtn}>
+      <Button onClick={onReady}>
         {"I\u2019m ready \u2014 test me"}
-      </button>
+      </Button>
     </div>
   );
 }

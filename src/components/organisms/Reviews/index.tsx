@@ -14,23 +14,12 @@ import useLessons from "@lib/hooks/useLessons";
 import useAuth from "@lib/hooks/useAuth";
 import useProgress, { getMasteryLevel } from "@lib/useProgress";
 import { FREE_LESSON_COUNT } from "@lib/projectConfig";
+import formatTimeUntil from "@lib/util/formatTimeUntil";
 import MasteryBar from "@/components/atoms/MasteryBar";
 import Modal from "@/components/atoms/Modal";
 import SignUpPrompt from "@atoms/SignUpPrompt";
 import LanguageCard from "@/components/organisms/LanguageCard";
 import styles from "./Reviews.module.css";
-
-function formatTimeUntil(ms: number): string {
-  const totalSeconds = Math.floor(ms / 1000);
-  const minutes = Math.floor(totalSeconds / 60);
-  const seconds = totalSeconds % 60;
-  if (minutes < 10) return `${minutes}m ${seconds}s`;
-  if (minutes < 60) return `${minutes}m`;
-  const hours = Math.floor(minutes / 60);
-  if (hours < 24) return `${hours}h`;
-  const days = Math.floor(hours / 24);
-  return `${days}d`;
-}
 
 export default function Reviews() {
   const [selectedId, setSelectedId] = useState<number | null>(null);
