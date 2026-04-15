@@ -125,30 +125,3 @@
   color: var(--text-light);
 }
 
-.targetRow {
-  display: flex;
-  align-items: center;
-  gap: 0.75em;
-}
-
-.targetInput {
-  font: inherit;
-  font-size: 0.9375em;
-  width: 4em;
-  padding: 0.5em 0.75em;
-  border: 0.0625em solid var(--border);
-  border-radius: 0.5em;
-  background: var(--bg-white);
-  color: var(--text-body);
-  text-align: center;
-}
-
-.targetInput:focus {
-  outline: 0.125em solid var(--primary);
-  outline-offset: 0.0625em;
-}
-
-.targetHint {
-  font-size: 0.75em;
-  color: var(--text-light);
-}

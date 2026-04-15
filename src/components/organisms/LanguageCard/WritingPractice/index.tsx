@@ -1,9 +1,7 @@
 "use client";
 
-import { useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faChevronRight } from "@fortawesome/free-solid-svg-icons";
-import SentenceDisplay from "@/components/organisms/LanguageCard/SentenceDisplay";
 import SectionHeader from "@/components/atoms/SectionHeader";
 import FeedbackAlert from "@atoms/FeedbackAlert";
 import Button from "@atoms/Button";
@@ -16,7 +14,9 @@ import styles from "./WritingPractice.module.css";
 
 interface Props {
   lesson: ILesson;
+  languageLabel: string;
   onReady: () => void;
+  isFirstTime?: boolean;
   initialStreak?: number;
   initialBestTime?: number | null;
   onStreakChange?: (streak: number) => void;
@@ -25,24 +25,20 @@ interface Props {
 
 export default function WritingPractice({
   lesson,
+  languageLabel,
   onReady,
+  isFirstTime = false,
   initialStreak = 0,
   initialBestTime = null,
   onStreakChange,
   onBestTimeChange,
 }: Props) {
-  const [textVisible, setTextVisible] = useState(false);
-  const writeStreak = useStreak({
-    readyMessage:
-      "I think you\u2019re ready for the speaking test! \uD83C\uDF99\uFE0F",
-    initialStreak,
-    onStreakChange,
-  });
+  const writeStreak = useStreak({ initialStreak, onStreakChange });
   const writeTimer = useBestTime({ initialBestTime, onBestTimeChange });
   const writing = useWritingCheck();
 
   function handleWriteSubmit(input: string) {
-    const { passed } = writing.check(lesson.sentence, input);
+    const { passed, onlyAccentIssues } = writing.check(lesson.sentence, input);
     if (passed) {
       writeTimer.stopTimer();
       writeStreak.hit();
@@ -50,6 +46,7 @@ export default function WritingPractice({
       writeTimer.resetTimer();
       writeStreak.miss();
     }
+    return onlyAccentIssues;
   }
 
   function handleWriteRetry() {
@@ -64,23 +61,18 @@ export default function WritingPractice({
 
   return (
     <div className={styles.body}>
-      <SentenceDisplay
-        lesson={lesson}
-        blurrable
-        onRevealChange={(visible) => {
-          setTextVisible(visible);
-          if (visible) writeStreak.miss();
-        }}
-      />
+      <div className={styles.translationWrap}>
+        <p className={styles.translation}>
+          {"\u201C" + lesson.translation + "\u201D"}
+        </p>
+        <p className={styles.hint}>
+          {isFirstTime
+            ? `Write it correctly in ${languageLabel} three times!`
+            : `Write it in ${languageLabel}!`}
+        </p>
+      </div>
 
       <div>
-        <SectionHeader
-          label="Writing Practice"
-          bestTime={writeTimer.bestTime}
-          streak={writeStreak.streak}
-          streakGoal={writeStreak.goal}
-        />
-
         <WritingInput
           onSubmit={handleWriteSubmit}
           onInputChange={handleWriteInputChange}
@@ -91,11 +83,14 @@ export default function WritingPractice({
           onlyAccentIssues={writing.onlyAccentIssues}
           hideCorrectionsOnAccentHint
           onRetry={handleWriteRetry}
-          disabled={textVisible}
         >
           {writing.result !== null && writing.isPass && (
             <FeedbackAlert theme="correct">
-              <span>Correct!</span>
+              <span>
+                Correct!
+                {writeStreak.streak === writeStreak.goal &&
+                  " You\u2019re ready for the speaking practice."}
+              </span>
               {writeTimer.elapsed !== null && (
                 <span className={styles.timeInfo}>
                   {writeTimer.elapsed.toFixed(1)}s
@@ -110,7 +105,18 @@ export default function WritingPractice({
         </WritingInput>
       </div>
 
-      <Button onClick={onReady}>
+      {isFirstTime && (
+        <SectionHeader
+          bestTime={writeTimer.bestTime}
+          streak={writeStreak.streak}
+          streakGoal={writeStreak.goal}
+        />
+      )}
+
+      <Button
+        onClick={onReady}
+        disabled={isFirstTime && writeStreak.streak < writeStreak.goal}
+      >
         Speaking Practice
         <FontAwesomeIcon
           icon={faChevronRight}

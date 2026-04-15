@@ -1,43 +1,35 @@
 "use client";
 
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faCircleCheck, faBullseye } from "@fortawesome/free-solid-svg-icons";
 import { ILessonProgress, TDailyLog } from "@lib/types";
-import { getMasteryLevel, getTodayKey, calculateStreak, MAX_MASTERY_LEVEL } from "@lib/useProgress";
+import {
+  getMasteryLevel,
+  getTodayKey,
+  calculateStreak,
+  MAX_MASTERY_LEVEL,
+} from "@lib/useProgress";
 import classNames from "classnames";
 import styles from "./StatsPanel.module.css";
 
 interface Props {
   progress: Record<number, ILessonProgress>;
   dailyLog: TDailyLog;
-  dailyTarget: number;
+  totalLessons: number;
 }
 
-const LEVEL_LABELS = [
-  "New",
-  "Lv 1",
-  "Lv 2",
-  "Lv 3",
-  "Lv 4",
-  "Lv 5",
-  "Lv 6",
-  "Lv 7",
-  "Lv 8",
-  "Mastered",
-];
-
-export default function StatsPanel({ progress, dailyLog, dailyTarget }: Props) {
+export default function StatsPanel({ progress, dailyLog, totalLessons }: Props) {
   const today = getTodayKey();
   const todayEntry = dailyLog[today];
   const lessonsToday = todayEntry?.l ?? 0;
   const reviewsToday = todayEntry?.r ?? 0;
-  const goalMet = lessonsToday >= dailyTarget;
+  const goalMet = lessonsToday >= 1;
 
   const streak = calculateStreak(dailyLog);
 
   let totalCompleted = 0;
   let lifetimeReviews = 0;
   const levelCounts = new Array(MAX_MASTERY_LEVEL + 1).fill(0);
+  const now = Date.now();
+  let reviewsDue = 0;
 
   const entries = Object.values(progress);
   for (const p of entries) {
@@ -46,40 +38,70 @@ export default function StatsPanel({ progress, dailyLog, dailyTarget }: Props) {
       const level = getMasteryLevel(p);
       levelCounts[level]++;
       lifetimeReviews += p.reviewPassCount ?? 0;
+      if (!p.retired && p.nextReview && p.nextReview <= now) {
+        reviewsDue++;
+      }
     }
   }
   const totalMastered = levelCounts[MAX_MASTERY_LEVEL];
+  const allLessonsCompleted = totalCompleted >= totalLessons;
 
-  const maxLevelCount = Math.max(1, ...levelCounts);
+  function getLevelColor(i: number): string {
+    const t = (i - 1) / (MAX_MASTERY_LEVEL - 1);
+    const h = 210 + (140 - 210) * t;
+    const s = 60 + (50 - 60) * t;
+    const l = 92 + (85 - 92) * t;
+    return `hsl(${h}, ${s}%, ${l}%)`;
+  }
 
   return (
     <div className={styles.container}>
-      <div className={styles.dailyGoal}>
-        <div
-          className={classNames(
-            styles.checkCircle,
-            goalMet && styles.checkComplete,
-            !goalMet && styles.checkIncomplete
-          )}
-        >
-          {goalMet && <FontAwesomeIcon icon={faCircleCheck} />}
-          {!goalMet && <FontAwesomeIcon icon={faBullseye} />}
-        </div>
-        <div className={styles.goalText}>
-          {goalMet && (
-            <p className={styles.goalTitle}>Daily goal complete!</p>
-          )}
-          {!goalMet && (
-            <p className={styles.goalTitle}>
-              {lessonsToday} / {dailyTarget} lessons today
-            </p>
-          )}
-          <p className={styles.goalSub}>
-            {reviewsToday > 0 && `${reviewsToday} review${reviewsToday !== 1 ? "s" : ""} today`}
-            {reviewsToday === 0 && !goalMet && "Keep going!"}
-            {reviewsToday === 0 && goalMet && "Great work!"}
-          </p>
-        </div>
+      <div className={styles.checklist}>
+        <p className={styles.checklistTitle}>Today's goals</p>
+
+        {allLessonsCompleted && (
+          <div className={styles.checkItem}>
+            <span className={styles.checkEmoji}>&#x2705;</span>
+            <span className={classNames(styles.checkLabel, styles.checkLabelDone)}>
+              You've completed all available lessons
+            </span>
+          </div>
+        )}
+
+        {!allLessonsCompleted && (
+          <div className={styles.checkItem}>
+            {goalMet && <span className={styles.checkEmoji}>&#x2705;</span>}
+            {!goalMet && <span className={styles.uncheckCircle} />}
+            <span
+              className={classNames(
+                styles.checkLabel,
+                goalMet && styles.checkLabelDone
+              )}
+            >
+              Learn a new lesson
+            </span>
+          </div>
+        )}
+
+        {reviewsDue > 0 && (
+          <div className={styles.checkItem}>
+            <span className={styles.uncheckCircle} />
+            <span className={styles.checkLabel}>
+              Complete {reviewsDue} review{reviewsDue !== 1 ? "s" : ""}
+            </span>
+          </div>
+        )}
+
+        {reviewsDue === 0 && reviewsToday > 0 && (
+          <div className={styles.checkItem}>
+            <span className={styles.checkEmoji}>&#x2705;</span>
+            <span
+              className={classNames(styles.checkLabel, styles.checkLabelDone)}
+            >
+              Reviews complete
+            </span>
+          </div>
+        )}
       </div>
 
       <div className={styles.grid}>
@@ -102,22 +124,27 @@ export default function StatsPanel({ progress, dailyLog, dailyTarget }: Props) {
       </div>
 
       {totalCompleted > 0 && (
-        <div>
-          {levelCounts.map((count, i) => {
-            if (i === 0) return null;
-            return (
-              <div key={i} className={styles.levelRow}>
-                <span className={styles.levelLabel}>{LEVEL_LABELS[i]}</span>
-                <div className={styles.levelBar}>
+        <div className={styles.progress}>
+          <p className={styles.progressTitle}>Your progress</p>
+          <div className={styles.levelSquares}>
+            {levelCounts.map((count, i) => {
+              if (i === 0) return null;
+              return (
+                <div key={i} className={styles.levelSquareWrapper}>
+                  <span className={styles.levelSquareLabel}>lvl.{i}</span>
                   <div
-                    className={styles.levelFill}
-                    style={{ width: `${(count / maxLevelCount) * 100}%` }}
-                  />
+                    className={classNames(
+                      styles.levelSquare,
+                      count === 0 && styles.levelSquareEmpty
+                    )}
+                    style={{ background: getLevelColor(i) }}
+                  >
+                    <span className={styles.levelSquareCount}>{count}</span>
+                  </div>
                 </div>
-                <span className={styles.levelCount}>{count}</span>
-              </div>
-            );
-          })}
+              );
+            })}
+          </div>
         </div>
       )}
     </div>

@@ -5,6 +5,25 @@
   gap: 1.5em;
 }
 
+.translationWrap {
+  text-align: center;
+}
+
+.translation {
+  font-size: 1.5em;
+  font-family: var(--font-serif);
+  color: var(--text-dark);
+  line-height: 1.6;
+  font-style: italic;
+}
+
+.hint {
+  margin-top: 0.5em;
+  color: var(--text-light);
+  font-size: 0.75em;
+  font-style: italic;
+}
+
 .timeInfo {
   margin-left: 0.5em;
   font-weight: 400;

@@ -180,6 +180,37 @@ export default function FaqPage() {
               so you can switch back and forth without losing anything.
             </p>
           </div>
+
+          <div className={styles.item}>
+            <h2 className={styles.question}>Who built this website?</h2>
+            <p className={styles.answer}>
+              This website was built by Givi, a guitar player and web developer
+              from Georgia with over ten years of experience, and Marie, a
+              seamstress and teacher from France.
+            </p>
+          </div>
+
+          <div className={styles.item}>
+            <h2 className={styles.question}>
+              What was the inspiration behind it?
+            </h2>
+            <p className={styles.answer}>
+              Givi was waiting for Marie outside a supermarket in Paris, reading
+              the sign at the entrance to pass the time. The sign read "Nos amis
+              les animaux ne sont pas admis dans ce magasin" (our friends the
+              animals are not allowed in this shop). It sounded cute and had a
+              nice ring to it, so he kept repeating the phrase all the way back
+              home, asking Marie to correct his pronunciation. Every now and
+              then Marie would ask him if he still remembered it. With the
+              natural spaced repetition of the phrase, it became ingrained in
+              his memory and he could say it in his sleep. Some time later, on
+              one sunny morning in Batumi, Georgia, he made the connection. To
+              be able to improvise on the guitar and come up with melodies on
+              the spot without thinking, he had to have the "licks" and scales
+              in muscle memory, so it comes without thinking. And that's how
+              Language Licks was born.
+            </p>
+          </div>
         </div>
       </div>
     </main>

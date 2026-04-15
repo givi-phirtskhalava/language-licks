@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
 import useAuth from "@lib/hooks/useAuth";
 import usePaddle from "@lib/hooks/usePaddle";
-import useSpeechUsage from "@lib/hooks/useSpeechUsage";
+import useSpeechCredits from "@lib/hooks/useSpeechUsage";
 import useLanguage from "@lib/useLanguage";
 import { clearDbMode, clearAllProgress } from "@lib/useProgress";
 import Modal from "@/components/atoms/Modal";
@@ -25,30 +25,21 @@ type TModal = null | "change-email" | "delete-account" | "clear-progress";
 type TEmailStep = "email" | "code";
 type TDeleteStep = "send" | "confirm";
 
-function formatMinutes(seconds: number): string {
-  const mins = Math.floor(seconds / 60);
-  const secs = Math.round(seconds % 60);
-  if (mins === 0) return `${secs}s`;
-  if (secs === 0) return `${mins}m`;
-  return `${mins}m ${secs}s`;
+interface ICreditsCardProps {
+  balance: number;
+  maxAccumulation: number;
+  dailyAllowance: number;
 }
 
-interface IUsageCardProps {
-  label: string;
-  usedSeconds: number;
-  limitSeconds: number;
-}
-
-function UsageCard({ label, usedSeconds, limitSeconds }: IUsageCardProps) {
-  const percentage = Math.min((usedSeconds / limitSeconds) * 100, 100);
-  const remaining = Math.max(limitSeconds - usedSeconds, 0);
+function CreditsCard({ balance, maxAccumulation, dailyAllowance }: ICreditsCardProps) {
+  const percentage = Math.min((balance / maxAccumulation) * 100, 100);
 
   return (
     <div className={styles.usageCard}>
       <div className={styles.usageHeader}>
-        <span className={styles.usageLabel}>{label}</span>
+        <span className={styles.usageLabel}>Credits</span>
         <span className={styles.usageTime}>
-          {formatMinutes(remaining)} left
+          {balance} left
         </span>
       </div>
       <div className={styles.usageBarTrack}>
@@ -58,7 +49,7 @@ function UsageCard({ label, usedSeconds, limitSeconds }: IUsageCardProps) {
         />
       </div>
       <p className={styles.usageDetail}>
-        {formatMinutes(usedSeconds)} / {formatMinutes(limitSeconds)}
+        {balance} / {maxAccumulation} &middot; +{dailyAllowance}/day
       </p>
     </div>
   );
@@ -70,7 +61,7 @@ export default function ProfilePage() {
   const { user, isLoggedIn, isPremium, isLoading } = useAuth();
   const { openCheckout } = usePaddle();
   const { language } = useLanguage();
-  const { data: speechUsage } = useSpeechUsage();
+  const { data: speechCreditsData } = useSpeechCredits();
 
   const [modal, setModal] = useState<TModal>(null);
   const [billingLoading, setBillingLoading] = useState(false);
@@ -410,23 +401,18 @@ export default function ProfilePage() {
           )}
         </section>
 
-        {isPremium && speechUsage && (
+        {isPremium && speechCreditsData && (
           <section className={styles.group}>
-            <p className={styles.sectionTitle}>Usage</p>
+            <p className={styles.sectionTitle}>Credits</p>
             <p className={styles.usageDescription}>
-              Voice recognition is powered by a paid service, so each account
-              has a monthly allowance. Limits reset on the 1st of every month.
+              Each voice recording costs 1 credit. You get {speechCreditsData.dailyAllowance} credits
+              per day, up to a maximum of {speechCreditsData.maxAccumulation}.
             </p>
             <div className={styles.usageCards}>
-              <UsageCard
-                label="Practice"
-                usedSeconds={speechUsage.trainingSeconds}
-                limitSeconds={speechUsage.trainingLimit}
-              />
-              <UsageCard
-                label="Tests"
-                usedSeconds={speechUsage.testingSeconds}
-                limitSeconds={speechUsage.testingLimit}
+              <CreditsCard
+                balance={speechCreditsData.balance}
+                maxAccumulation={speechCreditsData.maxAccumulation}
+                dailyAllowance={speechCreditsData.dailyAllowance}
               />
             </div>
           </section>

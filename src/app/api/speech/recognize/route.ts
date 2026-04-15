@@ -1,35 +1,34 @@
 import { db } from "@lib/db";
-import { speechUsage } from "@lib/db/schema";
-import { eq, and, sql } from "drizzle-orm";
+import { speechCredits } from "@lib/db/schema";
+import { eq, sql } from "drizzle-orm";
 import { requirePremium, AuthError } from "@lib/auth";
 import type { NextRequest } from "next/server";
+import { topUpCredits } from "../topUpCredits";
 
-const TRAINING_LIMIT = 3600;
-const TESTING_LIMIT = 900;
-const MAX_AUDIO_SIZE = 1_000_000; // 1MB
+// 15s of 16kHz 16-bit mono WAV = 480,044 bytes
+const MAX_AUDIO_SIZE = 480_100;
 
-function getCurrentMonth(): string {
-  const now = new Date();
-  const year = now.getFullYear();
-  const month = String(now.getMonth() + 1).padStart(2, "0");
-  return `${year}-${month}`;
-}
-
-// Map browser MIME types to Azure-accepted content types
-function getAzureContentType(mimeType: string): string | null {
-  if (mimeType.includes("ogg")) {
-    return "audio/ogg";
-  }
-  if (mimeType.includes("webm")) {
-    return "audio/webm";
-  }
-  if (mimeType.includes("mp4") || mimeType.includes("m4a")) {
-    return "audio/mp4";
-  }
-  if (mimeType.includes("wav")) {
-    return "audio/wav";
-  }
-  return null;
+// Validate actual WAV bytes: RIFF header + 16kHz + mono + 16-bit
+function isValidWav(buffer: ArrayBuffer): boolean {
+  if (buffer.byteLength < 44) return false;
+  const view = new DataView(buffer);
+  const riff = String.fromCharCode(
+    view.getUint8(0),
+    view.getUint8(1),
+    view.getUint8(2),
+    view.getUint8(3)
+  );
+  const wave = String.fromCharCode(
+    view.getUint8(8),
+    view.getUint8(9),
+    view.getUint8(10),
+    view.getUint8(11)
+  );
+  if (riff !== "RIFF" || wave !== "WAVE") return false;
+  const sampleRate = view.getUint32(24, true);
+  const channels = view.getUint16(22, true);
+  const bitsPerSample = view.getUint16(34, true);
+  return sampleRate === 16000 && channels === 1 && bitsPerSample === 16;
 }
 
 export async function POST(request: NextRequest) {
@@ -49,68 +48,43 @@ export async function POST(request: NextRequest) {
     const formData = await request.formData();
     const audio = formData.get("audio") as File | null;
     const lang = formData.get("lang") as string | null;
-    const mode = formData.get("mode") as string | null;
+    const referenceText = formData.get("referenceText") as string | null;
 
-    if (!audio || !lang || !mode) {
+    if (!audio || !lang) {
       return Response.json(
-        { error: "audio, lang, and mode are required" },
+        { error: "audio and lang are required" },
         { status: 400 }
       );
     }
 
-    if (mode !== "training" && mode !== "testing") {
-      return Response.json(
-        { error: "mode must be 'training' or 'testing'" },
-        { status: 400 }
-      );
-    }
-
-    console.log(`[recognize] user=${userId} lang=${lang} mode=${mode} audioType=${audio.type} audioSize=${(audio.size / 1024).toFixed(1)}KB`);
+    console.log(
+      `[recognize] user=${userId} lang=${lang} audioType=${audio.type} audioSize=${(audio.size / 1024).toFixed(1)}KB`
+    );
 
     if (audio.size > MAX_AUDIO_SIZE) {
-      return Response.json(
-        { error: "Audio file too large (max 1MB)" },
-        { status: 413 }
-      );
+      return Response.json({ error: "Audio file too large" }, { status: 413 });
     }
 
-    // Check monthly budget
-    const month = getCurrentMonth();
-    const limit = mode === "training" ? TRAINING_LIMIT : TESTING_LIMIT;
+    // Top up and check credits
+    const balance = await topUpCredits(userId);
 
-    const rows = await db
-      .select({
-        trainingSeconds: speechUsage.trainingSeconds,
-        testingSeconds: speechUsage.testingSeconds,
-      })
-      .from(speechUsage)
-      .where(and(eq(speechUsage.userId, userId), eq(speechUsage.month, month)))
-      .limit(1);
-
-    const usage = rows[0] ?? { trainingSeconds: 0, testingSeconds: 0 };
-    const currentUsage =
-      mode === "training" ? usage.trainingSeconds : usage.testingSeconds;
-
-    if (currentUsage >= limit) {
-      return Response.json(
-        { error: "Monthly usage limit reached" },
-        { status: 403 }
-      );
-    }
-
-    // Determine Azure content type from the browser's MIME type
-    const contentType = getAzureContentType(audio.type);
-    console.log(`[recognize] mapped content type: ${audio.type} -> ${contentType}`);
-    if (!contentType) {
-      return Response.json(
-        { error: `Unsupported audio format: ${audio.type}` },
-        { status: 415 }
-      );
+    if (balance <= 0) {
+      return Response.json({ error: "No credits remaining" }, { status: 403 });
     }
 
     const audioBuffer = await audio.arrayBuffer();
 
-    // Call Azure Speech-to-Text REST API
+    // Validate actual file bytes — only accept 16kHz 16-bit mono WAV
+    if (!isValidWav(audioBuffer)) {
+      return Response.json(
+        { error: "Unsupported audio format" },
+        { status: 415 }
+      );
+    }
+
+    // Plain STT call — no pronunciation assessment.
+    // Azure pronunciation assessment force-aligns the transcript to the
+    // reference text, making it useless for verifying what was actually said.
     const azureUrl = new URL(
       `https://${region}.stt.speech.microsoft.com/speech/recognition/conversation/cognitiveservices/v1`
     );
@@ -120,7 +94,7 @@ export async function POST(request: NextRequest) {
       method: "POST",
       headers: {
         "Ocp-Apim-Subscription-Key": key,
-        "Content-Type": contentType,
+        "Content-Type": "audio/wav",
         Accept: "application/json",
       },
       body: audioBuffer,
@@ -140,38 +114,17 @@ export async function POST(request: NextRequest) {
     const result = await azureRes.json();
     console.log("[recognize] Azure result:", JSON.stringify(result));
 
-    // Calculate duration from Azure's response (offset + duration in ticks, 1 tick = 100ns)
-    const durationTicks = (result.Duration ?? 0) as number;
-    const durationSeconds = durationTicks / 10_000_000;
-
-    // Record usage
-    const column =
-      mode === "training"
-        ? speechUsage.trainingSeconds
-        : speechUsage.testingSeconds;
-
+    // Deduct 1 credit
     await db
-      .insert(speechUsage)
-      .values({
-        userId,
-        month,
-        trainingSeconds: mode === "training" ? durationSeconds : 0,
-        testingSeconds: mode === "testing" ? durationSeconds : 0,
-      })
-      .onConflictDoUpdate({
-        target: [speechUsage.userId, speechUsage.month],
-        set: {
-          [mode === "training" ? "trainingSeconds" : "testingSeconds"]:
-            sql`${column} + ${durationSeconds}`,
-        },
-      });
+      .update(speechCredits)
+      .set({ balance: sql`${speechCredits.balance} - 1` })
+      .where(eq(speechCredits.userId, userId));
 
-    // Return transcript
     const transcript =
       result.RecognitionStatus === "Success" ? (result.DisplayText ?? "") : "";
 
-    console.log(`[recognize] returning transcript="${transcript}" duration=${durationSeconds}s`);
-    return Response.json({ transcript, durationSeconds });
+    console.log(`[recognize] transcript="${transcript}"`);
+    return Response.json({ transcript, pronunciation: null });
   } catch (error) {
     if (error instanceof AuthError) {
       return Response.json({ error: error.message }, { status: error.status });

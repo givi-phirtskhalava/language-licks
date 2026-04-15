@@ -6,7 +6,7 @@ import CorrectionDisplay from "@/components/atoms/CorrectionDisplay";
 import FeedbackAlert from "@atoms/FeedbackAlert";
 import Button from "@atoms/Button";
 import SectionHeader from "@/components/atoms/SectionHeader";
-import RecordButton from "@/components/organisms/LanguageCard/RecordButton";
+import RecordButton from "@atoms/RecordButton";
 import WritingInput from "@/components/organisms/LanguageCard/WritingInput";
 import useStreak from "@/components/organisms/LanguageCard/useStreak";
 import useBestTime from "@/components/organisms/LanguageCard/useBestTime";
@@ -22,13 +22,11 @@ interface Props {
 
 export default function Practice({ lesson, onReady }: Props) {
   const [textVisible, setTextVisible] = useState(false);
-  const writeStreak = useStreak({
-    readyMessage: "You're ready to move on to speaking practice!",
-  });
+  const writeStreak = useStreak({});
   const writeTimer = useBestTime();
   const writing = useWritingCheck();
 
-  const speakStreak = useStreak({ readyMessage: "You're ready for the test!" });
+  const speakStreak = useStreak({});
   const speakTimer = useBestTime();
   const speaking = useSpeakingCheck(
     "fr-FR",
@@ -41,7 +39,6 @@ export default function Practice({ lesson, onReady }: Props) {
       speakTimer.resetTimer();
       speakStreak.miss();
     },
-    "training",
   );
 
   function handleWriteSubmit(input: string) {

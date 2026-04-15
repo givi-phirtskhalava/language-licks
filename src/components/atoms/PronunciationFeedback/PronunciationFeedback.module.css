@@ -3,18 +3,11 @@
 }
 
 .overallScore {
-  display: flex;
-  align-items: center;
-  gap: 0.5em;
-}
-
-.scoreLabel {
   font-size: 0.8125em;
   color: var(--text-light);
 }
 
 .scoreValue {
-  font-size: 0.875em;
   font-weight: 600;
 }
 
@@ -31,7 +24,13 @@
 }
 
 .wordFeedback {
-  margin-top: 0.5em;
+  margin-top: 0.375em;
+}
+
+.wordFeedbackLabel {
+  font-size: 0.8125em;
+  color: var(--text-light);
+  margin-bottom: 0.375em;
 }
 
 .wordList {

@@ -1,10 +1,20 @@
 "use client";
 
 import { useCallback, useRef, useState } from "react";
-import type { TSpeechMode } from "./types";
+import { useQueryClient } from "@tanstack/react-query";
+import { IAzureWordScore } from "@lib/types";
+
+export interface IPronunciationScore {
+  accuracyScore: number;
+  fluencyScore: number;
+  completenessScore: number;
+  prosodyScore: number;
+  words: IAzureWordScore[];
+}
 
 interface IUseAzureSpeechReturn {
   transcript: string;
+  pronunciation: IPronunciationScore | null;
   resultId: number;
   isListening: boolean;
   isProcessing: boolean;
@@ -68,14 +78,16 @@ function encodeWav(pcm: Float32Array, sampleRate: number): Blob {
 
 const SILENCE_THRESHOLD = 0.01;
 const SILENCE_DURATION = 1500;
-const MAX_RECORDING_MS = 30000;
+const MAX_RECORDING_MS = 15000;
 const SAMPLE_RATE = 16000;
 
 export function useAzureSpeech(
   lang: string,
-  mode: TSpeechMode,
+  referenceText?: string,
 ): IUseAzureSpeechReturn {
+  const queryClient = useQueryClient();
   const [transcript, setTranscript] = useState("");
+  const [pronunciation, setPronunciation] = useState<IPronunciationScore | null>(null);
   const [resultId, setResultId] = useState(0);
   const [isListening, setIsListening] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -164,7 +176,9 @@ export function useAzureSpeech(
       const formData = new FormData();
       formData.append("audio", blob);
       formData.append("lang", lang);
-      formData.append("mode", mode);
+      if (referenceText) {
+        formData.append("referenceText", referenceText);
+      }
 
       const res = await fetch("/api/speech/recognize", {
         method: "POST",
@@ -189,8 +203,10 @@ export function useAzureSpeech(
 
       if (data.transcript) {
         setTranscript(data.transcript);
+        setPronunciation(data.pronunciation ?? null);
         setResultId((id) => id + 1);
       }
+      queryClient.invalidateQueries({ queryKey: ["speech", "credits"] });
     } catch (err) {
       console.log("[speech] fetch error:", err);
       setError("Speech recognition failed");
@@ -247,6 +263,7 @@ export function useAzureSpeech(
 
     setError(null);
     setTranscript("");
+    setPronunciation(null);
     setIsProcessing(false);
     speechDetectedRef.current = false;
     silenceStartRef.current = null;
@@ -296,7 +313,7 @@ export function useAzureSpeech(
     }, MAX_RECORDING_MS);
 
     return true;
-  }, [lang, mode]);
+  }, [lang]);
 
   const stop = useCallback(() => {
     stopRecording();
@@ -304,6 +321,7 @@ export function useAzureSpeech(
 
   return {
     transcript,
+    pronunciation,
     resultId,
     isListening,
     isProcessing,

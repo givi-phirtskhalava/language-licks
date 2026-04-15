@@ -107,7 +107,7 @@ export default function Landing() {
               router.push("/lessons");
             }}
           >
-            Start learning
+            Start learning {LANGUAGES.find((l) => l.id === language)?.label}
           </Button>
         </div>
       </section>

@@ -42,7 +42,8 @@
 }
 
 .primary:disabled {
-  opacity: 0.8;
+  background: var(--border);
+  color: var(--text-muted);
 }
 
 .secondary {

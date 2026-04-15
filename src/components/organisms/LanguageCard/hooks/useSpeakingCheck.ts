@@ -2,12 +2,27 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import toast from "react-hot-toast";
-import { useAzureSpeech } from "@/lib/useAzureSpeech";
+import { useAzureSpeech, IPronunciationScore } from "@/lib/useAzureSpeech";
 import {
   compareWriting,
   IWriteWordResult,
+  TWriteWordStatus,
 } from "@/components/organisms/LanguageCard/hooks/useWritingCheck";
-import type { TSpeechMode } from "@lib/types";
+// Strip leading hesitations/restarts from speech.
+// If the user stutters "Nos... nos amis les animaux..." we find the
+// latest point where the correct sequence begins and trim before it.
+// Speech recognition can't distinguish French silent endings (e.g. plural "s")
+function isSpeechEquivalent(expected: string, actual: string): boolean {
+  const exp = expected
+    .replace(/[^a-zA-ZàâäéèêëïîôùûüÿçœæÀÂÄÉÈÊËÏÎÔÙÛÜŸÇŒÆ']/g, "")
+    .toLowerCase();
+  const act = actual
+    .replace(/[^a-zA-ZàâäéèêëïîôùûüÿçœæÀÂÄÉÈÊËÏÎÔÙÛÜŸÇŒÆ']/g, "")
+    .toLowerCase();
+  if (exp === act) return true;
+  if (exp + "s" === act || act + "s" === exp) return true;
+  return false;
+}
 
 // Strip leading hesitations/restarts from speech.
 // If the user stutters "Nos... nos amis les animaux..." we find the
@@ -37,6 +52,7 @@ function stripHesitation(expected: string, actual: string): string {
 interface ISpeakResult {
   correct: boolean;
   words: IWriteWordResult[];
+  pronunciation: IPronunciationScore | null;
 }
 
 interface IUseSpeakingCheckReturn {
@@ -53,17 +69,17 @@ export default function useSpeakingCheck(
   sentence: string,
   onCorrect?: () => void,
   onWrong?: () => void,
-  mode: TSpeechMode = "training",
 ): IUseSpeakingCheckReturn {
   const {
     transcript,
+    pronunciation,
     resultId,
     isListening,
     isProcessing,
     error,
     start,
     stop,
-  } = useAzureSpeech(lang, mode);
+  } = useAzureSpeech(lang, sentence);
 
   const [result, setResult] = useState<ISpeakResult | null>(null);
   const processedResultId = useRef(0);
@@ -71,15 +87,21 @@ export default function useSpeakingCheck(
   useEffect(() => {
     if (resultId > processedResultId.current && transcript) {
       processedResultId.current = resultId;
+      console.log("[speech] transcript:", transcript);
+      console.log("[speech] pronunciation:", JSON.stringify(pronunciation, null, 2));
+
       const cleaned = stripHesitation(sentence, transcript);
+      console.log("[speech] cleaned:", cleaned);
       const results = compareWriting(sentence, cleaned);
       const passed = !results.some(
         (r) =>
-          r.status === "error" ||
+          (r.status === "error" &&
+            !(r.actual && isSpeechEquivalent(r.expected, r.actual))) ||
           r.status === "missing" ||
           r.status === "extra",
       );
-      setResult({ correct: passed, words: results });
+
+      setResult({ correct: passed, words: results, pronunciation });
       if (passed) {
         onCorrect?.();
       } else {

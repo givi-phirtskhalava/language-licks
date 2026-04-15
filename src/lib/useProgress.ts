@@ -16,10 +16,6 @@ function dailyLogKey(language: TLanguageId): string {
   return `daily-log-${language}`;
 }
 
-function dailyTargetKey(): string {
-  return "daily-target";
-}
-
 const IS_DEV = process.env.NODE_ENV === "development";
 const INITIAL_INTERVAL_MS = IS_DEV ? 30000 : 24 * 60 * 60 * 1000;
 const RETIRE_THRESHOLD_MS = IS_DEV ? 120000 : 180 * 24 * 60 * 60 * 1000;
@@ -196,13 +192,6 @@ function getPauseSnapshot(language: TLanguageId): number | null {
   return value;
 }
 
-// --- Daily target store (localStorage) ---
-
-function getDailyTargetSnapshot(): number {
-  const raw = localStorage.getItem(dailyTargetKey());
-  return raw ? Number(raw) : 1;
-}
-
 // --- Public API for sync ---
 
 export async function hydrateFromApi(language: TLanguageId) {
@@ -216,14 +205,6 @@ export async function hydrateFromApi(language: TLanguageId) {
   if (logRes.ok) {
     const { log } = await logRes.json();
     dbDailyLog.set(dailyLogKey(language), log as TDailyLog);
-  }
-
-  const targetRes = await fetch("/api/settings/daily-target");
-  if (targetRes.ok) {
-    const { dailyTarget } = await targetRes.json();
-    if (dailyTarget) {
-      localStorage.setItem(dailyTargetKey(), String(dailyTarget));
-    }
   }
 
   emitChange();
@@ -331,11 +312,9 @@ export default function useProgress(language: TLanguageId) {
   const getSnap = useCallback(() => getSnapshot(key), [key]);
   const getLogSnap = useCallback(() => getDailyLogSnapshot(logKey), [logKey]);
   const getPause = useCallback(() => getPauseSnapshot(language), [language]);
-  const getTarget = useCallback(() => getDailyTargetSnapshot(), []);
   const progress = useSyncExternalStore(subscribe, getSnap, () => SERVER_SNAPSHOT);
   const dailyLog = useSyncExternalStore(subscribe, getLogSnap, () => SERVER_DAILY_LOG);
   const pausedAt = useSyncExternalStore(subscribe, getPause, () => null);
-  const dailyTarget = useSyncExternalStore(subscribe, getTarget, () => 1);
 
   const updatePhase = useCallback(
     (lessonId: number, phase: TPhase, isReview = false) => {
@@ -477,19 +456,6 @@ export default function useProgress(language: TLanguageId) {
     [key]
   );
 
-  const setDailyTarget = useCallback((target: number) => {
-    localStorage.setItem(dailyTargetKey(), String(target));
-    emitChange();
-
-    if (dbMode) {
-      fetch("/api/settings/daily-target", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ dailyTarget: target }),
-      }).catch((err) => console.error("Failed to sync daily target:", err));
-    }
-  }, []);
-
   const pauseReviews = useCallback(() => {
     localStorage.setItem(pauseKey(language), String(Date.now()));
     emitChange();
@@ -525,7 +491,6 @@ export default function useProgress(language: TLanguageId) {
   return {
     progress,
     dailyLog,
-    dailyTarget,
     updatePhase,
     failReview,
     updateStreak,
@@ -533,7 +498,6 @@ export default function useProgress(language: TLanguageId) {
     getLesson,
     unretire,
     resetLesson,
-    setDailyTarget,
     pausedAt,
     pauseReviews,
     unpauseReviews,

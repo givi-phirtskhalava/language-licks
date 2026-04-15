@@ -24,17 +24,17 @@ export default function PronunciationFeedback({
   return (
     <div className={styles.container}>
       {hasScore && (
-        <div className={styles.overallScore}>
-          <span className={styles.scoreLabel}>Pronunciation</span>
+        <p className={styles.overallScore}>
+          Overall pronunciation score:{" "}
           <span className={`${styles.scoreValue} ${scoreClass(accuracyScore)}`}>
             {Math.round(accuracyScore)}%
           </span>
-        </div>
+        </p>
       )}
 
       {weak.length > 0 && (
         <div className={styles.wordFeedback}>
-          <p className={styles.wordFeedbackLabel}>Work on:</p>
+          <p className={styles.wordFeedbackLabel}>Words to work on:</p>
           <div className={styles.wordList}>
             {weak.map((w, i) => (
               <span key={i} className={styles.wordChip}>

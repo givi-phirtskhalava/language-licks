@@ -17,8 +17,17 @@ export default function Lessons() {
   const [selectedIndex, setSelectedIndex] = useState<number>(0);
   const { language } = useLanguage();
   const { isPremium } = useAuth();
-  const { progress, dailyLog, dailyTarget, getLesson, unretire } = useProgress(language);
+  const { progress, dailyLog, getLesson, unretire } = useProgress(language);
   const { data: lessons, isLoading } = useLessons(language);
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const openParam = params.get("open");
+    if (openParam) {
+      setSelectedId(Number(openParam));
+      window.history.replaceState({}, "", "/lessons");
+    }
+  }, []);
 
   useEffect(() => {
     function handleNavReset() {
@@ -48,7 +57,7 @@ export default function Lessons() {
       <StatsPanel
         progress={progress}
         dailyLog={dailyLog}
-        dailyTarget={dailyTarget}
+        totalLessons={lessons.length}
       />
 
       <section>

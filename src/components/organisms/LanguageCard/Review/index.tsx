@@ -1,9 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import RecordButton from "@/components/organisms/LanguageCard/RecordButton";
+import RecordButton from "@atoms/RecordButton";
+import SentenceDisplay from "@/components/organisms/LanguageCard/SentenceDisplay";
+import CorrectionDisplay from "@/components/atoms/CorrectionDisplay";
+import PronunciationFeedback from "@/components/atoms/PronunciationFeedback";
 import WritingInput from "@/components/organisms/LanguageCard/WritingInput";
 import FeedbackAlert from "@atoms/FeedbackAlert";
+import Button from "@atoms/Button";
 import useWritingCheck from "@/components/organisms/LanguageCard/hooks/useWritingCheck";
 import useSpeakingCheck from "@/components/organisms/LanguageCard/hooks/useSpeakingCheck";
 import Hearts from "@/components/atoms/Hearts";
@@ -16,17 +20,28 @@ interface Props {
   lesson: ILesson;
   locale: string;
   languageLabel: string;
+  credits: number | null;
   onPass: () => void;
   onFail: () => void;
+  onViewLesson: () => void;
 }
 
 type TReviewStep = "writing" | "speaking";
 
-export default function Review({ lesson, locale, languageLabel, onPass, onFail }: Props) {
+export default function Review({
+  lesson,
+  locale,
+  languageLabel,
+  credits,
+  onPass,
+  onFail,
+  onViewLesson,
+}: Props) {
   const [step, setStep] = useState<TReviewStep>("writing");
   const [attempts, setAttempts] = useState(0);
   const [passed, setPassed] = useState(false);
   const [lastCorrect, setLastCorrect] = useState<boolean | null>(null);
+  const [showFailedScreen, setShowFailedScreen] = useState(false);
 
   const writing = useWritingCheck();
 
@@ -43,10 +58,12 @@ export default function Review({ lesson, locale, languageLabel, onPass, onFail }
       const newAttempts = attempts + 1;
       setAttempts(newAttempts);
       if (newAttempts >= MAX_ATTEMPTS) {
-        setTimeout(onFail, 1500);
+        setTimeout(() => {
+          onFail();
+          setShowFailedScreen(true);
+        }, 1500);
       }
-    },
-    "testing",
+    }
   );
 
   useEffect(() => {
@@ -64,7 +81,7 @@ export default function Review({ lesson, locale, languageLabel, onPass, onFail }
   function handleWriteSubmit(input: string): boolean {
     const { passed: correct, onlyAccentIssues } = writing.check(
       lesson.sentence,
-      input,
+      input
     );
     setLastCorrect(correct);
 
@@ -74,7 +91,10 @@ export default function Review({ lesson, locale, languageLabel, onPass, onFail }
       const newAttempts = attempts + 1;
       setAttempts(newAttempts);
       if (newAttempts >= MAX_ATTEMPTS) {
-        setTimeout(onFail, 1500);
+        setTimeout(() => {
+          onFail();
+          setShowFailedScreen(true);
+        }, 1500);
       }
     }
 
@@ -91,6 +111,33 @@ export default function Review({ lesson, locale, languageLabel, onPass, onFail }
   const speakingDone = step === "speaking" && passed;
   const failed = attempts >= MAX_ATTEMPTS && !passed;
 
+  if (showFailedScreen) {
+    const corrections =
+      step === "writing" ? writing.result : speaking.result?.words;
+
+    return (
+      <div className={styles.body}>
+        <SentenceDisplay lesson={lesson} />
+
+        <div className={styles.failedSection}>
+          <p className={styles.failedTitle}>Oh no, you didn't pass!</p>
+
+          {corrections && corrections.length > 0 && (
+            <div>
+              <p className={styles.failedLabel}>Here's what you did wrong:</p>
+              <CorrectionDisplay words={corrections} />
+            </div>
+          )}
+
+          <p className={styles.failedHint}>
+            Go back to the lesson to brush up.
+          </p>
+          <Button onClick={onViewLesson}>View Lesson</Button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className={styles.body}>
       <div className={styles.translationWrap}>
@@ -98,7 +145,9 @@ export default function Review({ lesson, locale, languageLabel, onPass, onFail }
           {"\u201C" + lesson.translation + "\u201D"}
         </p>
         <p className={styles.hint}>
-          {step === "writing" ? `Write it in ${languageLabel}!` : `Say it in ${languageLabel}!`}
+          {step === "writing"
+            ? `You have three attempts to write it correctly in ${languageLabel}`
+            : `You have three attempts to say it correctly in ${languageLabel}`}
         </p>
       </div>
 
@@ -108,7 +157,6 @@ export default function Review({ lesson, locale, languageLabel, onPass, onFail }
 
       {step === "writing" && !writingDone && !failed && (
         <div>
-          <p className={styles.sectionLabel}>Write the sentence</p>
           <WritingInput
             onSubmit={handleWriteSubmit}
             onInputChange={() => {
@@ -123,29 +171,40 @@ export default function Review({ lesson, locale, languageLabel, onPass, onFail }
 
       {step === "speaking" && !speakingDone && !failed && (
         <div>
-          <p className={styles.sectionLabel}>Say the sentence</p>
           <RecordButton
             isListening={speaking.isListening}
             isProcessing={speaking.isProcessing}
             error={speaking.error}
             onToggle={handleRecordToggle}
-            showHint={lastCorrect === null}
+            credits={credits}
           />
         </div>
       )}
 
-      {lastCorrect !== null && !speaking.isProcessing && !writing.onlyAccentIssues && (
-        <FeedbackAlert theme={lastCorrect ? "correct" : "wrong"}>
-          {lastCorrect
-            ? step === "writing"
-              ? "Correct! Moving to speaking\u2026"
-              : "Correct!"
-            : failed
-              ? "Back to practice\u2026"
-              : "Not quite \u2014 try again"}
-        </FeedbackAlert>
-      )}
+      {lastCorrect !== null &&
+        !speaking.isProcessing &&
+        !writing.onlyAccentIssues && (
+          <FeedbackAlert theme={lastCorrect ? "correct" : "wrong"}>
+            {lastCorrect
+              ? step === "writing"
+                ? "Correct! Moving to speaking\u2026"
+                : "Correct!"
+              : failed
+                ? "Back to practice\u2026"
+                : "Not quite \u2014 try again"}
+          </FeedbackAlert>
+        )}
 
+      {/* TODO: bring back when pronunciation assessment can coexist with real STT
+      {step === "speaking" &&
+        speaking.result?.pronunciation &&
+        !speaking.isProcessing && (
+          <PronunciationFeedback
+            accuracyScore={speaking.result.pronunciation.accuracyScore}
+            wordScores={speaking.result.pronunciation.words}
+          />
+        )}
+      */}
     </div>
   );
 }

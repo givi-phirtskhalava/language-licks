@@ -15,8 +15,6 @@ export interface ILesson {
 
 export type TPhase = "lesson" | "practice" | "practice-writing" | "practice-speaking" | "test" | "review" | "complete";
 
-export type TSpeechMode = "training" | "testing";
-
 export interface IAzureWordScore {
   word: string;
   accuracyScore: number;
@@ -32,11 +30,10 @@ export interface IAzureSpeechResult {
   words: IAzureWordScore[];
 }
 
-export interface ISpeechUsage {
-  trainingSeconds: number;
-  testingSeconds: number;
-  trainingLimit: number;
-  testingLimit: number;
+export interface ISpeechCredits {
+  balance: number;
+  dailyAllowance: number;
+  maxAccumulation: number;
 }
 
 export interface ILessonProgress {

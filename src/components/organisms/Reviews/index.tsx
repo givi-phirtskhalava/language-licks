@@ -61,6 +61,24 @@ export default function Reviews() {
         lessonId={selectedId}
         mode="review"
         onBack={() => setSelectedId(null)}
+        onNextReview={() => {
+          if (!lessons) {
+            setSelectedId(null);
+            return;
+          }
+          const next = lessons.find((l) => {
+            if (l.id === selectedId) return false;
+            const p = getLesson(l.id);
+            return (
+              p &&
+              p.completed &&
+              !p.retired &&
+              p.nextReview != null &&
+              p.nextReview <= Date.now()
+            );
+          });
+          setSelectedId(next?.id ?? null);
+        }}
       />
     );
   }

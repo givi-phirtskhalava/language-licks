@@ -1,8 +1,13 @@
 "use client";
 
 import { useCallback, useState } from "react";
+import { useRouter } from "next/navigation";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faChevronLeft, faChevronRight, faXmark } from "@fortawesome/free-solid-svg-icons";
+import {
+  faChevronLeft,
+  faChevronRight,
+  faXmark,
+} from "@fortawesome/free-solid-svg-icons";
 import LessonPhase from "./Lesson";
 import WritingPractice from "./WritingPractice";
 import SpeakingPractice from "./SpeakingPractice";
@@ -11,6 +16,7 @@ import Complete from "./Complete";
 import SignUpPrompt from "@atoms/SignUpPrompt";
 import useLesson from "@lib/hooks/useLesson";
 import useAuth from "@lib/hooks/useAuth";
+import useSpeechCredits from "@lib/hooks/useSpeechUsage";
 import { TPhase } from "@lib/types";
 import useLanguage from "@lib/useLanguage";
 import { LANGUAGES } from "@lib/projectConfig";
@@ -22,14 +28,25 @@ interface Props {
   onBack: () => void;
   mode?: "lesson" | "review";
   isFree?: boolean;
+  onNextReview?: () => void;
 }
 
-export default function LanguageCard({ lessonId, onBack, mode = "lesson", isFree = true }: Props) {
+export default function LanguageCard({
+  lessonId,
+  onBack,
+  mode = "lesson",
+  isFree = true,
+  onNextReview,
+}: Props) {
   const { language } = useLanguage();
+  const router = useRouter();
   const { isPremium } = useAuth();
-  const { getLesson, updatePhase, failReview, updateStreak, updateBestTime } = useProgress(language);
+  const { getLesson, updatePhase, failReview, updateStreak, updateBestTime } =
+    useProgress(language);
   const hasWritingAccess = isFree || isPremium;
   const hasVoiceAccess = isPremium;
+  const { data: speechCreditsData } = useSpeechCredits();
+  const credits = speechCreditsData?.balance ?? null;
   const { data: lesson, isLoading } = useLesson(lessonId);
   const saved = getLesson(lessonId);
   const savedPhase =
@@ -60,9 +77,11 @@ export default function LanguageCard({ lessonId, onBack, mode = "lesson", isFree
 
   const handleReviewFail = useCallback(() => {
     failReview(lessonId);
-    setPhase("practice-writing");
-    window.scrollTo(0, 0);
   }, [lessonId, failReview]);
+
+  const handleViewLesson = useCallback(() => {
+    router.push(`/lessons?open=${lessonId}`);
+  }, [lessonId, router]);
 
   const phases: TPhase[] = [
     "lesson",
@@ -95,10 +114,16 @@ export default function LanguageCard({ lessonId, onBack, mode = "lesson", isFree
     return null;
   }
 
+  const isFirstTime = !saved?.completed;
   const isFirstPhase = phase === "lesson";
   const isLastPhase = phases.indexOf(phase) >= phases.length - 1;
+  const phaseGated =
+    isFirstTime &&
+    ((phase === "practice-writing" && (saved?.writingStreak ?? 0) < 3) ||
+      (phase === "practice-speaking" && (saved?.speakingStreak ?? 0) < 3));
   const showBack = mode !== "review" && !isFirstPhase && hasWritingAccess;
-  const showNext = mode !== "review" && !isLastPhase && hasWritingAccess;
+  const showNext =
+    mode !== "review" && !isLastPhase && hasWritingAccess && !phaseGated;
 
   const phaseLabel =
     phase === "lesson"
@@ -160,6 +185,8 @@ export default function LanguageCard({ lessonId, onBack, mode = "lesson", isFree
         {phase === "practice-writing" && hasWritingAccess && (
           <WritingPractice
             lesson={lesson}
+            languageLabel={langConfig?.label ?? "French"}
+            isFirstTime={isFirstTime}
             onReady={() => {
               if (hasVoiceAccess) {
                 changePhase("practice-speaking");
@@ -169,14 +196,21 @@ export default function LanguageCard({ lessonId, onBack, mode = "lesson", isFree
             }}
             initialStreak={saved?.writingStreak ?? 0}
             initialBestTime={saved?.writingBestTime ?? null}
-            onStreakChange={(streak) => updateStreak(lessonId, "writing", streak)}
-            onBestTimeChange={(time) => updateBestTime(lessonId, "writing", time)}
+            onStreakChange={(streak) =>
+              updateStreak(lessonId, "writing", streak)
+            }
+            onBestTimeChange={(time) =>
+              updateBestTime(lessonId, "writing", time)
+            }
           />
         )}
         {phase === "practice-speaking" && hasVoiceAccess && (
           <SpeakingPractice
             lesson={lesson}
             locale={locale}
+            languageLabel={langConfig?.label ?? "French"}
+            credits={credits}
+            isFirstTime={isFirstTime}
             onReady={() => {
               if (mode === "lesson" && saved?.completed) {
                 onBack();
@@ -186,8 +220,12 @@ export default function LanguageCard({ lessonId, onBack, mode = "lesson", isFree
             }}
             initialStreak={saved?.speakingStreak ?? 0}
             initialBestTime={saved?.speakingBestTime ?? null}
-            onStreakChange={(streak) => updateStreak(lessonId, "speaking", streak)}
-            onBestTimeChange={(time) => updateBestTime(lessonId, "speaking", time)}
+            onStreakChange={(streak) =>
+              updateStreak(lessonId, "speaking", streak)
+            }
+            onBestTimeChange={(time) =>
+              updateBestTime(lessonId, "speaking", time)
+            }
           />
         )}
         {phase === "review" && hasVoiceAccess && (
@@ -195,24 +233,23 @@ export default function LanguageCard({ lessonId, onBack, mode = "lesson", isFree
             lesson={lesson}
             locale={locale}
             languageLabel={langConfig?.label ?? "French"}
+            credits={credits}
             onPass={handleReviewPass}
             onFail={handleReviewFail}
+            onViewLesson={handleViewLesson}
           />
         )}
         {phase === "complete" && (
           <Complete
             lesson={lesson}
+            mode={mode}
             onNext={onBack}
-            onPractice={() => {
-              changePhase(
-                hasVoiceAccess ? "practice-speaking" : "practice-writing"
-              );
-            }}
+            onPractice={mode === "lesson" ? () => changePhase("lesson") : undefined}
+            onNextReview={onNextReview}
             nextReview={saved?.nextReview}
           />
         )}
       </div>
-
     </div>
   );
 }

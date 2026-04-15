@@ -20,6 +20,7 @@ function stripAccents(word: string): string {
 
 function classifyWord(exp: string, act: string): TWriteWordStatus {
   if (exp === act) return "correct";
+  if (exp.replace(/[.,]/g, "") === act.replace(/[.,]/g, "")) return "correct";
   const expStripped = stripPunctuation(exp);
   const actStripped = stripPunctuation(act);
   if (expStripped === actStripped) return "warning";
