@@ -52,6 +52,7 @@
 }
 
 .item {
+  position: relative;
   display: flex;
   align-items: center;
   gap: 1em;
@@ -70,6 +71,26 @@
 
 .itemContent {
   min-width: 0;
+  flex: 1;
+}
+
+.gearBtn {
+  position: absolute;
+  bottom: 0.5em;
+  right: 0.5em;
+  width: 1.75em;
+  height: 1.75em;
+  border-radius: 50%;
+  color: var(--text-light);
+  font-size: 0.75em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.gearBtn:hover {
+  color: var(--text-muted);
+  background: var(--bg-subtle);
 }
 
 .number {
@@ -128,75 +149,38 @@
   margin-top: 0.25em;
 }
 
-.itemRow {
+
+.infoBox {
+  border: 0.125em solid var(--text-placeholder);
+  border-radius: 0.75em;
+  padding: 1.25em;
+}
+
+.infoBoxHeader {
   display: flex;
   align-items: center;
   gap: 0.5em;
+  margin-bottom: 0.75em;
 }
 
-.itemRow .item {
-  flex: 1;
-  min-width: 0;
-}
-
-.resetBtn {
-  flex-shrink: 0;
-  width: 2em;
-  height: 2em;
-  border-radius: 50%;
-  color: var(--text-light);
-  font-size: 0.75em;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.resetBtn:hover {
+.infoBoxIcon {
   color: var(--text-muted);
-  background: var(--bg-subtle);
+  font-size: 0.875em;
 }
 
-.resetTitle {
-  font-size: 1.125em;
-  font-weight: 700;
-  color: var(--text-dark);
+.infoBoxTitle {
+  font-size: 0.875em;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.infoBoxText {
+  font-size: 0.8125em;
+  color: var(--text-muted);
+  line-height: 1.5;
   margin-bottom: 0.5em;
 }
 
-.resetMessage {
-  font-size: 0.875em;
-  color: var(--text-muted);
-  line-height: 1.5;
-  margin-bottom: 1.5em;
-}
-
-.resetActions {
-  display: flex;
-  gap: 0.75em;
-  justify-content: flex-end;
-}
-
-.resetCancel {
-  font-size: 0.875em;
-  font-weight: 600;
-  color: var(--text-muted);
-  padding: 0.5em 1em;
-  border-radius: 0.5em;
-}
-
-.resetCancel:hover {
-  background: var(--bg-subtle);
-}
-
-.resetConfirm {
-  font-size: 0.875em;
-  font-weight: 600;
-  color: var(--bg-white);
-  background: var(--error);
-  padding: 0.5em 1em;
-  border-radius: 0.5em;
-}
-
-.resetConfirm:hover {
-  background: var(--error-mid);
+.infoBoxText:last-child {
+  margin-bottom: 0;
 }

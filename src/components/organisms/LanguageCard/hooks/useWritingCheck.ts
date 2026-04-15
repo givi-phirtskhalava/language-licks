@@ -23,8 +23,8 @@ function classifyWord(exp: string, act: string): TWriteWordStatus {
   if (exp.replace(/[.,]/g, "") === act.replace(/[.,]/g, "")) return "correct";
   const expStripped = stripPunctuation(exp);
   const actStripped = stripPunctuation(act);
-  if (expStripped === actStripped) return "warning";
-  if (expStripped.toLowerCase() === actStripped.toLowerCase()) return "warning";
+  if (expStripped === actStripped) return "correct";
+  if (expStripped.toLowerCase() === actStripped.toLowerCase()) return "correct";
   if (stripAccents(expStripped).toLowerCase() === stripAccents(actStripped).toLowerCase())
     return "warning";
   return "error";

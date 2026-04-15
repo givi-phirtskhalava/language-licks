@@ -45,9 +45,7 @@ export default function Complete({
             </p>
           </>
         )}
-        {onNextReview && (
-          <Button onClick={onNextReview}>Next review</Button>
-        )}
+        {onNextReview && <Button onClick={onNextReview}>Next review</Button>}
         {onNext && (
           <Button theme="secondary" onClick={onNext}>
             <FontAwesomeIcon
@@ -99,7 +97,7 @@ export default function Complete({
             icon={faRotateRight}
             style={{ marginRight: "0.5em" }}
           />
-          Review the lesson
+          Revise this lesson
         </Button>
       )}
     </div>

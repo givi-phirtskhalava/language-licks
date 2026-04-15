@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
-  faRotateLeft,
+  faGear,
   faCircleQuestion,
   faPen,
   faTriangleExclamation,
@@ -16,18 +16,17 @@ import useProgress, { getMasteryLevel } from "@lib/useProgress";
 import { FREE_LESSON_COUNT } from "@lib/projectConfig";
 import formatTimeUntil from "@lib/util/formatTimeUntil";
 import MasteryBar from "@/components/atoms/MasteryBar";
-import Modal from "@/components/atoms/Modal";
+import LessonSettings from "@/components/atoms/LessonSettings";
 import SignUpPrompt from "@atoms/SignUpPrompt";
 import LanguageCard from "@/components/organisms/LanguageCard";
 import styles from "./Reviews.module.css";
 
 export default function Reviews() {
   const [selectedId, setSelectedId] = useState<number | null>(null);
-  const [resetId, setResetId] = useState<number | null>(null);
-  const [showInfo, setShowInfo] = useState(false);
+  const [settingsId, setSettingsId] = useState<number | null>(null);
   const { language } = useLanguage();
   const { isPremium } = useAuth();
-  const { getLesson, resetLesson, pausedAt } = useProgress(language);
+  const { getLesson, unretire, resetLesson, pausedAt } = useProgress(language);
   const { data: lessons, isLoading } = useLessons(language);
   const [now, setNow] = useState(Date.now());
 
@@ -58,15 +57,12 @@ export default function Reviews() {
   if (selectedId !== null) {
     return (
       <LanguageCard
+        key={selectedId}
         lessonId={selectedId}
         mode="review"
         onBack={() => setSelectedId(null)}
-        onNextReview={() => {
-          if (!lessons) {
-            setSelectedId(null);
-            return;
-          }
-          const next = lessons.find((l) => {
+        onNextReview={
+          lessons?.some((l) => {
             if (l.id === selectedId) return false;
             const p = getLesson(l.id);
             return (
@@ -76,9 +72,23 @@ export default function Reviews() {
               p.nextReview != null &&
               p.nextReview <= Date.now()
             );
-          });
-          setSelectedId(next?.id ?? null);
-        }}
+          })
+            ? () => {
+                const next = lessons!.find((l) => {
+                  if (l.id === selectedId) return false;
+                  const p = getLesson(l.id);
+                  return (
+                    p &&
+                    p.completed &&
+                    !p.retired &&
+                    p.nextReview != null &&
+                    p.nextReview <= Date.now()
+                  );
+                });
+                setSelectedId(next?.id ?? null);
+              }
+            : undefined
+        }
       />
     );
   }
@@ -136,6 +146,8 @@ export default function Reviews() {
 
   comingUp.sort((a, b) => a.timeLeft - b.timeLeft);
 
+  const settingsLesson = settingsId !== null ? getLesson(settingsId) : null;
+
   return (
     <div className={styles.container}>
       <section>
@@ -143,26 +155,28 @@ export default function Reviews() {
         {ready.length > 0 && (
           <div className={styles.list}>
             {ready.map(({ id, translation, level }) => (
-              <div key={id} className={styles.itemRow}>
+              <button
+                key={id}
+                className={`${styles.item} ${styles.ready}`}
+                onClick={() => setSelectedId(id)}
+              >
+                <span className={`${styles.number} ${styles.numberReady}`}>
+                  <FontAwesomeIcon icon={faPen} />
+                </span>
+                <div className={styles.itemContent}>
+                  <p className={styles.sentence}>{translation}</p>
+                  <MasteryBar level={level} />
+                </div>
                 <button
-                  className={`${styles.item} ${styles.ready}`}
-                  onClick={() => setSelectedId(id)}
+                  className={styles.gearBtn}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setSettingsId(id);
+                  }}
                 >
-                  <span className={`${styles.number} ${styles.numberReady}`}>
-                    <FontAwesomeIcon icon={faPen} />
-                  </span>
-                  <div className={styles.itemContent}>
-                    <p className={styles.sentence}>{translation}</p>
-                    <MasteryBar level={level} />
-                  </div>
+                  <FontAwesomeIcon icon={faGear} />
                 </button>
-                <button
-                  className={styles.resetBtn}
-                  onClick={() => setResetId(id)}
-                >
-                  <FontAwesomeIcon icon={faRotateLeft} />
-                </button>
-              </div>
+              </button>
             ))}
           </div>
         )}
@@ -176,82 +190,78 @@ export default function Reviews() {
           <h2 className={styles.sectionTitle}>Needs Attention</h2>
           <div className={styles.list}>
             {problematic.map(({ id, translation, level }) => (
-              <div key={id} className={styles.itemRow}>
-                <button
-                  className={`${styles.item} ${styles.problematic}`}
-                  onClick={() => setRelearningId(id)}
-                >
-                  <span className={`${styles.number} ${styles.numberProblematic}`}>
-                    <FontAwesomeIcon icon={faTriangleExclamation} />
-                  </span>
-                  <div className={styles.itemContent}>
-                    <p className={styles.sentence}>{translation}</p>
-                    <div className={styles.tagRow}>
-                      <MasteryBar level={level} />
-                      <p className={styles.tag}>Go back to learn</p>
-                    </div>
+              <button
+                key={id}
+                className={`${styles.item} ${styles.problematic}`}
+                onClick={() => setRelearningId(id)}
+              >
+                <span className={`${styles.number} ${styles.numberProblematic}`}>
+                  <FontAwesomeIcon icon={faTriangleExclamation} />
+                </span>
+                <div className={styles.itemContent}>
+                  <p className={styles.sentence}>{translation}</p>
+                  <div className={styles.tagRow}>
+                    <MasteryBar level={level} />
+                    <p className={styles.tag}>Go back to learn</p>
                   </div>
-                </button>
+                </div>
                 <button
-                  className={styles.resetBtn}
-                  onClick={() => setResetId(id)}
+                  className={styles.gearBtn}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setSettingsId(id);
+                  }}
                 >
-                  <FontAwesomeIcon icon={faRotateLeft} />
+                  <FontAwesomeIcon icon={faGear} />
                 </button>
-              </div>
+              </button>
             ))}
           </div>
         </section>
       )}
 
       <section>
-        <div className={styles.sectionHeader}>
-          <h2 className={styles.sectionTitle}>Coming Up</h2>
-          <button
-            className={styles.infoBtn}
-            onClick={() => setShowInfo(true)}
-          >
-            <FontAwesomeIcon icon={faCircleQuestion} />
-          </button>
-        </div>
+        <h2 className={styles.sectionTitle}>Coming Up</h2>
         {comingUp.length > 0 && (
           <div className={styles.list}>
             {comingUp.map(({ id, translation, timeLeft, level }) => (
-              <div key={id} className={styles.itemRow}>
+              <button
+                key={id}
+                className={`${styles.item} ${styles.comingUp}`}
+                onClick={() => {
+                  toast.dismiss();
+                  toast.error(
+                    pausedAt
+                      ? "Reviews are paused"
+                      : "Not ready yet! Review in " +
+                          formatTimeUntil(timeLeft)
+                  );
+                }}
+              >
+                <span className={`${styles.number} ${styles.numberComingUp}`}>
+                  {"\u2713"}
+                </span>
+                <div className={styles.itemContent}>
+                  <p className={styles.sentence}>{translation}</p>
+                  <div className={styles.tagRow}>
+                    <MasteryBar level={level} />
+                    <p className={styles.tag}>
+                      {pausedAt
+                        ? "Paused"
+                        : "Review in " + formatTimeUntil(timeLeft)}
+                    </p>
+                  </div>
+                </div>
                 <button
-                  className={`${styles.item} ${styles.comingUp}`}
-                  onClick={() => {
-                    toast.dismiss();
-                    toast.error(
-                      pausedAt
-                        ? "Reviews are paused"
-                        : "Not ready yet! Review in " +
-                            formatTimeUntil(timeLeft)
-                    );
+                  className={styles.gearBtn}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setSettingsId(id);
                   }}
                 >
-                  <span className={`${styles.number} ${styles.numberComingUp}`}>
-                    {"\u2713"}
-                  </span>
-                  <div className={styles.itemContent}>
-                    <p className={styles.sentence}>{translation}</p>
-                    <div className={styles.tagRow}>
-                      <MasteryBar level={level} />
-                      <p className={styles.tag}>
-                        {pausedAt
-                          ? "Paused"
-                          : "Review in " + formatTimeUntil(timeLeft)}
-                      </p>
-                    </div>
-                  </div>
+                  <FontAwesomeIcon icon={faGear} />
                 </button>
-                <button
-                  className={styles.resetBtn}
-                  onClick={() => setResetId(id)}
-                >
-                  <FontAwesomeIcon icon={faRotateLeft} />
-                </button>
-              </div>
+              </button>
             ))}
           </div>
         )}
@@ -264,49 +274,41 @@ export default function Reviews() {
         <SignUpPrompt message="Go Premium to unlock reviews for all lessons." />
       )}
 
-      {showInfo && (
-        <Modal onClose={() => setShowInfo(false)}>
-          <p className={styles.resetTitle}>How reviews work</p>
-          <p className={styles.infoMessage}>
-            Reviews use spaced repetition to help you remember what you{"\u2019"}ve
-            learned. After completing a lesson, it moves here for review.
-          </p>
-          <p className={styles.infoMessage}>
-            Each time you pass a review, the interval before the next one doubles.
-            If you fail, you{"\u2019"}ll go back to practice before trying again.
-          </p>
-          <p className={styles.infoMessage}>
-            Over time, the intervals grow longer until the sentence is fully
-            mastered and retired.
-          </p>
-        </Modal>
-      )}
+      <div className={styles.infoBox}>
+        <div className={styles.infoBoxHeader}>
+          <FontAwesomeIcon
+            icon={faCircleQuestion}
+            className={styles.infoBoxIcon}
+          />
+          <span className={styles.infoBoxTitle}>How reviews work</span>
+        </div>
+        <p className={styles.infoBoxText}>
+          Reviews use spaced repetition to help you remember what you{"\u2019"}ve
+          learned. After completing a lesson, it moves here for review.
+        </p>
+        <p className={styles.infoBoxText}>
+          Each time you pass a review, the interval before the next one doubles.
+          If you fail, you{"\u2019"}ll go back to practice before trying again.
+        </p>
+        <p className={styles.infoBoxText}>
+          Over time, the intervals grow longer until the sentence is fully
+          mastered and retired.
+        </p>
+      </div>
 
-      {resetId !== null && (
-        <Modal onClose={() => setResetId(null)}>
-          <p className={styles.resetTitle}>Reset progress?</p>
-          <p className={styles.resetMessage}>
-            This will reset your progress back to zero for this lesson. You can
-            take it again from the beginning.
-          </p>
-          <div className={styles.resetActions}>
-            <button
-              className={styles.resetCancel}
-              onClick={() => setResetId(null)}
-            >
-              Cancel
-            </button>
-            <button
-              className={styles.resetConfirm}
-              onClick={() => {
-                resetLesson(resetId);
-                setResetId(null);
-              }}
-            >
-              Reset
-            </button>
-          </div>
-        </Modal>
+      {settingsId !== null && settingsLesson && (
+        <LessonSettings
+          lessonProgress={settingsLesson}
+          onUnretire={() => {
+            unretire(settingsId);
+            setSettingsId(null);
+          }}
+          onReset={() => {
+            resetLesson(settingsId);
+            setSettingsId(null);
+          }}
+          onClose={() => setSettingsId(null)}
+        />
       )}
     </div>
   );

@@ -1,12 +1,15 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faGear } from "@fortawesome/free-solid-svg-icons";
 import useLanguage from "@lib/useLanguage";
 import useLessons from "@lib/hooks/useLessons";
 import useAuth from "@lib/hooks/useAuth";
 import useProgress, { getMasteryLevel } from "@lib/useProgress";
 import { FREE_LESSON_COUNT } from "@lib/projectConfig";
 import MasteryBar from "@/components/atoms/MasteryBar";
+import LessonSettings from "@/components/atoms/LessonSettings";
 import classNames from "classnames";
 import LanguageCard from "@/components/organisms/LanguageCard";
 import StatsPanel from "@/components/atoms/StatsPanel";
@@ -15,9 +18,11 @@ import styles from "./Lessons.module.css";
 export default function Lessons() {
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const [selectedIndex, setSelectedIndex] = useState<number>(0);
+  const [settingsId, setSettingsId] = useState<number | null>(null);
   const { language } = useLanguage();
   const { isPremium } = useAuth();
-  const { progress, dailyLog, getLesson, unretire } = useProgress(language);
+  const { progress, dailyLog, getLesson, unretire, resetLesson } =
+    useProgress(language);
   const { data: lessons, isLoading } = useLessons(language);
 
   useEffect(() => {
@@ -52,13 +57,11 @@ export default function Lessons() {
     return null;
   }
 
+  const settingsLesson = settingsId !== null ? getLesson(settingsId) : null;
+
   return (
     <div className={styles.container}>
-      <StatsPanel
-        progress={progress}
-        dailyLog={dailyLog}
-        totalLessons={lessons.length}
-      />
+      <StatsPanel progress={progress} dailyLog={dailyLog} />
 
       <section>
         <h2 className={styles.sectionTitle}>Lessons</h2>
@@ -68,6 +71,7 @@ export default function Lessons() {
             const completed = p?.completed && !p.retired;
             const retired = p?.retired;
             const level = getMasteryLevel(p);
+            const hasProgress = p && (p.completed || p.phase !== "lesson");
 
             return (
               <button
@@ -78,12 +82,8 @@ export default function Lessons() {
                   retired && styles.retiredItem
                 )}
                 onClick={() => {
-                  if (retired) {
-                    unretire(lesson.id);
-                  } else {
-                    setSelectedId(lesson.id);
-                    setSelectedIndex(index);
-                  }
+                  setSelectedId(lesson.id);
+                  setSelectedIndex(index);
                 }}
               >
                 <span
@@ -103,15 +103,41 @@ export default function Lessons() {
                   {completed && <MasteryBar level={level} />}
                   {retired && (
                     <p className={styles.tag}>
-                      {"Mastered \u2014 Review again"}
+                      {"Mastered \u2014 tap to review"}
                     </p>
                   )}
                 </div>
+                {hasProgress && (
+                  <button
+                    className={styles.gearBtn}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setSettingsId(lesson.id);
+                    }}
+                  >
+                    <FontAwesomeIcon icon={faGear} />
+                  </button>
+                )}
               </button>
             );
           })}
         </div>
       </section>
+
+      {settingsId !== null && settingsLesson && (
+        <LessonSettings
+          lessonProgress={settingsLesson}
+          onUnretire={() => {
+            unretire(settingsId);
+            setSettingsId(null);
+          }}
+          onReset={() => {
+            resetLesson(settingsId);
+            setSettingsId(null);
+          }}
+          onClose={() => setSettingsId(null)}
+        />
+      )}
     </div>
   );
 }

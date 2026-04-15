@@ -1,14 +1,19 @@
 .footer {
   display: flex;
   justify-content: center;
-  padding: 1.5em;
+  align-items: center;
+  padding: 0 1.5em;
   border-top: 0.0625em solid var(--border);
   background: var(--bg-white);
+  height: var(--footer-height);
 }
 
 .links {
   display: flex;
+  align-items: center;
+  justify-content: center;
   gap: 2em;
+  height: 100%;
 }
 
 .link {

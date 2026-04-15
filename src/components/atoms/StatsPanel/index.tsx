@@ -13,10 +13,9 @@ import styles from "./StatsPanel.module.css";
 interface Props {
   progress: Record<number, ILessonProgress>;
   dailyLog: TDailyLog;
-  totalLessons: number;
 }
 
-export default function StatsPanel({ progress, dailyLog, totalLessons }: Props) {
+export default function StatsPanel({ progress, dailyLog }: Props) {
   const today = getTodayKey();
   const todayEntry = dailyLog[today];
   const lessonsToday = todayEntry?.l ?? 0;
@@ -44,7 +43,6 @@ export default function StatsPanel({ progress, dailyLog, totalLessons }: Props) 
     }
   }
   const totalMastered = levelCounts[MAX_MASTERY_LEVEL];
-  const allLessonsCompleted = totalCompleted >= totalLessons;
 
   function getLevelColor(i: number): string {
     const t = (i - 1) / (MAX_MASTERY_LEVEL - 1);
@@ -59,29 +57,18 @@ export default function StatsPanel({ progress, dailyLog, totalLessons }: Props) 
       <div className={styles.checklist}>
         <p className={styles.checklistTitle}>Today's goals</p>
 
-        {allLessonsCompleted && (
-          <div className={styles.checkItem}>
-            <span className={styles.checkEmoji}>&#x2705;</span>
-            <span className={classNames(styles.checkLabel, styles.checkLabelDone)}>
-              You've completed all available lessons
-            </span>
-          </div>
-        )}
-
-        {!allLessonsCompleted && (
-          <div className={styles.checkItem}>
-            {goalMet && <span className={styles.checkEmoji}>&#x2705;</span>}
-            {!goalMet && <span className={styles.uncheckCircle} />}
-            <span
-              className={classNames(
-                styles.checkLabel,
-                goalMet && styles.checkLabelDone
-              )}
-            >
-              Learn a new lesson
-            </span>
-          </div>
-        )}
+        <div className={styles.checkItem}>
+          {goalMet && <span className={styles.checkEmoji}>&#x2705;</span>}
+          {!goalMet && <span className={styles.uncheckCircle} />}
+          <span
+            className={classNames(
+              styles.checkLabel,
+              goalMet && styles.checkLabelDone
+            )}
+          >
+            Learn a new lesson
+          </span>
+        </div>
 
         {reviewsDue > 0 && (
           <div className={styles.checkItem}>

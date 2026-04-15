@@ -20,6 +20,7 @@
 }
 
 .item {
+  position: relative;
   display: flex;
   align-items: center;
   gap: 1em;
@@ -38,6 +39,7 @@
 
 .itemContent {
   min-width: 0;
+  flex: 1;
 }
 
 .number {
@@ -64,6 +66,25 @@
   font-size: 0.75em;
   color: var(--text-light);
   margin-top: 0.25em;
+}
+
+.gearBtn {
+  position: absolute;
+  bottom: 0.5em;
+  right: 0.5em;
+  width: 1.75em;
+  height: 1.75em;
+  border-radius: 50%;
+  color: var(--text-light);
+  font-size: 0.75em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.gearBtn:hover {
+  color: var(--text-muted);
+  background: var(--bg-subtle);
 }
 
 .completedItem {

@@ -52,11 +52,6 @@ export default function Practice({ lesson, onReady }: Props) {
     }
   }
 
-  function handleWriteRetry() {
-    writing.clear();
-    writeTimer.resetTimer();
-  }
-
   function handleWriteInputChange() {
     if (writing.result !== null) writing.clear();
     writeTimer.startTimer();
@@ -99,7 +94,6 @@ export default function Practice({ lesson, onReady }: Props) {
           hasWarnings={writing.hasWarnings}
           isPass={writing.isPass}
           onlyAccentIssues={writing.onlyAccentIssues}
-          onRetry={handleWriteRetry}
           disabled={textVisible}
         >
           {writing.result !== null && writing.isPass && (

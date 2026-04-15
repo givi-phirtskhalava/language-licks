@@ -44,6 +44,7 @@
 .primary:disabled {
   background: var(--border);
   color: var(--text-muted);
+  opacity: 0.5;
 }
 
 .secondary {

@@ -9,6 +9,14 @@
   height: var(--header-height);
 }
 
+.logo {
+  font-family: var(--font-logo), cursive;
+  font-size: 1em;
+  font-weight: 400;
+  color: var(--text-dark);
+  margin-right: 0.5em;
+}
+
 .link {
   position: relative;
   font-size: 0.875em;

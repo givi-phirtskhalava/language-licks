@@ -1,0 +1,100 @@
+.modalTitle {
+  font-size: 1.125em;
+  font-weight: 700;
+  color: var(--text-dark);
+  margin-bottom: 1em;
+}
+
+.statsList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.625em;
+  margin-bottom: 1.5em;
+}
+
+.statsRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.statsLabel {
+  font-size: 0.875em;
+  color: var(--text-muted);
+}
+
+.statsValue {
+  font-size: 0.875em;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.unretireBtn {
+  width: 100%;
+  font-size: 0.875em;
+  font-weight: 600;
+  color: var(--primary);
+  padding: 0.625em 1em;
+  border-radius: 0.5em;
+  border: 0.0625em solid var(--primary);
+  margin-bottom: 0.75em;
+}
+
+.unretireBtn:hover {
+  background: var(--primary-lighter);
+}
+
+.resetBtn {
+  width: 100%;
+  font-size: 0.875em;
+  font-weight: 600;
+  color: var(--error);
+  padding: 0.625em 1em;
+  border-radius: 0.5em;
+}
+
+.resetBtn:hover {
+  background: var(--error-bg);
+}
+
+.confirmReset {
+  border-top: 0.0625em solid var(--border);
+  padding-top: 1em;
+}
+
+.confirmText {
+  font-size: 0.875em;
+  color: var(--text-muted);
+  margin-bottom: 0.75em;
+}
+
+.confirmActions {
+  display: flex;
+  gap: 0.75em;
+  justify-content: flex-end;
+}
+
+.confirmCancel {
+  font-size: 0.875em;
+  font-weight: 600;
+  color: var(--text-muted);
+  padding: 0.5em 1em;
+  border-radius: 0.5em;
+}
+
+.confirmCancel:hover {
+  background: var(--bg-subtle);
+}
+
+.confirmBtn {
+  font-size: 0.875em;
+  font-weight: 600;
+  color: var(--bg-white);
+  background: var(--error);
+  padding: 0.5em 1em;
+  border-radius: 0.5em;
+}
+
+.confirmBtn:hover {
+  background: var(--error-mid);
+}

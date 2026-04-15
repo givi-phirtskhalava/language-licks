@@ -1,7 +1,11 @@
 "use client";
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faChevronRight } from "@fortawesome/free-solid-svg-icons";
+import {
+  faChevronRight,
+  faLock,
+  faLockOpen,
+} from "@fortawesome/free-solid-svg-icons";
 import SectionHeader from "@/components/atoms/SectionHeader";
 import FeedbackAlert from "@atoms/FeedbackAlert";
 import Button from "@atoms/Button";
@@ -49,11 +53,6 @@ export default function WritingPractice({
     return onlyAccentIssues;
   }
 
-  function handleWriteRetry() {
-    writing.clear();
-    writeTimer.resetTimer();
-  }
-
   function handleWriteInputChange() {
     if (writing.result !== null) writing.clear();
     writeTimer.startTimer();
@@ -82,7 +81,6 @@ export default function WritingPractice({
           isPass={writing.isPass}
           onlyAccentIssues={writing.onlyAccentIssues}
           hideCorrectionsOnAccentHint
-          onRetry={handleWriteRetry}
         >
           {writing.result !== null && writing.isPass && (
             <FeedbackAlert theme="correct">
@@ -117,6 +115,18 @@ export default function WritingPractice({
         onClick={onReady}
         disabled={isFirstTime && writeStreak.streak < writeStreak.goal}
       >
+        {isFirstTime && writeStreak.streak < writeStreak.goal && (
+          <FontAwesomeIcon
+            icon={faLock}
+            style={{ marginRight: "0.5em" }}
+          />
+        )}
+        {isFirstTime && writeStreak.streak >= writeStreak.goal && (
+          <FontAwesomeIcon
+            icon={faLockOpen}
+            style={{ marginRight: "0.5em" }}
+          />
+        )}
         Speaking Practice
         <FontAwesomeIcon
           icon={faChevronRight}

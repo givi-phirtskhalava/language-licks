@@ -50,6 +50,7 @@ export default function Header() {
 
   return (
     <header className={style.header}>
+      <span className={style.logo}>LanguageLicks</span>
       {navItems.map(({ href, label }) => (
         <Link
           key={href}

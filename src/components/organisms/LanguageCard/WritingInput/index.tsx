@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faPen, faRotateLeft } from "@fortawesome/free-solid-svg-icons";
+import { faPen } from "@fortawesome/free-solid-svg-icons";
 import CorrectionDisplay from "@/components/atoms/CorrectionDisplay";
 import { IWriteWordResult } from "@/components/organisms/LanguageCard/hooks/useWritingCheck";
 import styles from "./WritingInput.module.css";
@@ -16,7 +16,7 @@ interface Props {
   isPass?: boolean;
   onlyAccentIssues?: boolean;
   hideCorrectionsOnAccentHint?: boolean;
-  onRetry?: () => void;
+
   placeholder?: string;
   disabled?: boolean;
   children?: React.ReactNode;
@@ -31,7 +31,6 @@ export default function WritingInput({
   isPass,
   onlyAccentIssues,
   hideCorrectionsOnAccentHint,
-  onRetry,
   placeholder = "Type the sentence here\u2026",
   disabled,
   children,
@@ -48,12 +47,6 @@ export default function WritingInput({
     if (!input.trim()) return;
     const keepInput = onSubmit(input);
     if (!keepInput) setInput("");
-  }
-
-  function handleRetry() {
-    setInput("");
-    onRetry?.();
-    inputRef.current?.focus();
   }
 
   const inputStateClass =
@@ -110,17 +103,6 @@ export default function WritingInput({
       {result && (hasErrors || (hasWarnings && !(onlyAccentIssues && hideCorrectionsOnAccentHint))) && (
         <div style={{ marginTop: "0.75rem" }}>
           <CorrectionDisplay words={result} />
-
-          {onRetry && (
-            <button
-              type="button"
-              className={styles.retryBtn}
-              onClick={handleRetry}
-            >
-              <FontAwesomeIcon icon={faRotateLeft} style={{ marginRight: "0.5rem" }} />
-              Try again
-            </button>
-          )}
         </div>
       )}
     </>

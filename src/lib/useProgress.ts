@@ -18,7 +18,7 @@ function dailyLogKey(language: TLanguageId): string {
 
 const IS_DEV = process.env.NODE_ENV === "development";
 const INITIAL_INTERVAL_MS = IS_DEV ? 30000 : 24 * 60 * 60 * 1000;
-const RETIRE_THRESHOLD_MS = IS_DEV ? 120000 : 180 * 24 * 60 * 60 * 1000;
+const RETIRE_THRESHOLD_MS = IS_DEV ? 7680000 : 180 * 24 * 60 * 60 * 1000;
 
 export const MAX_MASTERY_LEVEL = 9;
 

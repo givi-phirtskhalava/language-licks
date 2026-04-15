@@ -1,5 +1,7 @@
 "use client";
 
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faLock, faLockOpen } from "@fortawesome/free-solid-svg-icons";
 import CorrectionDisplay from "@/components/atoms/CorrectionDisplay";
 import PronunciationFeedback from "@/components/atoms/PronunciationFeedback";
 import FeedbackAlert from "@atoms/FeedbackAlert";
@@ -132,6 +134,18 @@ export default function SpeakingPractice({
         onClick={onReady}
         disabled={isFirstTime && speakStreak.streak < speakStreak.goal}
       >
+        {isFirstTime && speakStreak.streak < speakStreak.goal && (
+          <FontAwesomeIcon
+            icon={faLock}
+            style={{ marginRight: "0.5em" }}
+          />
+        )}
+        {isFirstTime && speakStreak.streak >= speakStreak.goal && (
+          <FontAwesomeIcon
+            icon={faLockOpen}
+            style={{ marginRight: "0.5em" }}
+          />
+        )}
         Complete Lesson
       </Button>
     </div>
