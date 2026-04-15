@@ -85,8 +85,8 @@ export default function Complete({
 
       <p>
         Try to think of this sentence throughout your day or repeat it before
-        going to sleep instead of counting sheep. The more often you remember
-        it, the better!
+        going to sleep instead of counting sheep. The more you practice, the
+        better you will remember it!
       </p>
 
       {onNext && (
