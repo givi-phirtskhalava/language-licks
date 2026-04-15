@@ -1,12 +1,11 @@
 "use client";
 
-import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import classNames from "classnames";
 import useLessons from "@lib/hooks/useLessons";
 import useLanguage from "@lib/useLanguage";
-import useProgress from "@lib/useProgress";
+import useProgress, { getToday } from "@lib/useProgress";
 import useAuth from "@lib/hooks/useAuth";
 import style from "./Header.module.css";
 
@@ -23,22 +22,16 @@ export default function Header() {
   const { language } = useLanguage();
   const { getLesson, pausedAt } = useProgress(language);
   const { data: lessons } = useLessons(language);
-  const [now, setNow] = useState(Date.now());
 
-  useEffect(() => {
-    const interval = setInterval(() => setNow(Date.now()), 1000);
-    return () => clearInterval(interval);
-  }, []);
-
-  const effectiveNow = pausedAt ?? now;
-  const hasDueReviews = lessons?.some((lesson) => {
+  const today = getToday();
+  const hasDueReviews = !pausedAt && lessons?.some((lesson) => {
     const p = getLesson(lesson.id);
     return (
       p &&
       p.completed &&
       !p.retired &&
       p.nextReview &&
-      p.nextReview <= effectiveNow
+      p.nextReview <= today
     );
   });
 

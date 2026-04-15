@@ -17,8 +17,39 @@ function dailyLogKey(language: TLanguageId): string {
 }
 
 const IS_DEV = process.env.NODE_ENV === "development";
-const INITIAL_INTERVAL_MS = IS_DEV ? 30000 : 24 * 60 * 60 * 1000;
-const RETIRE_THRESHOLD_MS = IS_DEV ? 7680000 : 180 * 24 * 60 * 60 * 1000;
+const INITIAL_INTERVAL_DAYS = 1;
+const RETIRE_THRESHOLD_DAYS = 128;
+
+let devDateOffset = 0;
+
+export function getToday(): string {
+  const d = new Date();
+  if (IS_DEV) d.setDate(d.getDate() + devDateOffset);
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+}
+
+function addDays(days: number): string {
+  const d = new Date();
+  if (IS_DEV) d.setDate(d.getDate() + devDateOffset);
+  d.setDate(d.getDate() + days);
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+}
+
+function daysBetween(dateA: string, dateB: string): number {
+  const a = new Date(dateA + "T00:00:00");
+  const b = new Date(dateB + "T00:00:00");
+  return Math.round((b.getTime() - a.getTime()) / (24 * 60 * 60 * 1000));
+}
+
+export function devAdvanceDay() {
+  if (!IS_DEV) return;
+  devDateOffset++;
+  emitChange();
+}
+
+export function devGetOffset(): number {
+  return devDateOffset;
+}
 
 export const MAX_MASTERY_LEVEL = 9;
 
@@ -26,7 +57,7 @@ export function getMasteryLevel(p: ILessonProgress | null): number {
   if (!p || !p.completed) return 0;
   if (p.retired) return MAX_MASTERY_LEVEL;
   return Math.min(
-    Math.floor(Math.log2(p.interval / INITIAL_INTERVAL_MS)) + 1,
+    Math.floor(Math.log2(p.interval)) + 1,
     MAX_MASTERY_LEVEL
   );
 }
@@ -72,8 +103,21 @@ function getSnapshot(key: string): TProgressMap {
   const raw = localStorage.getItem(key);
   const cached = snapshotCache.get(key);
   if (cached && cached.raw === raw) return cached.data;
-  const data = raw ? (JSON.parse(raw) as TProgressMap) : {};
-  snapshotCache.set(key, { raw, data });
+  const parsed = raw ? (JSON.parse(raw) as TProgressMap) : {};
+  let needsMigration = false;
+  const data: TProgressMap = {};
+  for (const [id, p] of Object.entries(parsed)) {
+    const migrated = migrateProgress(p);
+    if (migrated !== p) needsMigration = true;
+    data[Number(id)] = migrated;
+  }
+  if (needsMigration && raw) {
+    const json = JSON.stringify(data);
+    localStorage.setItem(key, json);
+    snapshotCache.set(key, { raw: json, data });
+  } else {
+    snapshotCache.set(key, { raw, data });
+  }
   return data;
 }
 
@@ -156,13 +200,29 @@ function syncDailyLogToApi(
   }).catch((err) => console.error("Failed to sync daily activity:", err));
 }
 
+function migrateProgress(p: ILessonProgress): ILessonProgress {
+  if (p.interval > 1000) {
+    return {
+      ...p,
+      interval: Math.max(1, Math.round(p.interval / (24 * 60 * 60 * 1000))),
+      nextReview: p.nextReview && typeof p.nextReview === "number"
+        ? (() => {
+            const d = new Date(p.nextReview as unknown as number);
+            return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+          })()
+        : p.nextReview,
+    };
+  }
+  return p;
+}
+
 function defaultProgress(): ILessonProgress {
   return {
     phase: "lesson",
     completed: false,
     completedAt: null,
     firstCompletedAt: null,
-    interval: INITIAL_INTERVAL_MS,
+    interval: INITIAL_INTERVAL_DAYS,
     nextReview: null,
     retired: false,
     writingBestTime: null,
@@ -179,15 +239,15 @@ function defaultProgress(): ILessonProgress {
 
 const pauseCache = new Map<
   string,
-  { raw: string | null; value: number | null }
+  { raw: string | null; value: string | null }
 >();
 
-function getPauseSnapshot(language: TLanguageId): number | null {
+function getPauseSnapshot(language: TLanguageId): string | null {
   const pk = pauseKey(language);
   const raw = localStorage.getItem(pk);
   const cached = pauseCache.get(pk);
   if (cached && cached.raw === raw) return cached.value;
-  const value = raw ? Number(raw) : null;
+  const value = raw ?? null;
   pauseCache.set(pk, { raw, value });
   return value;
 }
@@ -329,14 +389,14 @@ export default function useProgress(language: TLanguageId) {
           updated = { ...existing, phase };
         } else if (isReview) {
           const nextInterval = existing.interval * 2;
-          const retired = nextInterval >= RETIRE_THRESHOLD_MS;
+          const retired = nextInterval >= RETIRE_THRESHOLD_DAYS;
 
           updated = {
             ...existing,
             phase,
             completedAt: now,
             interval: nextInterval,
-            nextReview: retired ? null : now + nextInterval,
+            nextReview: retired ? null : addDays(nextInterval),
             retired,
             reviewPassCount: (existing.reviewPassCount ?? 0) + 1,
             consecutiveFails: 0,
@@ -350,8 +410,8 @@ export default function useProgress(language: TLanguageId) {
             completed: true,
             completedAt: now,
             firstCompletedAt: existing.firstCompletedAt ?? now,
-            interval: INITIAL_INTERVAL_MS,
-            nextReview: now + INITIAL_INTERVAL_MS,
+            interval: INITIAL_INTERVAL_DAYS,
+            nextReview: addDays(INITIAL_INTERVAL_DAYS),
             retired: false,
           };
 
@@ -372,15 +432,11 @@ export default function useProgress(language: TLanguageId) {
       const current = getSnapshot(key);
       const existing = current[lessonId] ?? defaultProgress();
 
-      const halvedInterval = Math.max(
-        INITIAL_INTERVAL_MS,
-        Math.floor(existing.interval / 2)
-      );
-
       const updated: ILessonProgress = {
         ...existing,
         phase: "practice-writing" as TPhase,
-        interval: halvedInterval,
+        interval: INITIAL_INTERVAL_DAYS,
+        nextReview: addDays(INITIAL_INTERVAL_DAYS),
         reviewFailCount: (existing.reviewFailCount ?? 0) + 1,
         consecutiveFails: (existing.consecutiveFails ?? 0) + 1,
       };
@@ -435,8 +491,8 @@ export default function useProgress(language: TLanguageId) {
       const updated: ILessonProgress = {
         ...existing,
         retired: false,
-        interval: INITIAL_INTERVAL_MS,
-        nextReview: Date.now() + INITIAL_INTERVAL_MS,
+        interval: INITIAL_INTERVAL_DAYS,
+        nextReview: addDays(INITIAL_INTERVAL_DAYS),
       };
       save(key, { ...current, [lessonId]: updated });
       if (dbMode) syncLessonToApi(lessonId, updated);
@@ -457,23 +513,27 @@ export default function useProgress(language: TLanguageId) {
   );
 
   const pauseReviews = useCallback(() => {
-    localStorage.setItem(pauseKey(language), String(Date.now()));
+    localStorage.setItem(pauseKey(language), getToday());
     emitChange();
   }, [language]);
 
   const unpauseReviews = useCallback(() => {
     const raw = localStorage.getItem(pauseKey(language));
     if (!raw) return;
-    const pausedTimestamp = Number(raw);
-    const duration = Date.now() - pausedTimestamp;
+    const pausedDate = raw;
+    const today = getToday();
+    const daysPaused = daysBetween(pausedDate, today);
     const current = getSnapshot(key);
     const updated = { ...current };
     for (const idx of Object.keys(updated)) {
       const lesson = updated[Number(idx)];
       if (lesson.nextReview && !lesson.retired) {
+        const shifted = new Date(lesson.nextReview + "T00:00:00");
+        shifted.setDate(shifted.getDate() + daysPaused);
+        const shiftedStr = `${shifted.getFullYear()}-${String(shifted.getMonth() + 1).padStart(2, "0")}-${String(shifted.getDate()).padStart(2, "0")}`;
         updated[Number(idx)] = {
           ...lesson,
-          nextReview: lesson.nextReview + duration,
+          nextReview: shiftedStr,
         };
       }
     }

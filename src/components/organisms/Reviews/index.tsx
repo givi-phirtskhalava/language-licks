@@ -12,9 +12,8 @@ import toast from "react-hot-toast";
 import useLanguage from "@lib/useLanguage";
 import useLessons from "@lib/hooks/useLessons";
 import useAuth from "@lib/hooks/useAuth";
-import useProgress, { getMasteryLevel } from "@lib/useProgress";
+import useProgress, { getMasteryLevel, getToday, devAdvanceDay, devGetOffset } from "@lib/useProgress";
 import { FREE_LESSON_COUNT } from "@lib/projectConfig";
-import formatTimeUntil from "@lib/util/formatTimeUntil";
 import MasteryBar from "@/components/atoms/MasteryBar";
 import LessonSettings from "@/components/atoms/LessonSettings";
 import SignUpPrompt from "@atoms/SignUpPrompt";
@@ -28,12 +27,6 @@ export default function Reviews() {
   const { isPremium } = useAuth();
   const { getLesson, unretire, resetLesson, pausedAt } = useProgress(language);
   const { data: lessons, isLoading } = useLessons(language);
-  const [now, setNow] = useState(Date.now());
-
-  useEffect(() => {
-    const interval = setInterval(() => setNow(Date.now()), 1000);
-    return () => clearInterval(interval);
-  }, []);
 
   useEffect(() => {
     function handleNavReset() {
@@ -70,7 +63,7 @@ export default function Reviews() {
               p.completed &&
               !p.retired &&
               p.nextReview != null &&
-              p.nextReview <= Date.now()
+              p.nextReview <= getToday()
             );
           })
             ? () => {
@@ -82,7 +75,7 @@ export default function Reviews() {
                     p.completed &&
                     !p.retired &&
                     p.nextReview != null &&
-                    p.nextReview <= Date.now()
+                    p.nextReview <= getToday()
                   );
                 });
                 setSelectedId(next?.id ?? null);
@@ -97,7 +90,7 @@ export default function Reviews() {
     return null;
   }
 
-  const effectiveNow = pausedAt ?? now;
+  const today = getToday();
   const freeLessonIds = new Set(
     lessons.slice(0, FREE_LESSON_COUNT).map((l) => l.id)
   );
@@ -105,7 +98,7 @@ export default function Reviews() {
   const comingUp: {
     id: number;
     translation: string;
-    timeLeft: number;
+    daysLeft: number;
     level: number;
   }[] = [];
   const problematic: { id: number; translation: string; level: number }[] = [];
@@ -132,24 +125,45 @@ export default function Reviews() {
         translation: lesson.translation,
         level,
       });
-    } else if (p.nextReview && p.nextReview <= effectiveNow) {
+    } else if (p.nextReview && !pausedAt && p.nextReview <= today) {
       ready.push({ id: lesson.id, translation: lesson.translation, level });
-    } else if (p.nextReview && p.nextReview > effectiveNow) {
+    } else if (p.nextReview) {
+      const todayDate = new Date(today + "T00:00:00");
+      const reviewDate = new Date(p.nextReview + "T00:00:00");
+      const daysLeft = Math.round((reviewDate.getTime() - todayDate.getTime()) / (24 * 60 * 60 * 1000));
       comingUp.push({
         id: lesson.id,
         translation: lesson.translation,
-        timeLeft: p.nextReview - effectiveNow,
+        daysLeft: Math.max(1, daysLeft),
         level,
       });
     }
   });
 
-  comingUp.sort((a, b) => a.timeLeft - b.timeLeft);
+  comingUp.sort((a, b) => a.daysLeft - b.daysLeft);
 
   const settingsLesson = settingsId !== null ? getLesson(settingsId) : null;
 
   return (
     <div className={styles.container}>
+      {process.env.NODE_ENV === "development" && (
+        <button
+          onClick={devAdvanceDay}
+          style={{
+            padding: "0.5em 1em",
+            background: "#333",
+            color: "#fff",
+            border: "none",
+            borderRadius: "0.25em",
+            cursor: "pointer",
+            fontSize: "0.85em",
+            marginBottom: "1em",
+          }}
+        >
+          Skip Day (today: {today}{devGetOffset() > 0 ? ` +${devGetOffset()}` : ""})
+        </button>
+      )}
+
       <section>
         <h2 className={styles.sectionTitle}>Ready for review</h2>
         {ready.length > 0 && (
@@ -224,7 +238,7 @@ export default function Reviews() {
         <h2 className={styles.sectionTitle}>Coming Up</h2>
         {comingUp.length > 0 && (
           <div className={styles.list}>
-            {comingUp.map(({ id, translation, timeLeft, level }) => (
+            {comingUp.map(({ id, translation, daysLeft, level }) => (
               <button
                 key={id}
                 className={`${styles.item} ${styles.comingUp}`}
@@ -233,8 +247,7 @@ export default function Reviews() {
                   toast.error(
                     pausedAt
                       ? "Reviews are paused"
-                      : "Not ready yet! Review in " +
-                          formatTimeUntil(timeLeft)
+                      : `Not ready yet! Review in ${daysLeft} day${daysLeft !== 1 ? "s" : ""}`
                   );
                 }}
               >
@@ -248,7 +261,7 @@ export default function Reviews() {
                     <p className={styles.tag}>
                       {pausedAt
                         ? "Paused"
-                        : "Review in " + formatTimeUntil(timeLeft)}
+                        : `Review in ${daysLeft} day${daysLeft !== 1 ? "s" : ""}`}
                     </p>
                   </div>
                 </div>

@@ -4,6 +4,7 @@ import { ILessonProgress, TDailyLog } from "@lib/types";
 import {
   getMasteryLevel,
   getTodayKey,
+  getToday,
   calculateStreak,
   MAX_MASTERY_LEVEL,
 } from "@lib/useProgress";
@@ -27,7 +28,7 @@ export default function StatsPanel({ progress, dailyLog }: Props) {
   let totalCompleted = 0;
   let lifetimeReviews = 0;
   const levelCounts = new Array(MAX_MASTERY_LEVEL + 1).fill(0);
-  const now = Date.now();
+  const todayDate = getToday();
   let reviewsDue = 0;
 
   const entries = Object.values(progress);
@@ -37,7 +38,7 @@ export default function StatsPanel({ progress, dailyLog }: Props) {
       const level = getMasteryLevel(p);
       levelCounts[level]++;
       lifetimeReviews += p.reviewPassCount ?? 0;
-      if (!p.retired && p.nextReview && p.nextReview <= now) {
+      if (!p.retired && p.nextReview && p.nextReview <= todayDate) {
         reviewsDue++;
       }
     }

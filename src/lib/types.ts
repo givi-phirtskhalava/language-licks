@@ -42,7 +42,7 @@ export interface ILessonProgress {
   completedAt: number | null;
   firstCompletedAt: number | null;
   interval: number;
-  nextReview: number | null;
+  nextReview: string | null;
   retired: boolean;
   writingBestTime: number | null;
   speakingBestTime: number | null;

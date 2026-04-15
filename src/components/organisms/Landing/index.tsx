@@ -54,7 +54,7 @@ export default function Landing() {
         <h1 className={style.title}>LanguageLicks</h1>
 
         <p className={style.tagline}>
-          Build up your fluency with just one phrase a day.
+          Improve your fluency with just one phrase a day.
         </p>
 
         <p className={style.pitch}>

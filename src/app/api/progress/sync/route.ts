@@ -40,8 +40,8 @@ export async function POST(request: NextRequest) {
         firstCompletedAt: data.firstCompletedAt
           ? new Date(data.firstCompletedAt)
           : null,
-        interval: data.interval ?? 86400000,
-        nextReview: data.nextReview ? new Date(data.nextReview) : null,
+        interval: data.interval ?? 1,
+        nextReview: data.nextReview ?? null,
         retired: data.retired ?? false,
         writingBestTime: data.writingBestTime ?? null,
         speakingBestTime: data.speakingBestTime ?? null,
