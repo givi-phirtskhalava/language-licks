@@ -82,6 +82,13 @@ export default function Complete({
           You{"\u2019"}re ready to be tested on it. Check the reviews page!
         </p>
       )}
+
+      <p>
+        Try to think of this sentence throughout your day or repeat it before
+        going to sleep instead of counting sheep. The more often you remember
+        it, the better!
+      </p>
+
       {onNext && (
         <Button onClick={onNext}>
           <FontAwesomeIcon
