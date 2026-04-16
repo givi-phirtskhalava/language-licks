@@ -1,0 +1,89 @@
+.container {
+  max-width: 32em;
+  width: 100%;
+  margin: 0 auto;
+  padding: 1.5em 1em;
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  gap: 1em;
+}
+
+.title {
+  font-size: 1.5em;
+  margin: 0;
+}
+
+.description {
+  color: var(--text-muted);
+  font-size: 0.875em;
+  margin: 0;
+}
+
+.label {
+  font-weight: 500;
+  font-size: 0.875em;
+  color: var(--text-secondary);
+}
+
+.select {
+  padding: 0.625em 0.75em;
+  border-radius: 0.5em;
+  border: 1px solid var(--border);
+  font-size: 1em;
+  background: var(--bg-white);
+  font-family: inherit;
+  color: var(--text-body);
+}
+
+.select:disabled {
+  opacity: 0.5;
+}
+
+.status {
+  color: var(--text-muted);
+  font-size: 0.875em;
+  min-height: 1.25em;
+  margin: 0;
+}
+
+.preview {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5em;
+  padding: 1em;
+  background: var(--bg-subtle);
+  border: 1px solid var(--border);
+  border-radius: 0.5em;
+}
+
+.previewName {
+  font-family: monospace;
+  font-size: 0.875em;
+  margin: 0;
+  color: var(--text-body);
+  word-break: break-all;
+}
+
+.previewMeta {
+  color: var(--text-muted);
+  font-size: 0.75em;
+  margin: 0;
+}
+
+.audio {
+  width: 100%;
+}
+
+.downloadLink {
+  color: var(--primary);
+  font-size: 0.875em;
+  text-decoration: none;
+  align-self: flex-start;
+}
+
+.downloadLink:hover {
+  text-decoration: underline;
+}
