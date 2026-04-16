@@ -1,17 +1,15 @@
 "use client";
 
+import { useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faChevronRight,
   faLock,
   faLockOpen,
 } from "@fortawesome/free-solid-svg-icons";
-import SectionHeader from "@/components/atoms/SectionHeader";
 import FeedbackAlert from "@atoms/FeedbackAlert";
 import Button from "@atoms/Button";
 import WritingInput from "@/components/organisms/LanguageCard/WritingInput";
-import useStreak from "@/components/organisms/LanguageCard/useStreak";
-import useBestTime from "@/components/organisms/LanguageCard/useBestTime";
 import useWritingCheck from "@/components/organisms/LanguageCard/hooks/useWritingCheck";
 import { ILesson } from "@lib/types";
 import styles from "./WritingPractice.module.css";
@@ -21,10 +19,8 @@ interface Props {
   languageLabel: string;
   onReady: () => void;
   isFirstTime?: boolean;
-  initialStreak?: number;
-  initialBestTime?: number | null;
-  onStreakChange?: (streak: number) => void;
-  onBestTimeChange?: (time: number) => void;
+  initialSpeakingUnlocked?: boolean;
+  onSpeakingUnlocked?: () => void;
 }
 
 export default function WritingPractice({
@@ -32,30 +28,25 @@ export default function WritingPractice({
   languageLabel,
   onReady,
   isFirstTime = false,
-  initialStreak = 0,
-  initialBestTime = null,
-  onStreakChange,
-  onBestTimeChange,
+  initialSpeakingUnlocked = false,
+  onSpeakingUnlocked,
 }: Props) {
-  const writeStreak = useStreak({ initialStreak, onStreakChange });
-  const writeTimer = useBestTime({ initialBestTime, onBestTimeChange });
+  const [speakingUnlocked, setSpeakingUnlocked] = useState(
+    initialSpeakingUnlocked
+  );
   const writing = useWritingCheck();
 
   function handleWriteSubmit(input: string) {
     const { passed, onlyAccentIssues } = writing.check(lesson.sentence, input);
-    if (passed) {
-      writeTimer.stopTimer();
-      writeStreak.hit();
-    } else {
-      writeTimer.resetTimer();
-      writeStreak.miss();
+    if (passed && !speakingUnlocked) {
+      setSpeakingUnlocked(true);
+      onSpeakingUnlocked?.();
     }
     return onlyAccentIssues;
   }
 
   function handleWriteInputChange() {
     if (writing.result !== null) writing.clear();
-    writeTimer.startTimer();
   }
 
   return (
@@ -64,11 +55,7 @@ export default function WritingPractice({
         <p className={styles.translation}>
           {"\u201C" + lesson.translation + "\u201D"}
         </p>
-        <p className={styles.hint}>
-          {isFirstTime
-            ? `Write it correctly in ${languageLabel} three times!`
-            : `Write it in ${languageLabel}!`}
-        </p>
+        <p className={styles.hint}>{`Write it in ${languageLabel}!`}</p>
       </div>
 
       <div>
@@ -85,47 +72,19 @@ export default function WritingPractice({
           {writing.result !== null && writing.isPass && (
             <FeedbackAlert theme="correct">
               <span>
-                Correct!
-                {writeStreak.streak === writeStreak.goal &&
-                  " You\u2019re ready for the speaking practice."}
+                {"Correct! You\u2019re ready for the speaking practice."}
               </span>
-              {writeTimer.elapsed !== null && (
-                <span className={styles.timeInfo}>
-                  {writeTimer.elapsed.toFixed(1)}s
-                </span>
-              )}
-              {writeTimer.bestTime !== null &&
-                writeTimer.elapsed === writeTimer.bestTime && (
-                  <span className={styles.newBest}>&nbsp;New best!</span>
-                )}
             </FeedbackAlert>
           )}
         </WritingInput>
       </div>
 
-      {isFirstTime && (
-        <SectionHeader
-          bestTime={writeTimer.bestTime}
-          streak={writeStreak.streak}
-          streakGoal={writeStreak.goal}
-        />
-      )}
-
-      <Button
-        onClick={onReady}
-        disabled={isFirstTime && writeStreak.streak < writeStreak.goal}
-      >
-        {isFirstTime && writeStreak.streak < writeStreak.goal && (
-          <FontAwesomeIcon
-            icon={faLock}
-            style={{ marginRight: "0.5em" }}
-          />
+      <Button onClick={onReady} disabled={isFirstTime && !speakingUnlocked}>
+        {isFirstTime && !speakingUnlocked && (
+          <FontAwesomeIcon icon={faLock} style={{ marginRight: "0.5em" }} />
         )}
-        {isFirstTime && writeStreak.streak >= writeStreak.goal && (
-          <FontAwesomeIcon
-            icon={faLockOpen}
-            style={{ marginRight: "0.5em" }}
-          />
+        {isFirstTime && speakingUnlocked && (
+          <FontAwesomeIcon icon={faLockOpen} style={{ marginRight: "0.5em" }} />
         )}
         Speaking Practice
         <FontAwesomeIcon

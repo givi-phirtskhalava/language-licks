@@ -41,8 +41,13 @@ export default function LanguageCard({
   const { language } = useLanguage();
   const router = useRouter();
   const { isPremium } = useAuth();
-  const { getLesson, updatePhase, failReview, updateStreak, updateBestTime } =
-    useProgress(language);
+  const {
+    getLesson,
+    updatePhase,
+    failReview,
+    unlockSpeaking,
+    markLessonLearned,
+  } = useProgress(language);
   const hasWritingAccess = isFree || isPremium;
   const hasVoiceAccess = isPremium;
   const { data: speechCreditsData } = useSpeechCredits();
@@ -119,8 +124,8 @@ export default function LanguageCard({
   const isLastPhase = phases.indexOf(phase) >= phases.length - 1;
   const phaseGated =
     isFirstTime &&
-    ((phase === "practice-writing" && (saved?.writingStreak ?? 0) < 3) ||
-      (phase === "practice-speaking" && (saved?.speakingStreak ?? 0) < 3));
+    ((phase === "practice-writing" && !saved?.speakingUnlocked) ||
+      (phase === "practice-speaking" && !saved?.lessonLearned));
   const showBack = mode !== "review" && !isFirstPhase && hasWritingAccess;
   const showNext =
     mode !== "review" && !isLastPhase && hasWritingAccess && !phaseGated;
@@ -194,14 +199,8 @@ export default function LanguageCard({
                 changePhase("complete");
               }
             }}
-            initialStreak={saved?.writingStreak ?? 0}
-            initialBestTime={saved?.writingBestTime ?? null}
-            onStreakChange={(streak) =>
-              updateStreak(lessonId, "writing", streak)
-            }
-            onBestTimeChange={(time) =>
-              updateBestTime(lessonId, "writing", time)
-            }
+            initialSpeakingUnlocked={saved?.speakingUnlocked ?? false}
+            onSpeakingUnlocked={() => unlockSpeaking(lessonId)}
           />
         )}
         {phase === "practice-speaking" && hasVoiceAccess && (
@@ -218,14 +217,8 @@ export default function LanguageCard({
                 changePhase("complete");
               }
             }}
-            initialStreak={saved?.speakingStreak ?? 0}
-            initialBestTime={saved?.speakingBestTime ?? null}
-            onStreakChange={(streak) =>
-              updateStreak(lessonId, "speaking", streak)
-            }
-            onBestTimeChange={(time) =>
-              updateBestTime(lessonId, "speaking", time)
-            }
+            initialLessonLearned={saved?.lessonLearned ?? false}
+            onLessonLearned={() => markLessonLearned(lessonId)}
           />
         )}
         {phase === "review" && hasVoiceAccess && (

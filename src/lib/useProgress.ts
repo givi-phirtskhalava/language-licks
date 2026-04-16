@@ -200,20 +200,53 @@ function syncDailyLogToApi(
   }).catch((err) => console.error("Failed to sync daily activity:", err));
 }
 
+type TLegacyProgress = ILessonProgress & {
+  writingStreak?: number;
+  speakingStreak?: number;
+  writingBestTime?: number | null;
+  speakingBestTime?: number | null;
+};
+
 function migrateProgress(p: ILessonProgress): ILessonProgress {
-  if (p.interval > 1000) {
-    return {
-      ...p,
-      interval: Math.max(1, Math.round(p.interval / (24 * 60 * 60 * 1000))),
-      nextReview: p.nextReview && typeof p.nextReview === "number"
-        ? (() => {
-            const d = new Date(p.nextReview as unknown as number);
-            return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
-          })()
-        : p.nextReview,
+  let next: ILessonProgress = p;
+
+  if (next.interval > 1000) {
+    next = {
+      ...next,
+      interval: Math.max(1, Math.round(next.interval / (24 * 60 * 60 * 1000))),
+      nextReview:
+        next.nextReview && typeof next.nextReview === "number"
+          ? (() => {
+              const d = new Date(next.nextReview as unknown as number);
+              return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+            })()
+          : next.nextReview,
     };
   }
-  return p;
+
+  const legacy = next as TLegacyProgress;
+  if (
+    "writingStreak" in legacy ||
+    "speakingStreak" in legacy ||
+    "writingBestTime" in legacy ||
+    "speakingBestTime" in legacy
+  ) {
+    const {
+      writingStreak,
+      speakingStreak,
+      writingBestTime: _wbt,
+      speakingBestTime: _sbt,
+      ...rest
+    } = legacy;
+    next = {
+      ...rest,
+      speakingUnlocked:
+        rest.speakingUnlocked ?? (writingStreak ?? 0) > 0,
+      lessonLearned: rest.lessonLearned ?? (speakingStreak ?? 0) > 0,
+    };
+  }
+
+  return next;
 }
 
 function defaultProgress(): ILessonProgress {
@@ -225,10 +258,8 @@ function defaultProgress(): ILessonProgress {
     interval: INITIAL_INTERVAL_DAYS,
     nextReview: null,
     retired: false,
-    writingBestTime: null,
-    speakingBestTime: null,
-    writingStreak: 0,
-    speakingStreak: 0,
+    speakingUnlocked: false,
+    lessonLearned: false,
     reviewPassCount: 0,
     reviewFailCount: 0,
     consecutiveFails: 0,
@@ -447,28 +478,24 @@ export default function useProgress(language: TLanguageId) {
     [key]
   );
 
-  const updateStreak = useCallback(
-    (lessonId: number, type: "writing" | "speaking", streak: number) => {
+  const unlockSpeaking = useCallback(
+    (lessonId: number) => {
       const current = getSnapshot(key);
       const existing = current[lessonId] ?? defaultProgress();
-      const field = type === "writing" ? "writingStreak" : "speakingStreak";
-      const updated = { ...existing, [field]: streak };
+      if (existing.speakingUnlocked) return;
+      const updated = { ...existing, speakingUnlocked: true };
       save(key, { ...current, [lessonId]: updated });
       if (dbMode) syncLessonToApi(lessonId, updated);
     },
     [key]
   );
 
-  const updateBestTime = useCallback(
-    (lessonId: number, type: "writing" | "speaking", time: number) => {
+  const markLessonLearned = useCallback(
+    (lessonId: number) => {
       const current = getSnapshot(key);
       const existing = current[lessonId] ?? defaultProgress();
-      const field =
-        type === "writing" ? "writingBestTime" : "speakingBestTime";
-      const current_best = existing[field];
-      const newBest =
-        current_best === null ? time : Math.min(current_best, time);
-      const updated = { ...existing, [field]: newBest };
+      if (existing.lessonLearned) return;
+      const updated = { ...existing, lessonLearned: true };
       save(key, { ...current, [lessonId]: updated });
       if (dbMode) syncLessonToApi(lessonId, updated);
     },
@@ -553,8 +580,8 @@ export default function useProgress(language: TLanguageId) {
     dailyLog,
     updatePhase,
     failReview,
-    updateStreak,
-    updateBestTime,
+    unlockSpeaking,
+    markLessonLearned,
     getLesson,
     unretire,
     resetLesson,

@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 
-const GOAL = 3;
+const GOAL = 1;
 
 interface Props {
   initialStreak?: number;

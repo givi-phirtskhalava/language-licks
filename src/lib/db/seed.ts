@@ -113,6 +113,45 @@ const FRENCH_LESSONS: ISeedLesson[] = [
       },
     ],
   },
+  {
+    sentence:
+      "Je pense que c'est difficile, mais je ne pense pas que ce soit impossible.",
+    translation: "I think it's difficult, but I don't think it's impossible.",
+    audio: "/sentence.mp3",
+    grammar: [
+      {
+        label: "Je pense que",
+        explanation:
+          '"I think that." When "penser que" is affirmative, it takes the indicative mood — here, "c\'est" (indicative of "être").',
+      },
+      {
+        label: "c'est difficile",
+        explanation:
+          '"It\'s difficult." "C\'est" = "ce est" (it is), "difficile" = difficult.',
+      },
+      {
+        label: "mais",
+        explanation: '"But" — a simple contrastive conjunction.',
+      },
+      {
+        label: "je ne pense pas que",
+        explanation:
+          'Negative "penser que" expresses doubt, so it triggers the subjunctive in the following clause. Standard negation "ne … pas" wraps around "pense."',
+      },
+      {
+        label: "ce soit impossible",
+        explanation:
+          '"It is impossible." "Soit" is the present subjunctive of "être," 3rd person singular — required here because of the preceding "je ne pense pas que."',
+      },
+    ],
+    liaisonTips: [
+      {
+        phrase: "soit‿impossible",
+        explanation:
+          'The "t" in "soit" links to the vowel in "impossible" — pronounced "swa‿tɛ̃possible."',
+      },
+    ],
+  },
 ];
 
 const ITALIAN_LESSONS: ISeedLesson[] = [

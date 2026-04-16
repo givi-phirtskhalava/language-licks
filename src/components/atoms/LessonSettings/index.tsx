@@ -13,13 +13,6 @@ interface Props {
   onClose: () => void;
 }
 
-function formatBestTime(seconds: number): string {
-  if (seconds < 60) return `${seconds.toFixed(1)}s`;
-  const mins = Math.floor(seconds / 60);
-  const secs = seconds % 60;
-  return `${mins}m ${secs.toFixed(0)}s`;
-}
-
 export default function LessonSettings({
   lessonProgress,
   onUnretire,
@@ -40,24 +33,6 @@ export default function LessonSettings({
             {lessonProgress.retired
               ? "Mastered"
               : `${level} / ${MAX_MASTERY_LEVEL}`}
-          </span>
-        </div>
-
-        <div className={styles.statsRow}>
-          <span className={styles.statsLabel}>Writing best</span>
-          <span className={styles.statsValue}>
-            {lessonProgress.writingBestTime !== null
-              ? formatBestTime(lessonProgress.writingBestTime)
-              : "\u2014"}
-          </span>
-        </div>
-
-        <div className={styles.statsRow}>
-          <span className={styles.statsLabel}>Speaking best</span>
-          <span className={styles.statsValue}>
-            {lessonProgress.speakingBestTime !== null
-              ? formatBestTime(lessonProgress.speakingBestTime)
-              : "\u2014"}
           </span>
         </div>
 

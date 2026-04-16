@@ -1,15 +1,13 @@
 "use client";
 
+import { useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faLock, faLockOpen } from "@fortawesome/free-solid-svg-icons";
 import CorrectionDisplay from "@/components/atoms/CorrectionDisplay";
 import PronunciationFeedback from "@/components/atoms/PronunciationFeedback";
 import FeedbackAlert from "@atoms/FeedbackAlert";
 import Button from "@atoms/Button";
-import SectionHeader from "@/components/atoms/SectionHeader";
 import RecordButton from "@atoms/RecordButton";
-import useStreak from "@/components/organisms/LanguageCard/useStreak";
-import useBestTime from "@/components/organisms/LanguageCard/useBestTime";
 import useSpeakingCheck from "@/components/organisms/LanguageCard/hooks/useSpeakingCheck";
 import { ILesson } from "@lib/types";
 import styles from "./SpeakingPractice.module.css";
@@ -21,10 +19,8 @@ interface Props {
   credits: number | null;
   onReady: () => void;
   isFirstTime?: boolean;
-  initialStreak?: number;
-  initialBestTime?: number | null;
-  onStreakChange?: (streak: number) => void;
-  onBestTimeChange?: (time: number) => void;
+  initialLessonLearned?: boolean;
+  onLessonLearned?: () => void;
 }
 
 export default function SpeakingPractice({
@@ -34,28 +30,23 @@ export default function SpeakingPractice({
   credits,
   onReady,
   isFirstTime = false,
-  initialStreak = 0,
-  initialBestTime = null,
-  onStreakChange,
-  onBestTimeChange,
+  initialLessonLearned = false,
+  onLessonLearned,
 }: Props) {
-  const speakStreak = useStreak({ initialStreak, onStreakChange });
-  const speakTimer = useBestTime({ initialBestTime, onBestTimeChange });
+  const [lessonLearned, setLessonLearned] = useState(initialLessonLearned);
   const speaking = useSpeakingCheck(
     locale,
     lesson.sentence,
     () => {
-      speakTimer.stopTimer();
-      speakStreak.hit();
+      if (!lessonLearned) {
+        setLessonLearned(true);
+        onLessonLearned?.();
+      }
     },
-    () => {
-      speakTimer.resetTimer();
-      speakStreak.miss();
-    }
+    () => {}
   );
 
   function handleRecordToggle() {
-    speakTimer.startTimer();
     speaking.toggle();
   }
 
@@ -65,22 +56,10 @@ export default function SpeakingPractice({
         <p className={styles.translation}>
           {"\u201C" + lesson.translation + "\u201D"}
         </p>
-        <p className={styles.hint}>
-          {isFirstTime
-            ? `Say it correctly in ${languageLabel} three times!`
-            : `Say it in ${languageLabel}!`}
-        </p>
+        <p className={styles.hint}>{`Say it in ${languageLabel}!`}</p>
       </div>
 
       <div>
-        {isFirstTime && (
-          <SectionHeader
-            bestTime={speakTimer.bestTime}
-            streak={speakStreak.streak}
-            streakGoal={speakStreak.goal}
-          />
-        )}
-
         <RecordButton
           isListening={speaking.isListening}
           isProcessing={speaking.isProcessing}
@@ -93,22 +72,9 @@ export default function SpeakingPractice({
           <FeedbackAlert theme={speaking.result.correct ? "correct" : "wrong"}>
             <span>
               {speaking.result.correct
-                ? "Correct!" +
-                  (speakStreak.streak === speakStreak.goal
-                    ? " You\u2019re ready to complete the lesson."
-                    : "")
+                ? "Correct! You\u2019re ready to complete the lesson."
                 : "Not quite \u2014 try again"}
             </span>
-            {speaking.result.correct && speakTimer.elapsed !== null && (
-              <span className={styles.timeInfo}>
-                {speakTimer.elapsed.toFixed(1)}s
-              </span>
-            )}
-            {speaking.result.correct &&
-              speakTimer.bestTime !== null &&
-              speakTimer.elapsed === speakTimer.bestTime && (
-                <span className={styles.newBest}>&nbsp;New best!</span>
-              )}
           </FeedbackAlert>
         )}
 
@@ -130,21 +96,12 @@ export default function SpeakingPractice({
         */}
       </div>
 
-      <Button
-        onClick={onReady}
-        disabled={isFirstTime && speakStreak.streak < speakStreak.goal}
-      >
-        {isFirstTime && speakStreak.streak < speakStreak.goal && (
-          <FontAwesomeIcon
-            icon={faLock}
-            style={{ marginRight: "0.5em" }}
-          />
+      <Button onClick={onReady} disabled={isFirstTime && !lessonLearned}>
+        {isFirstTime && !lessonLearned && (
+          <FontAwesomeIcon icon={faLock} style={{ marginRight: "0.5em" }} />
         )}
-        {isFirstTime && speakStreak.streak >= speakStreak.goal && (
-          <FontAwesomeIcon
-            icon={faLockOpen}
-            style={{ marginRight: "0.5em" }}
-          />
+        {isFirstTime && lessonLearned && (
+          <FontAwesomeIcon icon={faLockOpen} style={{ marginRight: "0.5em" }} />
         )}
         Complete Lesson
       </Button>

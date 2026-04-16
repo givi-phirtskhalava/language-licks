@@ -50,7 +50,7 @@ export default function RecordButton({
 
         {credits !== undefined && credits !== null && (
           <p className={styles.credits}>
-            {credits} {credits === 1 ? "credit" : "credits"} remaining
+            {credits} {credits === 1 ? "recording" : "recordings"} left
           </p>
         )}
       </div>

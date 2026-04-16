@@ -44,10 +44,8 @@ export interface ILessonProgress {
   interval: number;
   nextReview: string | null;
   retired: boolean;
-  writingBestTime: number | null;
-  speakingBestTime: number | null;
-  writingStreak: number;
-  speakingStreak: number;
+  speakingUnlocked: boolean;
+  lessonLearned: boolean;
   reviewPassCount: number;
   reviewFailCount: number;
   consecutiveFails: number;
