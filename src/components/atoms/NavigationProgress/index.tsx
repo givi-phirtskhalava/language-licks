@@ -16,8 +16,11 @@ export default function NavigationProgress() {
       if (!anchor) return;
 
       const href = anchor.getAttribute("href");
-      if (!href || href === prevPathname.current) return;
+      if (!href) return;
       if (anchor.target === "_blank") return;
+
+      const targetPathname = new URL(href, window.location.origin).pathname;
+      if (targetPathname === prevPathname.current) return;
 
       setNavigating(true);
     }

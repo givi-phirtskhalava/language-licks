@@ -44,6 +44,11 @@ function daysBetween(dateA: string, dateB: string): number {
 export function devAdvanceDay() {
   if (!IS_DEV) return;
   devDateOffset++;
+  console.log("[devAdvanceDay] offset now", devDateOffset, "today", getToday());
+  snapshotCache.clear();
+  for (const [k, v] of dbData) {
+    dbData.set(k, { ...v });
+  }
   emitChange();
 }
 

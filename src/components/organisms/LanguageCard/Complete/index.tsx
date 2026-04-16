@@ -22,8 +22,10 @@ interface Props {
 
 function daysUntilReview(nextReview: string): number {
   const today = new Date(getToday() + "T00:00:00");
-  const review = new Date(nextReview + "T00:00:00");
-  return Math.max(1, Math.round((review.getTime() - today.getTime()) / (24 * 60 * 60 * 1000)));
+  const review = new Date(String(nextReview).slice(0, 10) + "T00:00:00");
+  const diff = review.getTime() - today.getTime();
+  if (!Number.isFinite(diff)) return 1;
+  return Math.max(1, Math.round(diff / (24 * 60 * 60 * 1000)));
 }
 
 export default function Complete({
@@ -43,7 +45,8 @@ export default function Complete({
         <h2 className={styles.completeTitle}>Review completed!</h2>
         {nextReview && nextReview > getToday() && (
           <p className={styles.completeSubtitle}>
-            Next review in {daysUntilReview(nextReview)} day{daysUntilReview(nextReview) !== 1 ? "s" : ""}
+            Next review in {daysUntilReview(nextReview)} day
+            {daysUntilReview(nextReview) !== 1 ? "s" : ""}
           </p>
         )}
         {onNextReview && <Button onClick={onNextReview}>Next review</Button>}
@@ -70,7 +73,9 @@ export default function Complete({
       </h2>
       {nextReview && nextReview > getToday() && (
         <p className={styles.completeSubtitle}>
-          It has now moved into reviews. Next review in {daysUntilReview(nextReview)} day{daysUntilReview(nextReview) !== 1 ? "s" : ""}.
+          It has now moved into reviews. Next review in{" "}
+          {daysUntilReview(nextReview)} day
+          {daysUntilReview(nextReview) !== 1 ? "s" : ""}.
         </p>
       )}
       {(!nextReview || nextReview <= getToday()) && (
@@ -79,7 +84,7 @@ export default function Complete({
         </p>
       )}
 
-      <p>
+      <p className={styles.completeSubtitle}>
         Try to think of this sentence throughout your day or repeat it before
         going to sleep instead of counting sheep. The more you practice, the
         better you will remember it!

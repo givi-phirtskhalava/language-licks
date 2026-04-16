@@ -53,6 +53,9 @@
 
 .item {
   position: relative;
+}
+
+.itemBtn {
   display: flex;
   align-items: center;
   gap: 1em;
@@ -65,7 +68,7 @@
   transition: box-shadow 0.2s;
 }
 
-.item:hover {
+.itemBtn:hover {
   box-shadow: 0 0.25em 0.75em var(--shadow-hover);
 }
 
@@ -81,7 +84,8 @@
   width: 1.75em;
   height: 1.75em;
   border-radius: 50%;
-  color: var(--text-light);
+  color: var(--text-muted);
+  background: var(--bg-subtle);
   font-size: 0.75em;
   display: flex;
   align-items: center;
@@ -89,8 +93,7 @@
 }
 
 .gearBtn:hover {
-  color: var(--text-muted);
-  background: var(--bg-subtle);
+  opacity: 0.5;
 }
 
 .number {

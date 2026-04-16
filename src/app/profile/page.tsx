@@ -255,6 +255,24 @@ export default function ProfilePage() {
     }
   }
 
+  async function handleDevTogglePremium() {
+    setBillingError("");
+    setBillingLoading(true);
+    try {
+      const res = await fetch("/api/billing/dev-toggle", { method: "POST" });
+      if (!res.ok) {
+        const data = await res.json();
+        setBillingError(data.error || "Failed to toggle premium");
+        return;
+      }
+      queryClient.invalidateQueries({ queryKey: ["auth", "me"] });
+    } catch {
+      setBillingError("Something went wrong");
+    } finally {
+      setBillingLoading(false);
+    }
+  }
+
   async function handleResumeSubscription() {
     setBillingError("");
     setBillingLoading(true);
@@ -334,6 +352,18 @@ export default function ProfilePage() {
 
         <section className={styles.group}>
           <p className={styles.sectionTitle}>Billing</p>
+
+          {process.env.NODE_ENV === "development" && (
+            <div className={styles.section}>
+              <Button
+                theme="secondary"
+                loading={billingLoading}
+                onClick={handleDevTogglePremium}
+              >
+                {isActive ? "DEV: Deactivate premium" : "DEV: Activate premium"}
+              </Button>
+            </div>
+          )}
 
           {isActive && (
             <div className={styles.section}>

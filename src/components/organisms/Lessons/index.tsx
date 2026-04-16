@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faGear } from "@fortawesome/free-solid-svg-icons";
+import { faChartSimple } from "@fortawesome/free-solid-svg-icons";
 import useLanguage from "@lib/useLanguage";
 import useLessons from "@lib/hooks/useLessons";
 import useAuth from "@lib/hooks/useAuth";
@@ -74,51 +74,49 @@ export default function Lessons() {
             const hasProgress = p && (p.completed || p.phase !== "lesson");
 
             return (
-              <button
-                key={lesson.id}
-                className={classNames(
-                  styles.item,
-                  completed && styles.completedItem,
-                  retired && styles.retiredItem
-                )}
-                onClick={() => {
-                  setSelectedId(lesson.id);
-                  setSelectedIndex(index);
-                }}
-              >
-                <span
+              <div key={lesson.id} className={styles.item}>
+                <button
                   className={classNames(
-                    styles.number,
-                    completed && styles.numberCompleted,
-                    retired && styles.numberRetired
+                    styles.itemBtn,
+                    completed && styles.completedItem,
+                    retired && styles.retiredItem
                   )}
+                  onClick={() => {
+                    setSelectedId(lesson.id);
+                    setSelectedIndex(index);
+                  }}
                 >
-                  {completed || retired ? "\u2713" : index + 1}
-                </span>
-                <div className={styles.itemContent}>
-                  <p className={styles.sentence}>{lesson.sentence}</p>
-                  {p && !p.completed && (
-                    <p className={styles.tag}>In progress</p>
-                  )}
-                  {completed && <MasteryBar level={level} />}
-                  {retired && (
-                    <p className={styles.tag}>
-                      {"Mastered \u2014 tap to review"}
-                    </p>
-                  )}
-                </div>
+                  <span
+                    className={classNames(
+                      styles.number,
+                      completed && styles.numberCompleted,
+                      retired && styles.numberRetired
+                    )}
+                  >
+                    {completed || retired ? "\u2713" : index + 1}
+                  </span>
+                  <div className={styles.itemContent}>
+                    <p className={styles.sentence}>{lesson.sentence}</p>
+                    {p && !p.completed && (
+                      <p className={styles.tag}>In progress</p>
+                    )}
+                    {completed && <MasteryBar level={level} />}
+                    {retired && (
+                      <p className={styles.tag}>
+                        {"Mastered \u2014 tap to review"}
+                      </p>
+                    )}
+                  </div>
+                </button>
                 {hasProgress && (
                   <button
                     className={styles.gearBtn}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setSettingsId(lesson.id);
-                    }}
+                    onClick={() => setSettingsId(lesson.id)}
                   >
-                    <FontAwesomeIcon icon={faGear} />
+                    <FontAwesomeIcon icon={faChartSimple} />
                   </button>
                 )}
-              </button>
+              </div>
             );
           })}
         </div>

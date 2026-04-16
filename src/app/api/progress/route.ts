@@ -50,7 +50,7 @@ export async function GET(request: NextRequest) {
           ? row.firstCompletedAt.getTime()
           : null,
         interval: row.interval,
-        nextReview: row.nextReview ?? null,
+        nextReview: row.nextReview ? row.nextReview.slice(0, 10) : null,
         retired: row.retired,
         speakingUnlocked: (row.writingStreak ?? 0) > 0,
         lessonLearned: (row.speakingStreak ?? 0) > 0,
