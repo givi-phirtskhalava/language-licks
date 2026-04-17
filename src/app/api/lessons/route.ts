@@ -15,6 +15,7 @@ export async function GET(request: NextRequest) {
       id: lessons.id,
       sentence: lessons.sentence,
       translation: lessons.translation,
+      tags: lessons.tags,
     })
     .from(lessons)
     .where(eq(lessons.language, language))

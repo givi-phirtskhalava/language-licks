@@ -72,7 +72,9 @@ export default function WritingPractice({
           {writing.result !== null && writing.isPass && (
             <FeedbackAlert theme="correct">
               <span>
-                {"Correct! You\u2019re ready for the speaking practice."}
+                {
+                  "Correct! You\u2019re ready for the speaking practice. Still not feeling confident? Keep practicing before you move on."
+                }
               </span>
             </FeedbackAlert>
           )}

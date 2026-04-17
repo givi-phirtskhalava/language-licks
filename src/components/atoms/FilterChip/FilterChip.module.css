@@ -1,0 +1,37 @@
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4em;
+  padding: 0.4em 0.85em;
+  border-radius: 999em;
+  border: 0.0625em solid var(--border);
+  background: var(--bg-white);
+  color: var(--text-secondary);
+  font-size: 0.8125em;
+  font-weight: 500;
+  transition:
+    background 0.15s,
+    border-color 0.15s,
+    color 0.15s;
+}
+
+.chip:hover {
+  border-color: var(--primary-muted);
+  color: var(--text-dark);
+}
+
+.selected {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: var(--bg-white);
+}
+
+.selected:hover {
+  background: var(--primary-hover);
+  border-color: var(--primary-hover);
+  color: var(--bg-white);
+}
+
+.icon {
+  font-size: 0.8em;
+}

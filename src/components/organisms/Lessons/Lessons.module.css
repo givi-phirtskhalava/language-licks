@@ -13,6 +13,17 @@
   margin-bottom: 0.75em;
 }
 
+.filters {
+  margin-bottom: 1em;
+}
+
+.emptyState {
+  padding: 2em 1em;
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 0.875em;
+}
+
 .list {
   display: flex;
   flex-direction: column;

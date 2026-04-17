@@ -41,6 +41,7 @@ export const lessons = pgTable("lessons", {
   audio: varchar("audio", { length: 255 }).notNull(),
   grammar: jsonb("grammar").notNull().$type<{ label: string; explanation: string }[]>(),
   liaisonTips: jsonb("liaison_tips").$type<{ phrase: string; explanation: string }[]>(),
+  tags: jsonb("tags").notNull().$type<string[]>().default([]),
   order: integer("order").notNull(),
 });
 

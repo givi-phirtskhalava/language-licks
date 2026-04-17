@@ -2,6 +2,7 @@ export interface ILessonListItem {
   id: number;
   sentence: string;
   translation: string;
+  tags: string[];
 }
 
 export interface ILesson {
@@ -11,6 +12,7 @@ export interface ILesson {
   audio: string;
   grammar: { label: string; explanation: string }[];
   liaisonTips?: { phrase: string; explanation: string }[];
+  tags: string[];
 }
 
 export type TPhase = "lesson" | "practice" | "practice-writing" | "practice-speaking" | "test" | "review" | "complete";

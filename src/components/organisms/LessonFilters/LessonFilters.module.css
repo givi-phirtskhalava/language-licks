@@ -1,0 +1,121 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75em;
+}
+
+.bar {
+  display: flex;
+  align-items: center;
+  gap: 0.5em;
+}
+
+.filterBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5em;
+  padding: 0.5em 0.9em;
+  border-radius: 0.625em;
+  border: 0.0625em solid var(--border);
+  background: var(--bg-white);
+  color: var(--text-secondary);
+  font-size: 0.8125em;
+  font-weight: 600;
+  transition:
+    background 0.15s,
+    border-color 0.15s;
+}
+
+.filterBtn:hover {
+  border-color: var(--primary-muted);
+}
+
+.filterBtnActive {
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
+.count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.4em;
+  height: 1.4em;
+  padding: 0 0.4em;
+  border-radius: 999em;
+  background: var(--primary);
+  color: var(--bg-white);
+  font-size: 0.75em;
+  font-weight: 700;
+}
+
+.clearBtn {
+  font-size: 0.8125em;
+  color: var(--text-muted);
+  padding: 0.25em 0.5em;
+}
+
+.clearBtn:hover {
+  color: var(--text-secondary);
+}
+
+.activeChips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4em;
+}
+
+.modalBody {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25em;
+  max-height: 70vh;
+  overflow-y: auto;
+}
+
+.modalHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.modalTitle {
+  font-size: 1em;
+  font-weight: 700;
+  color: var(--text-dark);
+}
+
+.group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6em;
+}
+
+.groupLabel {
+  font-size: 0.75em;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+}
+
+.groupChips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4em;
+}
+
+.doneBtn {
+  margin-top: 0.5em;
+  padding: 0.75em 1em;
+  border-radius: 0.625em;
+  background: var(--primary);
+  color: var(--bg-white);
+  font-size: 0.875em;
+  font-weight: 600;
+  transition: background 0.15s;
+}
+
+.doneBtn:hover {
+  background: var(--primary-hover);
+}

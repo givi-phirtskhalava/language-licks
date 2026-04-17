@@ -10,6 +10,7 @@ interface ISeedLesson {
   audio: string;
   grammar: { label: string; explanation: string }[];
   liaisonTips?: { phrase: string; explanation: string }[];
+  tags: string[];
 }
 
 const FRENCH_LESSONS: ISeedLesson[] = [
@@ -56,6 +57,7 @@ const FRENCH_LESSONS: ISeedLesson[] = [
           'The "s" in "pas" links to "admis" — pronounced "pa‿zadmi."',
       },
     ],
+    tags: ["Present", "Animals", "Shopping", "Negation"],
   },
   {
     sentence:
@@ -112,6 +114,7 @@ const FRENCH_LESSONS: ISeedLesson[] = [
           'The "s" in "des" links to the vowel in "araignées" — pronounced "de‿zaraigne."',
       },
     ],
+    tags: ["Present", "Animals", "Conjunctions", "Impersonal"],
   },
   {
     sentence:
@@ -151,6 +154,220 @@ const FRENCH_LESSONS: ISeedLesson[] = [
           'The "t" in "soit" links to the vowel in "impossible" — pronounced "swa‿tɛ̃possible."',
       },
     ],
+    tags: ["Present", "Subjunctive", "Feelings", "Negation", "Conjunctions"],
+  },
+  {
+    sentence:
+      "J'ai des courbatures aux abdominaux parce que je suis allée à la salle de sport hier.",
+    translation:
+      "I'm sore in my abs because I went to the gym yesterday.",
+    audio: "/sentence.mp3",
+    grammar: [
+      {
+        label: "J'ai des courbatures",
+        explanation:
+          '"I have soreness." "Courbatures" (always plural in this sense) means muscle soreness from exertion. "J\'ai" = "je ai" (I have).',
+      },
+      {
+        label: "aux abdominaux",
+        explanation:
+          '"In the abs." "Aux" is the contraction of "à" + "les" (to/in the), used before a plural noun. "Abdominaux" = abs (masculine plural).',
+      },
+      {
+        label: "parce que",
+        explanation: '"Because" — the standard causal conjunction.',
+      },
+      {
+        label: "je suis allée",
+        explanation:
+          'Passé composé of "aller" (to go). "Aller" takes "être" as auxiliary, so the past participle "allé" agrees with the subject — the extra "e" marks a feminine speaker.',
+      },
+      {
+        label: "à la salle de sport",
+        explanation:
+          '"To the gym." Literally "to the hall of sport." "Salle" = room/hall, a feminine noun, so "à la."',
+      },
+      {
+        label: "hier",
+        explanation: '"Yesterday."',
+      },
+    ],
+    liaisonTips: [
+      {
+        phrase: "aux‿abdominaux",
+        explanation:
+          'The "x" in "aux" links to the vowel in "abdominaux" — pronounced "o‿zabdominaux."',
+      },
+      {
+        phrase: "suis‿allée",
+        explanation:
+          'The "s" in "suis" links to the vowel in "allée" — pronounced "sɥi‿zale."',
+      },
+    ],
+    tags: ["Passé Composé", "Health", "Sports", "Conjunctions"],
+  },
+  {
+    sentence:
+      "J'ai expliqué le problème au médecin et il m'a donné une ordonnance pour un anti-douleur.",
+    translation:
+      "I explained the problem to the doctor and he gave me a prescription for a painkiller.",
+    audio: "/sentence.mp3",
+    grammar: [
+      {
+        label: "J'ai expliqué",
+        explanation:
+          'Passé composé of "expliquer" (to explain), with "avoir" as auxiliary. "J\'ai" = "je ai."',
+      },
+      {
+        label: "au médecin",
+        explanation:
+          '"To the doctor." "Au" is the contraction of "à" + "le." "Expliquer quelque chose à quelqu\'un" = to explain something to someone.',
+      },
+      {
+        label: "il m'a donné",
+        explanation:
+          '"He gave me." "M\'" is the elided form of "me" (to me, indirect object pronoun), placed before the auxiliary "a" (avoir). "Donné" is the past participle of "donner" (to give).',
+      },
+      {
+        label: "une ordonnance",
+        explanation:
+          '"A prescription." Feminine noun — a doctor\'s written prescription for medication.',
+      },
+      {
+        label: "pour un anti-douleur",
+        explanation:
+          '"For a painkiller." Literally "anti-pain." "Douleur" = pain (feminine), but "anti-douleur" as a compound noun takes masculine "un."',
+      },
+    ],
+    liaisonTips: [
+      {
+        phrase: "un‿anti-douleur",
+        explanation:
+          'The "n" in "un" links to the vowel in "anti" — pronounced "œ̃‿nɑ̃ti."',
+      },
+    ],
+    tags: ["Passé Composé", "Health", "Pronouns"],
+  },
+  {
+    sentence:
+      "Je cherche une coque pour iPhone 10, si vous en avez encore.",
+    translation:
+      "I'm looking for a case for iPhone 10, if you still have some.",
+    audio: "/sentence.mp3",
+    grammar: [
+      {
+        label: "Je cherche",
+        explanation:
+          '"I\'m looking for." Present tense of "chercher." Note that "chercher" already includes "for" — no preposition is needed after it.',
+      },
+      {
+        label: "une coque",
+        explanation:
+          '"A case." "Coque" (feminine) literally means shell/hull; it\'s the standard word for a phone case.',
+      },
+      {
+        label: "pour iPhone 10",
+        explanation:
+          '"For iPhone 10." "Pour" = for. Numbers after product names are usually read as cardinal numbers — here "dix."',
+      },
+      {
+        label: "si vous en avez encore",
+        explanation:
+          '"If you still have some." "Si" = if. "En" is a pronoun replacing "de + noun" — here, "some (cases)." "Encore" = still/yet.',
+      },
+    ],
+    liaisonTips: [
+      {
+        phrase: "vous‿en",
+        explanation:
+          'The "s" in "vous" links to the vowel in "en" — pronounced "vu‿zɑ̃."',
+      },
+      {
+        phrase: "en‿avez",
+        explanation:
+          'The "n" in "en" links to the vowel in "avez" — pronounced "ɑ̃‿nave."',
+      },
+    ],
+    tags: ["Present", "Shopping", "Technology", "Pronouns"],
+  },
+  {
+    sentence:
+      "Il est déjà quatre heures, il faut que j'aille chercher les enfants à l'école.",
+    translation:
+      "It's already four o'clock, I need to go pick up the kids from school.",
+    audio: "/sentence.mp3",
+    grammar: [
+      {
+        label: "Il est déjà quatre heures",
+        explanation:
+          '"It\'s already four o\'clock." "Il est" is the impersonal form used for telling time. "Déjà" = already.',
+      },
+      {
+        label: "il faut que",
+        explanation:
+          '"It is necessary that." Impersonal construction from "falloir" (must). It always triggers the subjunctive in the following clause.',
+      },
+      {
+        label: "j'aille",
+        explanation:
+          'Present subjunctive of "aller" (to go), 1st person singular — required after "il faut que."',
+      },
+      {
+        label: "chercher les enfants",
+        explanation:
+          '"Pick up the kids." "Chercher" literally means "to look for," but "aller chercher quelqu\'un" is the standard way to say "to go pick someone up."',
+      },
+      {
+        label: "à l'école",
+        explanation:
+          '"At/from school." "À" = at/to. "L\'" is the elided definite article before a vowel ("la école" → "l\'école").',
+      },
+    ],
+    liaisonTips: [
+      {
+        phrase: "les‿enfants",
+        explanation:
+          'The "s" in "les" links to the vowel in "enfants" — pronounced "le‿zɑ̃fɑ̃."',
+      },
+    ],
+    tags: ["Present", "Subjunctive", "Time", "Family", "Errands", "Impersonal"],
+  },
+  {
+    sentence:
+      "Je suis en train de me garer, j'arrive dans cinq minutes.",
+    translation:
+      "I'm parking right now, I'll be there in five minutes.",
+    audio: "/sentence.mp3",
+    grammar: [
+      {
+        label: "Je suis en train de",
+        explanation:
+          '"I am in the process of." The standard French way to express an action in progress (equivalent to English "-ing" / present continuous). Always followed by an infinitive.',
+      },
+      {
+        label: "me garer",
+        explanation:
+          'Reflexive infinitive of "se garer" (to park). "Me" is the 1st person reflexive pronoun, placed before the infinitive.',
+      },
+      {
+        label: "j'arrive",
+        explanation:
+          '"I\'m coming." Present tense of "arriver" used with future meaning — a very common conversational shortcut for imminent arrival.',
+      },
+      {
+        label: "dans cinq minutes",
+        explanation:
+          '"In five minutes." "Dans" expresses a duration from now until a future point — different from "en," which measures how long something takes.',
+      },
+    ],
+    liaisonTips: [
+      {
+        phrase: "suis‿en",
+        explanation:
+          'The "s" in "suis" links to the vowel in "en" — pronounced "sɥi‿zɑ̃."',
+      },
+    ],
+    tags: ["Present", "Continuous", "Time", "Errands", "Reflexive"],
   },
 ];
 
@@ -181,6 +398,7 @@ const ITALIAN_LESSONS: ISeedLesson[] = [
           '"Of the mother." "Della" = "di" + "la" (of the). "Mamma" = mom/mother — an affectionate, everyday term.',
       },
     ],
+    tags: ["Imperative", "Family", "Feelings", "Comparatives", "Negation", "Idioms"],
   },
   {
     sentence:
@@ -220,6 +438,7 @@ const ITALIAN_LESSONS: ISeedLesson[] = [
           '"When they are available." Literally "when they have availability." "Hanno" = 3rd person plural present of "avere" (to have).',
       },
     ],
+    tags: ["Conditional", "Present", "Work", "Technology", "Pronouns"],
   },
 ];
 
@@ -267,6 +486,7 @@ async function seed() {
           audio: lesson.audio,
           grammar: lesson.grammar,
           liaisonTips: lesson.liaisonTips ?? null,
+          tags: lesson.tags,
           order: lesson.order,
         })
         .where(eq(lessons.id, existing[0].id));
@@ -279,6 +499,7 @@ async function seed() {
         audio: lesson.audio,
         grammar: lesson.grammar,
         liaisonTips: lesson.liaisonTips ?? null,
+        tags: lesson.tags,
         order: lesson.order,
       });
       inserted++;
