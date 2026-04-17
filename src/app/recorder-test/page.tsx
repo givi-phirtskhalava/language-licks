@@ -31,6 +31,21 @@ interface ILastRecording {
   filename: string;
   seconds: number;
   sizeKb: number;
+  blob: Blob;
+}
+
+interface ITokenInfo {
+  token: string;
+  expiresAtMs: number;
+}
+
+interface IWhisperResult {
+  transcript: string;
+  language?: string;
+  durationMs?: number;
+  inferenceMs?: number;
+  status: number;
+  raw: string;
 }
 
 function counterKey(lang: string): string {
@@ -91,17 +106,33 @@ function encodeWav(pcm: Float32Array, sampleRate: number): Blob {
   return new Blob([buffer], { type: "audio/wav" });
 }
 
+function formatExpiry(expiresAtMs: number): string {
+  const remaining = Math.max(0, expiresAtMs - Date.now());
+  const totalSec = Math.floor(remaining / 1000);
+  const m = Math.floor(totalSec / 60);
+  const s = totalSec % 60;
+  return `${m}m ${pad(s)}s`;
+}
+
 export default function RecorderTestPage() {
   const [lang, setLang] = useState("fr");
   const [recording, setRecording] = useState(false);
   const [status, setStatus] = useState("Ready.");
   const [last, setLast] = useState<ILastRecording | null>(null);
+  const [token, setToken] = useState<ITokenInfo | null>(null);
+  const [tokenError, setTokenError] = useState<string | null>(null);
+  const [tokenLoading, setTokenLoading] = useState(false);
+  const [whisperResult, setWhisperResult] = useState<IWhisperResult | null>(null);
+  const [whisperError, setWhisperError] = useState<string | null>(null);
+  const [whisperLoading, setWhisperLoading] = useState(false);
 
   const micStreamRef = useRef<MediaStream | null>(null);
   const audioContextRef = useRef<AudioContext | null>(null);
   const processorRef = useRef<ScriptProcessorNode | null>(null);
   const pcmChunksRef = useRef<Float32Array[]>([]);
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const gatewayUrl = process.env.NEXT_PUBLIC_WHISPER_GATEWAY_URL;
 
   function cleanup() {
     if (processorRef.current) {
@@ -179,18 +210,13 @@ export default function RecorderTestPage() {
       URL.revokeObjectURL(last.url);
     }
 
-    const anchor = document.createElement("a");
-    anchor.href = url;
-    anchor.download = filename;
-    document.body.appendChild(anchor);
-    anchor.click();
-    document.body.removeChild(anchor);
-
     const seconds = pcm.length / SAMPLE_RATE;
     const sizeKb = blob.size / 1024;
 
-    setLast({ url, filename, seconds, sizeKb });
-    setStatus(`Saved ${filename}`);
+    setLast({ url, filename, seconds, sizeKb, blob });
+    setStatus(`Recorded ${filename}`);
+    setWhisperResult(null);
+    setWhisperError(null);
     setRecording(false);
     cleanup();
   }
@@ -203,14 +229,104 @@ export default function RecorderTestPage() {
     }
   }
 
+  function downloadLast() {
+    if (!last) return;
+    const anchor = document.createElement("a");
+    anchor.href = last.url;
+    anchor.download = last.filename;
+    document.body.appendChild(anchor);
+    anchor.click();
+    document.body.removeChild(anchor);
+  }
+
+  async function fetchToken() {
+    setTokenError(null);
+    setTokenLoading(true);
+    try {
+      const res = await fetch("/api/speech/token", { method: "POST" });
+      const bodyText = await res.text();
+      if (!res.ok) {
+        setTokenError(`HTTP ${res.status}: ${bodyText}`);
+        setToken(null);
+        return;
+      }
+      const data = JSON.parse(bodyText) as {
+        token: string;
+        expiresInSec: number;
+      };
+      setToken({
+        token: data.token,
+        expiresAtMs: Date.now() + data.expiresInSec * 1000,
+      });
+    } catch (err) {
+      setTokenError((err as Error).message);
+      setToken(null);
+    }
+    setTokenLoading(false);
+  }
+
+  async function sendToWhisper() {
+    if (!last || !token) return;
+    if (!gatewayUrl) {
+      setWhisperError("NEXT_PUBLIC_WHISPER_GATEWAY_URL not configured");
+      return;
+    }
+
+    setWhisperError(null);
+    setWhisperResult(null);
+    setWhisperLoading(true);
+
+    try {
+      const form = new FormData();
+      form.append("audio", last.blob, last.filename);
+
+      const res = await fetch(
+        `${gatewayUrl}/transcribe?lang=${encodeURIComponent(lang)}`,
+        {
+          method: "POST",
+          headers: { Authorization: `Bearer ${token.token}` },
+          body: form,
+        }
+      );
+
+      const bodyText = await res.text();
+
+      if (!res.ok) {
+        setWhisperError(`HTTP ${res.status}: ${bodyText}`);
+        setWhisperLoading(false);
+        return;
+      }
+
+      const data = JSON.parse(bodyText) as {
+        transcript: string;
+        language?: string;
+        durationMs?: number;
+        inferenceMs?: number;
+      };
+
+      setWhisperResult({
+        transcript: data.transcript,
+        language: data.language,
+        durationMs: data.durationMs,
+        inferenceMs: data.inferenceMs,
+        status: res.status,
+        raw: bodyText,
+      });
+    } catch (err) {
+      setWhisperError((err as Error).message);
+    }
+    setWhisperLoading(false);
+  }
+
   return (
     <main className={pageStyle.main}>
       <div className={style.container}>
         <div className={style.content}>
           <h1 className={style.title}>Recorder Test</h1>
+
           <p className={style.description}>
-            Records 16 kHz mono WAV clips and downloads with sequential names.
-            Same audio pipeline as the main app.
+            Records 16 kHz mono WAV clips. Use the Whisper section below to
+            send the last recording to the self-hosted inference service.
           </p>
 
           <label htmlFor="lang" className={style.label}>
@@ -235,7 +351,7 @@ export default function RecorderTestPage() {
 
           {recording && (
             <Button theme="danger" onClick={toggle}>
-              Stop & Download
+              Stop
             </Button>
           )}
 
@@ -251,15 +367,74 @@ export default function RecorderTestPage() {
 
               <audio controls src={last.url} className={style.audio} />
 
-              <a
-                href={last.url}
-                download={last.filename}
+              <button
+                type="button"
+                onClick={downloadLast}
                 className={style.downloadLink}
               >
-                Download again
-              </a>
+                Download
+              </button>
             </div>
           )}
+
+          <section className={style.section}>
+            <h2 className={style.sectionTitle}>Whisper</h2>
+
+            <p className={style.sectionMeta}>
+              Gateway: <code>{gatewayUrl || "(not configured)"}</code>
+            </p>
+
+            <div className={style.row}>
+              <Button theme="secondary" onClick={fetchToken}>
+                {tokenLoading ? "Requesting..." : "Get Token"}
+              </Button>
+
+              {token && (
+                <span className={style.tokenMeta}>
+                  expires in {formatExpiry(token.expiresAtMs)}
+                </span>
+              )}
+            </div>
+
+            {tokenError && <p className={style.error}>{tokenError}</p>}
+
+            {token && (
+              <pre className={style.tokenPreview}>
+                {token.token.slice(0, 32)}…{token.token.slice(-8)}
+              </pre>
+            )}
+
+            <Button
+              onClick={sendToWhisper}
+              disabled={!last || !token || whisperLoading}
+            >
+              {whisperLoading ? "Transcribing..." : "Send to Whisper"}
+            </Button>
+
+            {whisperError && <p className={style.error}>{whisperError}</p>}
+
+            {whisperResult && (
+              <div className={style.result}>
+                <p className={style.resultLabel}>Transcript</p>
+
+                <p className={style.transcript}>
+                  {whisperResult.transcript || "(empty)"}
+                </p>
+
+                <p className={style.resultMeta}>
+                  {whisperResult.language && (
+                    <span>lang: {whisperResult.language} · </span>
+                  )}
+                  {typeof whisperResult.durationMs === "number" && (
+                    <span>audio: {whisperResult.durationMs}ms · </span>
+                  )}
+                  {typeof whisperResult.inferenceMs === "number" && (
+                    <span>inference: {whisperResult.inferenceMs}ms</span>
+                  )}
+                </p>
+              </div>
+            )}
+          </section>
         </div>
       </div>
     </main>
