@@ -5,78 +5,8 @@
     {
       "idx": 0,
       "version": "7",
-      "when": 1776013168961,
-      "tag": "0000_loud_stephen_strange",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "7",
-      "when": 1776014712599,
-      "tag": "0001_magical_mandroid",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "7",
-      "when": 1776021286930,
-      "tag": "0002_redundant_next_avengers",
-      "breakpoints": true
-    },
-    {
-      "idx": 3,
-      "version": "7",
-      "when": 1776022443627,
-      "tag": "0003_steep_gamora",
-      "breakpoints": true
-    },
-    {
-      "idx": 4,
-      "version": "7",
-      "when": 1776071812752,
-      "tag": "0004_mean_boomer",
-      "breakpoints": true
-    },
-    {
-      "idx": 5,
-      "version": "7",
-      "when": 1776079587746,
-      "tag": "0005_friendly_captain_britain",
-      "breakpoints": true
-    },
-    {
-      "idx": 6,
-      "version": "7",
-      "when": 1776107563163,
-      "tag": "0006_illegal_vance_astro",
-      "breakpoints": true
-    },
-    {
-      "idx": 7,
-      "version": "7",
-      "when": 1776192452542,
-      "tag": "0007_conscious_boomer",
-      "breakpoints": true
-    },
-    {
-      "idx": 8,
-      "version": "7",
-      "when": 1776252326696,
-      "tag": "0008_panoramic_random",
-      "breakpoints": true
-    },
-    {
-      "idx": 9,
-      "version": "7",
-      "when": 1776272602987,
-      "tag": "0009_omniscient_obadiah_stane",
-      "breakpoints": true
-    },
-    {
-      "idx": 10,
-      "version": "7",
-      "when": 1776444373294,
-      "tag": "0010_tiresome_dagger",
+      "when": 1776446882636,
+      "tag": "0000_deep_professor_monster",
       "breakpoints": true
     }
   ]
