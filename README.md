@@ -187,6 +187,51 @@ The Next.js app only issues tokens — it never sees the audio. This keeps GPU t
 |---|---|---|
 | `/api/speech/token` | POST | Issues a short-lived JWT for the Whisper gateway (premium-only) |
 
+### Running the Whisper service locally
+
+The Whisper service lives in a sibling repo (`language-licks-whisper-service`) and is **not** started by `npm run dev`. It runs a Python inference server on `:8000` and a TypeScript gateway on `:8080`; both must be up for speech to work in dev.
+
+1. Clone and install the service (from the parent directory of this repo):
+
+   ```bash
+   cd ../language-licks-whisper-service
+   python3 -m venv .venv
+   source .venv/bin/activate
+   pip install -r requirements.txt
+   (cd gateway && cp .env.example .env && npm install)
+   ```
+
+2. Generate a shared JWT secret:
+
+   ```bash
+   openssl rand -base64 64 | tr -d '\n'
+   ```
+
+   Paste the same value into **both** `language-licks-whisper-service/gateway/.env` (as `WHISPER_JWT_SECRET`) and this app's `.env.local`. It must match byte-for-byte.
+
+3. In this app's `.env.local`:
+
+   ```
+   WHISPER_JWT_SECRET=<shared secret>
+   NEXT_PUBLIC_WHISPER_GATEWAY_URL=http://localhost:8080
+   ```
+
+4. Start Python + gateway in parallel (from the whisper-service repo root):
+
+   ```bash
+   ./dev.sh
+   ```
+
+   First run downloads the `large-v3` model weights (~3 GB) from Hugging Face; subsequent runs use the cache.
+
+5. Sanity check:
+
+   ```bash
+   curl http://localhost:8080/healthz
+   ```
+
+See the whisper-service README for Docker, GPU, and deployment details.
+
 ## Project Structure
 
 ```
