@@ -1,0 +1,373 @@
+"use client";
+
+import { useCallback, useRef, useState } from "react";
+import { IPronunciationScore } from "@lib/useAzureSpeech";
+
+interface IUseWhisperSpeechReturn {
+  transcript: string;
+  pronunciation: IPronunciationScore | null;
+  resultId: number;
+  isListening: boolean;
+  isProcessing: boolean;
+  error: string | null;
+  start: () => Promise<boolean>;
+  stop: () => void;
+}
+
+interface IWhisperToken {
+  token: string;
+  expiresAtMs: number;
+}
+
+let cachedToken: IWhisperToken | null = null;
+let inFlight: Promise<IWhisperToken> | null = null;
+
+const GATEWAY_URL = process.env.NEXT_PUBLIC_WHISPER_GATEWAY_URL;
+const REFRESH_MARGIN_MS = 60_000;
+const SILENCE_THRESHOLD = 0.01;
+const SILENCE_DURATION = 1500;
+const MAX_RECORDING_MS = 15000;
+const SAMPLE_RATE = 16000;
+const RETRY_ATTEMPTS = 3;
+const RETRY_BASE_MS = 400;
+
+async function fetchWhisperToken(): Promise<IWhisperToken> {
+  const res = await fetch("/api/speech/token", { method: "POST" });
+  if (!res.ok) {
+    throw new Error(`token request failed: ${res.status}`);
+  }
+  const data = (await res.json()) as {
+    token: string;
+    expiresInSec: number;
+  };
+  return {
+    token: data.token,
+    expiresAtMs: Date.now() + data.expiresInSec * 1000,
+  };
+}
+
+async function getWhisperToken(): Promise<IWhisperToken> {
+  if (cachedToken && cachedToken.expiresAtMs - Date.now() > REFRESH_MARGIN_MS) {
+    return cachedToken;
+  }
+  if (inFlight) return inFlight;
+
+  inFlight = fetchWhisperToken()
+    .then((t) => {
+      cachedToken = t;
+      return t;
+    })
+    .finally(() => {
+      inFlight = null;
+    });
+
+  return inFlight;
+}
+
+async function checkMicPermission(): Promise<"granted" | "denied" | "prompt"> {
+  if (navigator.permissions) {
+    try {
+      const status = await navigator.permissions.query({
+        name: "microphone" as PermissionName,
+      });
+      return status.state as "granted" | "denied" | "prompt";
+    } catch {
+      // Firefox doesn't support microphone permission query
+    }
+  }
+  return "prompt";
+}
+
+function encodeWav(pcm: Float32Array, sampleRate: number): Blob {
+  const numChannels = 1;
+  const bitsPerSample = 16;
+  const byteRate = sampleRate * numChannels * (bitsPerSample / 8);
+  const blockAlign = numChannels * (bitsPerSample / 8);
+  const dataSize = pcm.length * (bitsPerSample / 8);
+  const buffer = new ArrayBuffer(44 + dataSize);
+  const view = new DataView(buffer);
+
+  function writeString(offset: number, str: string) {
+    for (let i = 0; i < str.length; i++) {
+      view.setUint8(offset + i, str.charCodeAt(i));
+    }
+  }
+
+  writeString(0, "RIFF");
+  view.setUint32(4, 36 + dataSize, true);
+  writeString(8, "WAVE");
+  writeString(12, "fmt ");
+  view.setUint32(16, 16, true);
+  view.setUint16(20, 1, true);
+  view.setUint16(22, numChannels, true);
+  view.setUint32(24, sampleRate, true);
+  view.setUint32(28, byteRate, true);
+  view.setUint16(32, blockAlign, true);
+  view.setUint16(34, bitsPerSample, true);
+  writeString(36, "data");
+  view.setUint32(40, dataSize, true);
+
+  let offset = 44;
+  for (let i = 0; i < pcm.length; i++) {
+    const s = Math.max(-1, Math.min(1, pcm[i]));
+    view.setInt16(offset, s < 0 ? s * 0x8000 : s * 0x7fff, true);
+    offset += 2;
+  }
+
+  return new Blob([buffer], { type: "audio/wav" });
+}
+
+async function postToGateway(
+  blob: Blob,
+  lang: string
+): Promise<{ transcript: string }> {
+  let lastError: unknown = null;
+
+  if (!GATEWAY_URL) {
+    throw new Error("NEXT_PUBLIC_WHISPER_GATEWAY_URL not configured");
+  }
+
+  for (let attempt = 0; attempt < RETRY_ATTEMPTS; attempt++) {
+    try {
+      const { token } = await getWhisperToken();
+      const form = new FormData();
+      form.append("audio", blob, "audio.wav");
+
+      const res = await fetch(
+        `${GATEWAY_URL}/transcribe?lang=${encodeURIComponent(lang)}`,
+        {
+          method: "POST",
+          headers: { Authorization: `Bearer ${token}` },
+          body: form,
+        }
+      );
+
+      if (res.status === 401) {
+        cachedToken = null;
+        throw new Error("unauthorized");
+      }
+      if (res.status === 429) {
+        throw new Error("rate_limited");
+      }
+      if (!res.ok) {
+        throw new Error(`gateway_${res.status}`);
+      }
+
+      const data = (await res.json()) as { transcript: string };
+      return { transcript: data.transcript ?? "" };
+    } catch (err) {
+      lastError = err;
+      if (attempt < RETRY_ATTEMPTS - 1) {
+        const delay = RETRY_BASE_MS * Math.pow(2, attempt);
+        await new Promise((r) => setTimeout(r, delay));
+      }
+    }
+  }
+
+  throw lastError ?? new Error("gateway_failed");
+}
+
+export function useWhisperSpeech(lang: string): IUseWhisperSpeechReturn {
+  const [transcript, setTranscript] = useState("");
+  const [resultId, setResultId] = useState(0);
+  const [isListening, setIsListening] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const busyRef = useRef(false);
+  const micStreamRef = useRef<MediaStream | null>(null);
+  const audioContextRef = useRef<AudioContext | null>(null);
+  const analyserRef = useRef<AnalyserNode | null>(null);
+  const silenceStartRef = useRef<number | null>(null);
+  const speechDetectedRef = useRef(false);
+  const rafRef = useRef<number>(0);
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const stoppedRef = useRef(false);
+  const pcmChunksRef = useRef<Float32Array[]>([]);
+  const processorRef = useRef<ScriptProcessorNode | null>(null);
+
+  function cleanup() {
+    if (rafRef.current) {
+      cancelAnimationFrame(rafRef.current);
+      rafRef.current = 0;
+    }
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+      timeoutRef.current = null;
+    }
+    if (processorRef.current) {
+      processorRef.current.disconnect();
+      processorRef.current = null;
+    }
+    if (audioContextRef.current) {
+      audioContextRef.current.close();
+      audioContextRef.current = null;
+    }
+    analyserRef.current = null;
+    if (micStreamRef.current) {
+      micStreamRef.current.getTracks().forEach((t) => t.stop());
+      micStreamRef.current = null;
+    }
+  }
+
+  async function sendAudio(blob: Blob) {
+    setIsListening(false);
+    setIsProcessing(true);
+
+    try {
+      console.log(`[whisper] sending audio — ${(blob.size / 1024).toFixed(1)} KB`);
+      const { transcript: text } = await postToGateway(blob, lang);
+      console.log("[whisper] transcript:", text);
+
+      if (text) {
+        setTranscript(text);
+        setResultId((id) => id + 1);
+      }
+    } catch (err) {
+      console.log("[whisper] error:", err);
+      setError("Speech recognition failed");
+    }
+
+    setIsProcessing(false);
+    busyRef.current = false;
+  }
+
+  function finishRecording() {
+    cleanup();
+
+    const maxSamples = SAMPLE_RATE * (MAX_RECORDING_MS / 1000);
+    let totalLength = 0;
+    for (const chunk of pcmChunksRef.current) totalLength += chunk.length;
+    const cappedLength = Math.min(totalLength, maxSamples);
+    const pcm = new Float32Array(cappedLength);
+    let offset = 0;
+    for (const chunk of pcmChunksRef.current) {
+      const remaining = cappedLength - offset;
+      if (remaining <= 0) break;
+      const toCopy = Math.min(chunk.length, remaining);
+      pcm.set(chunk.subarray(0, toCopy), offset);
+      offset += toCopy;
+    }
+
+    if (pcm.length > 0 && speechDetectedRef.current) {
+      const wav = encodeWav(pcm, SAMPLE_RATE);
+      sendAudio(wav);
+    } else {
+      setIsListening(false);
+      busyRef.current = false;
+    }
+  }
+
+  function stopRecording() {
+    if (stoppedRef.current) return;
+    stoppedRef.current = true;
+    finishRecording();
+  }
+
+  function monitorSilence() {
+    const analyser = analyserRef.current;
+    if (!analyser) return;
+
+    const dataArray = new Float32Array(analyser.fftSize);
+
+    function check() {
+      if (stoppedRef.current) return;
+
+      analyser!.getFloatTimeDomainData(dataArray);
+
+      let sum = 0;
+      for (let i = 0; i < dataArray.length; i++) {
+        sum += dataArray[i] * dataArray[i];
+      }
+      const rms = Math.sqrt(sum / dataArray.length);
+
+      if (rms > SILENCE_THRESHOLD) {
+        speechDetectedRef.current = true;
+        silenceStartRef.current = null;
+      } else if (speechDetectedRef.current) {
+        if (silenceStartRef.current === null) {
+          silenceStartRef.current = Date.now();
+        } else if (Date.now() - silenceStartRef.current >= SILENCE_DURATION) {
+          stopRecording();
+          return;
+        }
+      }
+
+      rafRef.current = requestAnimationFrame(check);
+    }
+
+    rafRef.current = requestAnimationFrame(check);
+  }
+
+  const start = useCallback(async (): Promise<boolean> => {
+    if (busyRef.current) return false;
+    busyRef.current = true;
+
+    const permission = await checkMicPermission();
+    if (permission === "denied") {
+      busyRef.current = false;
+      return false;
+    }
+
+    setError(null);
+    setTranscript("");
+    setIsProcessing(false);
+    speechDetectedRef.current = false;
+    silenceStartRef.current = null;
+    stoppedRef.current = false;
+    pcmChunksRef.current = [];
+
+    let micStream: MediaStream;
+    try {
+      micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    } catch {
+      busyRef.current = false;
+      return false;
+    }
+
+    micStreamRef.current = micStream;
+
+    const audioContext = new AudioContext({ sampleRate: SAMPLE_RATE });
+    audioContextRef.current = audioContext;
+    const source = audioContext.createMediaStreamSource(micStream);
+
+    const analyser = audioContext.createAnalyser();
+    analyser.fftSize = 2048;
+    source.connect(analyser);
+    analyserRef.current = analyser;
+
+    const processor = audioContext.createScriptProcessor(4096, 1, 1);
+    processor.onaudioprocess = (e: AudioProcessingEvent) => {
+      if (!stoppedRef.current) {
+        pcmChunksRef.current.push(new Float32Array(e.inputBuffer.getChannelData(0)));
+      }
+    };
+    source.connect(processor);
+    processor.connect(audioContext.destination);
+    processorRef.current = processor;
+
+    setIsListening(true);
+
+    monitorSilence();
+
+    timeoutRef.current = setTimeout(() => {
+      stopRecording();
+    }, MAX_RECORDING_MS);
+
+    return true;
+  }, [lang]);
+
+  const stop = useCallback(() => {
+    stopRecording();
+  }, []);
+
+  return {
+    transcript,
+    pronunciation: null,
+    resultId,
+    isListening,
+    isProcessing,
+    error,
+    start,
+    stop,
+  };
+}
