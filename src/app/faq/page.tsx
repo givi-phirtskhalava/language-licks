@@ -155,20 +155,8 @@ export default function FaqPage() {
               invasive marketing tracking, we don&apos;t sell your data, and we
               don&apos;t use cookies beyond what&apos;s needed for
               authentication. Your voice recordings are processed in real time
-              by Microsoft Azure Speech Services and are never stored &mdash;
-              not by us, and not by Microsoft. We don&apos;t use your audio for
-              training AI or any other purpose. Microsoft&apos;s own{" "}
-              <a
-                href="https://learn.microsoft.com/en-us/azure/foundry/responsible-ai/speech-service/speech-to-text/data-privacy-security"
-                target="_blank"
-                rel="noopener noreferrer"
-                className={styles.link}
-              >
-                privacy policy
-              </a>{" "}
-              applies to speech processing and may change over time, but we will
-              make reasonable efforts to ensure your data is not misused by any
-              third party.
+              on our own speech recognition servers and are never stored or
+              used to train any AI model.
             </p>
           </div>
 

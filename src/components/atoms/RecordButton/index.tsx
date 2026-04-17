@@ -8,7 +8,6 @@ interface Props {
   isProcessing: boolean;
   error: string | null;
   onToggle: () => void;
-  credits?: number | null;
 }
 
 export default function RecordButton({
@@ -16,7 +15,6 @@ export default function RecordButton({
   isProcessing,
   error,
   onToggle,
-  credits,
 }: Props) {
   const btnClass = isProcessing
     ? styles.btnProcessing
@@ -24,14 +22,12 @@ export default function RecordButton({
       ? styles.btnListening
       : styles.btnIdle;
 
-  const noCredits = credits !== undefined && credits !== null && credits <= 0;
-
   return (
     <>
       <div className={styles.wrap}>
         <button
           onClick={onToggle}
-          disabled={isProcessing || noCredits}
+          disabled={isProcessing}
           className={`${styles.btn} ${btnClass}`}
         >
           {isProcessing ? (
@@ -47,12 +43,6 @@ export default function RecordButton({
               ? "Click to stop"
               : "Record"}
         </button>
-
-        {credits !== undefined && credits !== null && (
-          <p className={styles.credits}>
-            {credits} {credits === 1 ? "recording" : "recordings"} left
-          </p>
-        )}
       </div>
 
       {error && <p className={styles.error}>{error}</p>}

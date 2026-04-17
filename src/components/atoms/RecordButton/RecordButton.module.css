@@ -43,11 +43,6 @@
   cursor: wait;
 }
 
-.credits {
-  font-size: 0.75em;
-  color: var(--text-light);
-}
-
 .spinnerWrap {
   display: inline-flex;
   width: 1em;

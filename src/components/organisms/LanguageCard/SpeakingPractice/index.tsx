@@ -4,7 +4,6 @@ import { useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faLock, faLockOpen } from "@fortawesome/free-solid-svg-icons";
 import CorrectionDisplay from "@/components/atoms/CorrectionDisplay";
-import PronunciationFeedback from "@/components/atoms/PronunciationFeedback";
 import FeedbackAlert from "@atoms/FeedbackAlert";
 import Button from "@atoms/Button";
 import RecordButton from "@atoms/RecordButton";
@@ -16,7 +15,6 @@ interface Props {
   lesson: ILesson;
   locale: string;
   languageLabel: string;
-  credits: number | null;
   onReady: () => void;
   isFirstTime?: boolean;
   initialLessonLearned?: boolean;
@@ -27,7 +25,6 @@ export default function SpeakingPractice({
   lesson,
   locale,
   languageLabel,
-  credits,
   onReady,
   isFirstTime = false,
   initialLessonLearned = false,
@@ -65,7 +62,6 @@ export default function SpeakingPractice({
           isProcessing={speaking.isProcessing}
           error={speaking.error}
           onToggle={handleRecordToggle}
-          credits={credits}
         />
 
         {speaking.result && !speaking.isProcessing && (
@@ -83,17 +79,6 @@ export default function SpeakingPractice({
             <CorrectionDisplay words={speaking.result.words} />
           </div>
         )}
-
-        {/* TODO: bring back when pronunciation assessment can coexist with real STT
-        {speaking.result &&
-          speaking.result.pronunciation &&
-          !speaking.isProcessing && (
-            <PronunciationFeedback
-              accuracyScore={speaking.result.pronunciation.accuracyScore}
-              wordScores={speaking.result.pronunciation.words}
-            />
-          )}
-        */}
       </div>
 
       <Button onClick={onReady} disabled={isFirstTime && !lessonLearned}>

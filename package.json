@@ -22,7 +22,6 @@
     "classnames": "^2.5.1",
     "drizzle-orm": "^0.45.2",
     "jose": "^6.2.2",
-    "microsoft-cognitiveservices-speech-sdk": "^1.49.0",
     "motion": "^12.38.0",
     "next": "16.2.3",
     "pg": "^8.20.0",

@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 import RecordButton from "@atoms/RecordButton";
 import SentenceDisplay from "@/components/organisms/LanguageCard/SentenceDisplay";
 import CorrectionDisplay from "@/components/atoms/CorrectionDisplay";
-import PronunciationFeedback from "@/components/atoms/PronunciationFeedback";
 import WritingInput from "@/components/organisms/LanguageCard/WritingInput";
 import FeedbackAlert from "@atoms/FeedbackAlert";
 import Button from "@atoms/Button";
@@ -20,7 +19,6 @@ interface Props {
   lesson: ILesson;
   locale: string;
   languageLabel: string;
-  credits: number | null;
   onPass: () => void;
   onFail: () => void;
   onViewLesson: () => void;
@@ -32,7 +30,6 @@ export default function Review({
   lesson,
   locale,
   languageLabel,
-  credits,
   onPass,
   onFail,
   onViewLesson,
@@ -176,7 +173,6 @@ export default function Review({
             isProcessing={speaking.isProcessing}
             error={speaking.error}
             onToggle={handleRecordToggle}
-            credits={credits}
           />
         </div>
       )}
@@ -194,17 +190,6 @@ export default function Review({
                 : "Not quite \u2014 try again"}
           </FeedbackAlert>
         )}
-
-      {/* TODO: bring back when pronunciation assessment can coexist with real STT
-      {step === "speaking" &&
-        speaking.result?.pronunciation &&
-        !speaking.isProcessing && (
-          <PronunciationFeedback
-            accuracyScore={speaking.result.pronunciation.accuracyScore}
-            wordScores={speaking.result.pronunciation.words}
-          />
-        )}
-      */}
     </div>
   );
 }

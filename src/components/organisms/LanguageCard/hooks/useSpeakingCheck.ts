@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import toast from "react-hot-toast";
-import { useAzureSpeech, IPronunciationScore } from "@/lib/useAzureSpeech";
+import { useWhisperSpeech } from "@/lib/useWhisperSpeech";
 import {
   compareWriting,
   IWriteWordResult,
@@ -52,7 +52,6 @@ function stripHesitation(expected: string, actual: string): string {
 interface ISpeakResult {
   correct: boolean;
   words: IWriteWordResult[];
-  pronunciation: IPronunciationScore | null;
 }
 
 interface IUseSpeakingCheckReturn {
@@ -72,14 +71,13 @@ export default function useSpeakingCheck(
 ): IUseSpeakingCheckReturn {
   const {
     transcript,
-    pronunciation,
     resultId,
     isListening,
     isProcessing,
     error,
     start,
     stop,
-  } = useAzureSpeech(lang, sentence);
+  } = useWhisperSpeech(lang.slice(0, 2));
 
   const [result, setResult] = useState<ISpeakResult | null>(null);
   const processedResultId = useRef(0);
@@ -88,7 +86,6 @@ export default function useSpeakingCheck(
     if (resultId > processedResultId.current && transcript) {
       processedResultId.current = resultId;
       console.log("[speech] transcript:", transcript);
-      console.log("[speech] pronunciation:", JSON.stringify(pronunciation, null, 2));
 
       const cleaned = stripHesitation(sentence, transcript);
       console.log("[speech] cleaned:", cleaned);
@@ -101,7 +98,7 @@ export default function useSpeakingCheck(
           r.status === "extra",
       );
 
-      setResult({ correct: passed, words: results, pronunciation });
+      setResult({ correct: passed, words: results });
       if (passed) {
         onCorrect?.();
       } else {

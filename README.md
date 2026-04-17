@@ -40,8 +40,8 @@ JWT_ACCESS_SECRET=     # openssl rand -base64 64
 JWT_REFRESH_SECRET=    # openssl rand -base64 64 (must be different from access)
 RESEND_API_KEY=        # from resend.com
 EMAIL_FROM=            # verified sender in Resend
-AZURE_SPEECH_KEY=      # from Azure Portal → Speech service → Keys and Endpoint
-AZURE_SPEECH_REGION=   # e.g. westeurope, eastus
+WHISPER_JWT_SECRET=    # HS256 secret, must match the whisper-service gateway
+NEXT_PUBLIC_WHISPER_GATEWAY_URL=   # e.g. http://localhost:8080 in dev
 ```
 
 4. Generate and run migrations:
@@ -85,7 +85,6 @@ Open [http://localhost:3000](http://localhost:3000).
 - **users** - User accounts with email, name, and selected language
 - **lessons** - Lesson content per language (sentence, translation, grammar, liaison tips) stored with JSON columns
 - **progress** - Per-user lesson progress tracking (phase, completion, SRS intervals)
-- **speech_usage** - Monthly speech recognition usage per user (training and testing seconds)
 
 ### Migrations
 
@@ -166,85 +165,27 @@ All auth cookies are set with:
 - Failed verification attempts are rate-limited
 - Tokens contain minimal claims (user ID, token version) — no PII in the payload
 
-## Speech Recognition & Pronunciation Assessment
+## Speech Recognition
 
-Speech recognition is powered by Azure Speech with Pronunciation Assessment. This replaces the browser's Web Speech API, which was unreliable across browsers and devices.
+Speech recognition is powered by a self-hosted Whisper service (`language-licks-whisper-service`) running `faster-whisper` (`large-v3`) behind a TypeScript gateway. Only authenticated premium users can call it.
 
-### Audio Format & Duration
+### Audio Format
 
-Audio is captured client-side as **WAV** (16kHz, 16-bit, mono PCM). WAV was chosen because:
-
-- Azure's REST API reliably decodes it with no container/codec ambiguity
-- Browser `MediaRecorder` compressed formats (WebM, MP4) vary by browser and Azure doesn't consistently transcribe them
-- At 16kHz mono, 30 seconds of audio is ~960KB — well within the 1MB server limit
-
-Recording auto-stops after **1.5 seconds of silence** following detected speech, or after a **30-second hard cap**. The PCM buffer is capped at 30 seconds of samples before WAV encoding to prevent overruns from audio thread timing.
+Audio is captured client-side as **WAV** (16kHz, 16-bit, mono PCM). Recording auto-stops after **1.5 seconds of silence** following detected speech, or after a **15-second hard cap**.
 
 ### Architecture
 
-Audio is proxied through the server — the client never talks to Azure directly. This keeps the API key private and gives the server full control over every recognition request.
+1. The client requests a short-lived HS256 JWT from `POST /api/speech/token` (premium-gated, 15-minute TTL, cached at module scope).
+2. The client captures PCM audio via `AudioContext`, encodes it as a WAV blob, and POSTs it directly to the Whisper gateway with the JWT as a bearer token.
+3. The gateway verifies the JWT, applies per-IP and per-user rate limits, and proxies the request to the Python inference server.
 
-1. The client captures raw PCM audio via `AudioContext` + `ScriptProcessor` at 16kHz mono
-2. On stop, the client encodes the PCM buffer as a WAV blob and sends it to `POST /api/speech/recognize`
-3. The server validates the request (auth, file size ≤ 1MB, monthly budget remaining)
-4. The server forwards the WAV to Azure Speech REST API and returns the transcript
-5. The server records usage duration (from Azure's response) in `speech_usage`
-
-Because the server handles every call, there is no way for a client to bypass usage limits, underreport duration, or abuse Azure credentials directly.
-
-### Usage Limits
-
-Each authenticated user gets per month:
-
-| Mode | Limit | Use case |
-|---|---|---|
-| Training | 1 hour (3600s) | Writing/speaking practice sessions |
-| Testing | 15 minutes (900s) | Review and test sessions |
-
-Usage is tracked in the `speech_usage` table, keyed by user ID and month (`YYYY-MM` format). Limits are checked before every recognition request — once a user exceeds their allowance, the endpoint returns 403.
-
-Duration is taken from Azure's response (`Duration` field), which reflects the actual speech duration in the audio — not the full recording length, upload time, or server processing time. A 10-second recording where the user spoke for 4 seconds is billed as 4 seconds.
-
-### Monthly Reset
-
-There is no cron job or scheduled reset. Each row in `speech_usage` is keyed by a `month` column in `YYYY-MM` format (e.g., `"2026-04"`). When a new month begins, `getCurrentMonth()` returns the new value, the query finds no matching row, and usage starts at 0. A new row is inserted on first use. Old months remain as history.
-
-### Pronunciation Feedback
-
-Azure Pronunciation Assessment returns four scores with each recognition:
-
-| Score | What it measures |
-|---|---|
-| Accuracy | How closely phonemes match native pronunciation |
-| Fluency | Smoothness and natural pacing |
-| Completeness | Ratio of pronounced words to expected words |
-| Prosody | Stress, intonation, and rhythm |
-
-Word-level accuracy scores are also returned. Words scoring below 60% are highlighted in the UI as needing work.
-
-### Azure Setup
-
-1. Go to [Azure Portal](https://portal.azure.com)
-2. Search for "Speech" and create a Speech service resource (S0 / Standard tier)
-3. Go to **Keys and Endpoint**, copy **Key 1** and the **Region**
-4. Add `AZURE_SPEECH_KEY` and `AZURE_SPEECH_REGION` to your `.env`
-
-### Cost
-
-Azure Speech real-time transcription with pronunciation assessment costs **$1 per audio hour**. At the current per-user limits (1h 15min/month), maximum cost per active user is approximately **$1.25/month**.
-
-| Active users | Max monthly cost |
-|---|---|
-| 100 | $125 |
-| 1,000 | $1,250 |
-| 10,000 | $12,500 |
+The Next.js app only issues tokens — it never sees the audio. This keeps GPU traffic off the web tier.
 
 ### Speech API Routes
 
 | Route | Method | Description |
 |---|---|---|
-| `/api/speech/recognize` | POST | Receives audio, proxies to Azure, returns transcript, records usage |
-| `/api/speech/usage` | GET | Returns current month's usage and limits |
+| `/api/speech/token` | POST | Issues a short-lived JWT for the Whisper gateway (premium-only) |
 
 ## Project Structure
 

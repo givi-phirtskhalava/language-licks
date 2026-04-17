@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
 import useAuth from "@lib/hooks/useAuth";
 import usePaddle from "@lib/hooks/usePaddle";
-import useSpeechCredits from "@lib/hooks/useSpeechUsage";
 import useLanguage from "@lib/useLanguage";
 import { clearDbMode, clearAllProgress } from "@lib/useProgress";
 import Modal from "@/components/atoms/Modal";
@@ -25,43 +24,12 @@ type TModal = null | "change-email" | "delete-account" | "clear-progress";
 type TEmailStep = "email" | "code";
 type TDeleteStep = "send" | "confirm";
 
-interface ICreditsCardProps {
-  balance: number;
-  maxAccumulation: number;
-  dailyAllowance: number;
-}
-
-function CreditsCard({ balance, maxAccumulation, dailyAllowance }: ICreditsCardProps) {
-  const percentage = Math.min((balance / maxAccumulation) * 100, 100);
-
-  return (
-    <div className={styles.usageCard}>
-      <div className={styles.usageHeader}>
-        <span className={styles.usageLabel}>Credits</span>
-        <span className={styles.usageTime}>
-          {balance} left
-        </span>
-      </div>
-      <div className={styles.usageBarTrack}>
-        <div
-          className={styles.usageBarFill}
-          style={{ width: `${percentage}%` }}
-        />
-      </div>
-      <p className={styles.usageDetail}>
-        {balance} / {maxAccumulation} &middot; +{dailyAllowance}/day
-      </p>
-    </div>
-  );
-}
-
 export default function ProfilePage() {
   const router = useRouter();
   const queryClient = useQueryClient();
   const { user, isLoggedIn, isPremium, isLoading } = useAuth();
   const { openCheckout } = usePaddle();
   const { language } = useLanguage();
-  const { data: speechCreditsData } = useSpeechCredits();
 
   const [modal, setModal] = useState<TModal>(null);
   const [billingLoading, setBillingLoading] = useState(false);
@@ -430,23 +398,6 @@ export default function ProfilePage() {
             </div>
           )}
         </section>
-
-        {isPremium && speechCreditsData && (
-          <section className={styles.group}>
-            <p className={styles.sectionTitle}>Credits</p>
-            <p className={styles.usageDescription}>
-              Each voice recording costs 1 credit. You get {speechCreditsData.dailyAllowance} credits
-              per day, up to a maximum of {speechCreditsData.maxAccumulation}.
-            </p>
-            <div className={styles.usageCards}>
-              <CreditsCard
-                balance={speechCreditsData.balance}
-                maxAccumulation={speechCreditsData.maxAccumulation}
-                dailyAllowance={speechCreditsData.dailyAllowance}
-              />
-            </div>
-          </section>
-        )}
 
         <section className={styles.group}>
           <p className={styles.dangerTitle}>Danger zone</p>

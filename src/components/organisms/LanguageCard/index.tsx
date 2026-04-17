@@ -16,7 +16,6 @@ import Complete from "./Complete";
 import SignUpPrompt from "@atoms/SignUpPrompt";
 import useLesson from "@lib/hooks/useLesson";
 import useAuth from "@lib/hooks/useAuth";
-import useSpeechCredits from "@lib/hooks/useSpeechUsage";
 import { TPhase } from "@lib/types";
 import useLanguage from "@lib/useLanguage";
 import { LANGUAGES } from "@lib/projectConfig";
@@ -50,8 +49,6 @@ export default function LanguageCard({
   } = useProgress(language);
   const hasWritingAccess = isFree || isPremium;
   const hasVoiceAccess = isPremium;
-  const { data: speechCreditsData } = useSpeechCredits();
-  const credits = speechCreditsData?.balance ?? null;
   const { data: lesson, isLoading } = useLesson(lessonId);
   const saved = getLesson(lessonId);
   const savedPhase =
@@ -208,7 +205,6 @@ export default function LanguageCard({
             lesson={lesson}
             locale={locale}
             languageLabel={langConfig?.label ?? "French"}
-            credits={credits}
             isFirstTime={isFirstTime}
             onReady={() => {
               if (mode === "lesson" && saved?.completed) {
@@ -226,7 +222,6 @@ export default function LanguageCard({
             lesson={lesson}
             locale={locale}
             languageLabel={langConfig?.label ?? "French"}
-            credits={credits}
             onPass={handleReviewPass}
             onFail={handleReviewFail}
             onViewLesson={handleViewLesson}

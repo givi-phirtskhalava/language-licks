@@ -1,11 +1,9 @@
 "use client";
 
 import { useCallback, useRef, useState } from "react";
-import { IPronunciationScore } from "@lib/useAzureSpeech";
 
 interface IUseWhisperSpeechReturn {
   transcript: string;
-  pronunciation: IPronunciationScore | null;
   resultId: number;
   isListening: boolean;
   isProcessing: boolean;
@@ -362,7 +360,6 @@ export function useWhisperSpeech(lang: string): IUseWhisperSpeechReturn {
 
   return {
     transcript,
-    pronunciation: null,
     resultId,
     isListening,
     isProcessing,

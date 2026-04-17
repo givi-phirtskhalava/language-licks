@@ -17,27 +17,6 @@ export interface ILesson {
 
 export type TPhase = "lesson" | "practice" | "practice-writing" | "practice-speaking" | "test" | "review" | "complete";
 
-export interface IAzureWordScore {
-  word: string;
-  accuracyScore: number;
-  errorType: "None" | "Omission" | "Insertion" | "Mispronunciation";
-}
-
-export interface IAzureSpeechResult {
-  transcript: string;
-  accuracyScore: number;
-  fluencyScore: number;
-  completenessScore: number;
-  prosodyScore: number;
-  words: IAzureWordScore[];
-}
-
-export interface ISpeechCredits {
-  balance: number;
-  dailyAllowance: number;
-  maxAccumulation: number;
-}
-
 export interface ILessonProgress {
   phase: TPhase;
   completed: boolean;
