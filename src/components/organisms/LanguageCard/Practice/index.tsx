@@ -38,7 +38,7 @@ export default function Practice({ lesson, onReady }: Props) {
     () => {
       speakTimer.resetTimer();
       speakStreak.miss();
-    },
+    }
   );
 
   function handleWriteSubmit(input: string) {
@@ -80,7 +80,6 @@ export default function Practice({ lesson, onReady }: Props) {
       {/* Writing practice */}
       <div>
         <SectionHeader
-          label="Writing Practice"
           bestTime={writeTimer.bestTime}
           streak={writeStreak.streak}
           streakGoal={writeStreak.goal}
@@ -116,7 +115,6 @@ export default function Practice({ lesson, onReady }: Props) {
       {/* Speaking practice */}
       <div>
         <SectionHeader
-          label="Speaking Practice"
           bestTime={speakTimer.bestTime}
           streak={speakStreak.streak}
           streakGoal={speakStreak.goal}
@@ -127,7 +125,6 @@ export default function Practice({ lesson, onReady }: Props) {
           isProcessing={speaking.isProcessing}
           error={speaking.error}
           onToggle={handleRecordToggle}
-          showHint={!speaking.result}
         />
 
         {speaking.result && !speaking.isProcessing && (
@@ -155,12 +152,9 @@ export default function Practice({ lesson, onReady }: Props) {
             <CorrectionDisplay words={speaking.result.words} />
           </div>
         )}
-
       </div>
 
-      <Button onClick={onReady}>
-        {"I\u2019m ready \u2014 test me"}
-      </Button>
+      <Button onClick={onReady}>{"I\u2019m ready \u2014 test me"}</Button>
     </div>
   );
 }
