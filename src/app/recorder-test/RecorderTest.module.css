@@ -181,3 +181,37 @@
   margin: 0;
   font-family: monospace;
 }
+
+.textarea {
+  padding: 0.625em 0.75em;
+  border-radius: 0.5em;
+  border: 1px solid var(--border);
+  font-size: 0.9375em;
+  background: var(--bg-white);
+  font-family: inherit;
+  color: var(--text-body);
+  resize: vertical;
+  min-height: 3em;
+}
+
+.passBadge,
+.failBadge {
+  display: inline-block;
+  align-self: flex-start;
+  padding: 0.125em 0.5em;
+  border-radius: 0.25em;
+  font-size: 0.75em;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  margin: 0;
+}
+
+.passBadge {
+  background: var(--success-bg, #d4edda);
+  color: var(--success, #1e7e34);
+}
+
+.failBadge {
+  background: var(--danger-bg, #f8d7da);
+  color: var(--danger, #c0392b);
+}

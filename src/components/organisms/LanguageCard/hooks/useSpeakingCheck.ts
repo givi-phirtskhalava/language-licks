@@ -2,11 +2,10 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import toast from "react-hot-toast";
-import { useWhisperSpeech } from "@/lib/useWhisperSpeech";
+import { useWhisperSpeech, IWhisperScoreResult } from "@/lib/useWhisperSpeech";
 import {
   compareWriting,
   IWriteWordResult,
-  TWriteWordStatus,
 } from "@/components/organisms/LanguageCard/hooks/useWritingCheck";
 // Strip leading hesitations/restarts from speech.
 // If the user stutters "Nos... nos amis les animaux..." we find the
@@ -54,6 +53,27 @@ interface ISpeakResult {
   words: IWriteWordResult[];
 }
 
+function wordsFromScore(score: IWhisperScoreResult): IWriteWordResult[] {
+  if (!score.perWord) return [];
+  return score.perWord.map((w) => {
+    if (!w.flagged) {
+      return { expected: w.word, actual: w.word, status: "correct" };
+    }
+    if (
+      w.flagReason === "mispronunciation" ||
+      w.flagReason === "insertion" ||
+      w.flagReason === "deletion"
+    ) {
+      return { expected: w.word, actual: w.word, status: "warning" };
+    }
+    return {
+      expected: w.word,
+      actual: w.whisperHeard ?? null,
+      status: w.whisperHeard ? "error" : "missing",
+    };
+  });
+}
+
 interface IUseSpeakingCheckReturn {
   result: ISpeakResult | null;
   isListening: boolean;
@@ -71,6 +91,7 @@ export default function useSpeakingCheck(
 ): IUseSpeakingCheckReturn {
   const {
     transcript,
+    scoreResult,
     resultId,
     isListening,
     isProcessing,
@@ -87,25 +108,49 @@ export default function useSpeakingCheck(
       processedResultId.current = resultId;
       console.log("[speech] transcript:", transcript);
 
-      const cleaned = stripHesitation(sentence, transcript);
-      console.log("[speech] cleaned:", cleaned);
-      const results = compareWriting(sentence, cleaned);
-      const passed = !results.some(
-        (r) =>
-          (r.status === "error" &&
-            !(r.actual && isSpeechEquivalent(r.expected, r.actual))) ||
-          r.status === "missing" ||
-          r.status === "extra",
-      );
+      let words: IWriteWordResult[];
+      let passed: boolean;
 
-      setResult({ correct: passed, words: results });
+      if (scoreResult?.perWord) {
+        console.log(`[speech] overall score=${scoreResult.overallScore}`);
+        console.table(
+          scoreResult.perWord.map((w) => ({
+            word: w.word,
+            flagged: w.flagged,
+            reason: w.flagReason ?? "",
+            score: w.score,
+            inserts: w.insertions ?? 0,
+            drops: w.deletions ?? 0,
+            added: w.added ?? "",
+            dropped: w.dropped ?? "",
+            expectedIpa: w.expectedIpa ?? "",
+            heardIpa: w.heardIpa ?? "",
+            whisper: w.whisperHeard ?? "<missing>",
+          })),
+        );
+        words = wordsFromScore(scoreResult);
+        passed = scoreResult.perWord.every((w) => !w.flagged);
+      } else {
+        const cleaned = stripHesitation(sentence, transcript);
+        console.log("[speech] cleaned:", cleaned);
+        words = compareWriting(sentence, cleaned);
+        passed = !words.some(
+          (r) =>
+            (r.status === "error" &&
+              !(r.actual && isSpeechEquivalent(r.expected, r.actual))) ||
+            r.status === "missing" ||
+            r.status === "extra",
+        );
+      }
+
+      setResult({ correct: passed, words });
       if (passed) {
         onCorrect?.();
       } else {
         onWrong?.();
       }
     }
-  }, [resultId, transcript, sentence]);
+  }, [resultId, transcript, scoreResult, sentence]);
 
   const toggle = useCallback(async () => {
     if (isProcessing) return;
@@ -116,14 +161,14 @@ export default function useSpeakingCheck(
     }
 
     setResult(null);
-    const started = await start();
+    const started = await start(sentence);
     if (!started && !error) {
       toast.error(
         "Microphone access is blocked. Please allow it in your browser settings.",
         { duration: 4000 },
       );
     }
-  }, [isProcessing, isListening, start, stop, error]);
+  }, [isProcessing, isListening, start, stop, error, sentence]);
 
   function clearResult() {
     setResult(null);

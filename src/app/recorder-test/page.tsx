@@ -1,12 +1,28 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Button from "@atoms/Button";
+import CorrectionDisplay from "@atoms/CorrectionDisplay";
+import {
+  IWhisperScoreResult,
+  IWhisperWordScore,
+} from "@lib/useWhisperSpeech";
+import { IWriteWordResult } from "@organisms/LanguageCard/hooks/useWritingCheck";
+import { getLessons } from "@lib/lessons";
+import { LANGUAGES as PROJECT_LANGUAGES, TLanguageId } from "@lib/projectConfig";
 import style from "./RecorderTest.module.css";
 import pageStyle from "../page.module.css";
 
 const SAMPLE_RATE = 16000;
 const MAX_MS = 30000;
+const SAMPLE_AUDIO_PATH = "/temp/sample_fr_26.wav";
+
+function languageIdForCode(code: string): TLanguageId | null {
+  const match = PROJECT_LANGUAGES.find((l) =>
+    l.locale.toLowerCase().startsWith(code.toLowerCase()),
+  );
+  return match ? (match.id as TLanguageId) : null;
+}
 
 interface ILanguageOption {
   code: string;
@@ -46,6 +62,30 @@ interface IWhisperResult {
   inferenceMs?: number;
   status: number;
   raw: string;
+  overallScore?: number;
+  perWord?: IWhisperWordScore[];
+  heardIpa?: string;
+}
+
+function wordsFromScore(score: IWhisperScoreResult): IWriteWordResult[] {
+  if (!score.perWord) return [];
+  return score.perWord.map((w) => {
+    if (!w.flagged) {
+      return { expected: w.word, actual: w.word, status: "correct" };
+    }
+    if (
+      w.flagReason === "mispronunciation" ||
+      w.flagReason === "insertion" ||
+      w.flagReason === "deletion"
+    ) {
+      return { expected: w.word, actual: w.word, status: "warning" };
+    }
+    return {
+      expected: w.word,
+      actual: w.whisperHeard ?? null,
+      status: w.whisperHeard ? "error" : "missing",
+    };
+  });
 }
 
 function counterKey(lang: string): string {
@@ -116,6 +156,7 @@ function formatExpiry(expiresAtMs: number): string {
 
 export default function RecorderTestPage() {
   const [lang, setLang] = useState("fr");
+  const [target, setTarget] = useState("");
   const [recording, setRecording] = useState(false);
   const [status, setStatus] = useState("Ready.");
   const [last, setLast] = useState<ILastRecording | null>(null);
@@ -125,6 +166,8 @@ export default function RecorderTestPage() {
   const [whisperResult, setWhisperResult] = useState<IWhisperResult | null>(null);
   const [whisperError, setWhisperError] = useState<string | null>(null);
   const [whisperLoading, setWhisperLoading] = useState(false);
+  const [correction, setCorrection] = useState<IWriteWordResult[] | null>(null);
+  const [passed, setPassed] = useState<boolean | null>(null);
 
   const micStreamRef = useRef<MediaStream | null>(null);
   const audioContextRef = useRef<AudioContext | null>(null);
@@ -133,6 +176,37 @@ export default function RecorderTestPage() {
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const gatewayUrl = process.env.NEXT_PUBLIC_WHISPER_GATEWAY_URL;
+
+  const languageId = languageIdForCode(lang);
+  const lessons = languageId ? getLessons(languageId) : [];
+
+  useEffect(() => {
+    let cancelled = false;
+    async function loadSample() {
+      try {
+        const res = await fetch(SAMPLE_AUDIO_PATH);
+        if (!res.ok) return;
+        const blob = await res.blob();
+        if (cancelled) return;
+        const url = URL.createObjectURL(blob);
+        const seconds = Math.max(0, (blob.size - 44) / 2 / SAMPLE_RATE);
+        setLast({
+          url,
+          filename: "sample_fr_26.wav",
+          seconds,
+          sizeKb: blob.size / 1024,
+          blob,
+        });
+        setStatus("Loaded sample_fr_26.wav");
+      } catch {
+        // ignore — sample is optional
+      }
+    }
+    loadSample();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   function cleanup() {
     if (processorRef.current) {
@@ -274,20 +348,23 @@ export default function RecorderTestPage() {
 
     setWhisperError(null);
     setWhisperResult(null);
+    setCorrection(null);
+    setPassed(null);
     setWhisperLoading(true);
 
     try {
       const form = new FormData();
       form.append("audio", last.blob, last.filename);
 
-      const res = await fetch(
-        `${gatewayUrl}/transcribe?lang=${encodeURIComponent(lang)}`,
-        {
-          method: "POST",
-          headers: { Authorization: `Bearer ${token.token}` },
-          body: form,
-        }
-      );
+      const params = new URLSearchParams({ lang });
+      const trimmedTarget = target.trim();
+      if (trimmedTarget) params.set("target", trimmedTarget);
+
+      const res = await fetch(`${gatewayUrl}/transcribe?${params.toString()}`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token.token}` },
+        body: form,
+      });
 
       const bodyText = await res.text();
 
@@ -297,8 +374,7 @@ export default function RecorderTestPage() {
         return;
       }
 
-      const data = JSON.parse(bodyText) as {
-        transcript: string;
+      const data = JSON.parse(bodyText) as IWhisperScoreResult & {
         language?: string;
         durationMs?: number;
         inferenceMs?: number;
@@ -311,7 +387,34 @@ export default function RecorderTestPage() {
         inferenceMs: data.inferenceMs,
         status: res.status,
         raw: bodyText,
+        overallScore: data.overallScore,
+        perWord: data.perWord,
+        heardIpa: data.heardIpa,
       });
+
+      console.log("[speech] transcript:", data.transcript);
+      if (data.perWord) {
+        console.log(`[speech] overall score=${data.overallScore}`);
+        console.table(
+          data.perWord.map((w) => ({
+            word: w.word,
+            flagged: w.flagged,
+            reason: w.flagReason ?? "",
+            score: w.score,
+            inserts: w.insertions ?? 0,
+            drops: w.deletions ?? 0,
+            added: w.added ?? "",
+            dropped: w.dropped ?? "",
+            expectedIpa: w.expectedIpa ?? "",
+            heardIpa: w.heardIpa ?? "",
+            whisper: w.whisperHeard ?? "<missing>",
+          })),
+        );
+        const words = wordsFromScore(data);
+        const didPass = data.perWord.every((w) => !w.flagged);
+        setCorrection(words);
+        setPassed(didPass);
+      }
     } catch (err) {
       setWhisperError((err as Error).message);
     }
@@ -404,6 +507,45 @@ export default function RecorderTestPage() {
               </pre>
             )}
 
+            <label htmlFor="target" className={style.label}>
+              Target (optional) — enables pronunciation scoring
+            </label>
+
+            {lessons.length > 0 && (
+              <select
+                className={style.select}
+                value={
+                  lessons.findIndex((l) => l.sentence === target) === -1
+                    ? ""
+                    : String(lessons.findIndex((l) => l.sentence === target))
+                }
+                onChange={(e) => {
+                  const v = e.target.value;
+                  if (v === "") return;
+                  const idx = parseInt(v, 10);
+                  if (!Number.isNaN(idx) && lessons[idx]) {
+                    setTarget(lessons[idx].sentence);
+                  }
+                }}
+              >
+                <option value="">— pick a lesson —</option>
+                {lessons.map((l, i) => (
+                  <option key={i} value={i}>
+                    {l.sentence}
+                  </option>
+                ))}
+              </select>
+            )}
+
+            <textarea
+              id="target"
+              className={style.textarea}
+              value={target}
+              onChange={(e) => setTarget(e.target.value)}
+              placeholder="e.g. Nos amis les animaux ne sont pas admis dans ce magasin."
+              rows={2}
+            />
+
             <Button
               onClick={sendToWhisper}
               disabled={!last || !token || whisperLoading}
@@ -431,7 +573,24 @@ export default function RecorderTestPage() {
                   {typeof whisperResult.inferenceMs === "number" && (
                     <span>inference: {whisperResult.inferenceMs}ms</span>
                   )}
+                  {typeof whisperResult.overallScore === "number" && (
+                    <span> · overall: {whisperResult.overallScore}</span>
+                  )}
                 </p>
+
+                {passed !== null && (
+                  <p
+                    className={
+                      passed ? style.passBadge : style.failBadge
+                    }
+                  >
+                    {passed ? "PASS" : "FAIL"}
+                  </p>
+                )}
+
+                {correction && (
+                  <CorrectionDisplay words={correction} />
+                )}
               </div>
             )}
           </section>

@@ -2,13 +2,39 @@
 
 import { useCallback, useRef, useState } from "react";
 
+export interface IWhisperWordScore {
+  word: string;
+  whisperHeard: string | null;
+  expectedIpa?: string;
+  heardIpa?: string;
+  score: number;
+  insertions?: number;
+  deletions?: number;
+  added?: string;
+  dropped?: string;
+  flagged: boolean;
+  flagReason: string | null;
+}
+
+export interface IWhisperScoreResult {
+  transcript: string;
+  target?: string;
+  heardIpa?: string;
+  overallScore?: number;
+  perWord?: IWhisperWordScore[];
+  language?: string;
+  durationMs?: number;
+  inferenceMs?: number;
+}
+
 interface IUseWhisperSpeechReturn {
   transcript: string;
+  scoreResult: IWhisperScoreResult | null;
   resultId: number;
   isListening: boolean;
   isProcessing: boolean;
   error: string | null;
-  start: () => Promise<boolean>;
+  start: (target?: string) => Promise<boolean>;
   stop: () => void;
 }
 
@@ -117,13 +143,17 @@ function encodeWav(pcm: Float32Array, sampleRate: number): Blob {
 
 async function postToGateway(
   blob: Blob,
-  lang: string
-): Promise<{ transcript: string }> {
+  lang: string,
+  target?: string
+): Promise<IWhisperScoreResult> {
   let lastError: unknown = null;
 
   if (!GATEWAY_URL) {
     throw new Error("NEXT_PUBLIC_WHISPER_GATEWAY_URL not configured");
   }
+
+  const params = new URLSearchParams({ lang });
+  if (target) params.set("target", target);
 
   for (let attempt = 0; attempt < RETRY_ATTEMPTS; attempt++) {
     try {
@@ -132,7 +162,7 @@ async function postToGateway(
       form.append("audio", blob, "audio.wav");
 
       const res = await fetch(
-        `${GATEWAY_URL}/transcribe?lang=${encodeURIComponent(lang)}`,
+        `${GATEWAY_URL}/transcribe?${params.toString()}`,
         {
           method: "POST",
           headers: { Authorization: `Bearer ${token}` },
@@ -151,8 +181,8 @@ async function postToGateway(
         throw new Error(`gateway_${res.status}`);
       }
 
-      const data = (await res.json()) as { transcript: string };
-      return { transcript: data.transcript ?? "" };
+      const data = (await res.json()) as IWhisperScoreResult;
+      return { ...data, transcript: data.transcript ?? "" };
     } catch (err) {
       lastError = err;
       if (attempt < RETRY_ATTEMPTS - 1) {
@@ -167,11 +197,13 @@ async function postToGateway(
 
 export function useWhisperSpeech(lang: string): IUseWhisperSpeechReturn {
   const [transcript, setTranscript] = useState("");
+  const [scoreResult, setScoreResult] = useState<IWhisperScoreResult | null>(null);
   const [resultId, setResultId] = useState(0);
   const [isListening, setIsListening] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const busyRef = useRef(false);
+  const targetRef = useRef<string | undefined>(undefined);
   const micStreamRef = useRef<MediaStream | null>(null);
   const audioContextRef = useRef<AudioContext | null>(null);
   const analyserRef = useRef<AnalyserNode | null>(null);
@@ -213,11 +245,12 @@ export function useWhisperSpeech(lang: string): IUseWhisperSpeechReturn {
 
     try {
       console.log(`[whisper] sending audio — ${(blob.size / 1024).toFixed(1)} KB`);
-      const { transcript: text } = await postToGateway(blob, lang);
-      console.log("[whisper] transcript:", text);
+      const result = await postToGateway(blob, lang, targetRef.current);
+      console.log("[whisper] response:", result);
 
-      if (text) {
-        setTranscript(text);
+      if (result.transcript) {
+        setTranscript(result.transcript);
+        setScoreResult(result);
         setResultId((id) => id + 1);
       }
     } catch (err) {
@@ -296,9 +329,10 @@ export function useWhisperSpeech(lang: string): IUseWhisperSpeechReturn {
     rafRef.current = requestAnimationFrame(check);
   }
 
-  const start = useCallback(async (): Promise<boolean> => {
+  const start = useCallback(async (target?: string): Promise<boolean> => {
     if (busyRef.current) return false;
     busyRef.current = true;
+    targetRef.current = target;
 
     const permission = await checkMicPermission();
     if (permission === "denied") {
@@ -308,6 +342,7 @@ export function useWhisperSpeech(lang: string): IUseWhisperSpeechReturn {
 
     setError(null);
     setTranscript("");
+    setScoreResult(null);
     setIsProcessing(false);
     speechDetectedRef.current = false;
     silenceStartRef.current = null;
@@ -360,6 +395,7 @@ export function useWhisperSpeech(lang: string): IUseWhisperSpeechReturn {
 
   return {
     transcript,
+    scoreResult,
     resultId,
     isListening,
     isProcessing,
