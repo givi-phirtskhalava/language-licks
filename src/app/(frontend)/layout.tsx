@@ -1,42 +1,19 @@
-import type { Metadata } from "next";
-import { Sniglet } from "next/font/google";
-import Header from "@/components/atoms/Header";
-import Footer from "@/components/organisms/Footer";
-import PastDueBanner from "@/components/atoms/PastDueBanner";
-import NavigationProgress from "@/components/atoms/NavigationProgress";
-import ProgressSync from "@/components/atoms/ProgressSync";
-import ToastProvider from "@/components/atoms/ToastProvider";
-import QueryProvider from "@lib/providers/QueryProvider";
-import "./globals.css";
+import React from 'react'
+import './styles.css'
 
-const sniglet = Sniglet({
-  weight: "400",
-  subsets: ["latin"],
-});
+export const metadata = {
+  description: 'A blank template using Payload in a Next.js app.',
+  title: 'Payload Blank Template',
+}
 
-export const metadata: Metadata = {
-  title: "LanguageLicks",
-  description: "Practice French pronunciation",
-};
+export default async function RootLayout(props: { children: React.ReactNode }) {
+  const { children } = props
 
-export default function RootLayout({
-  children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
   return (
-    <html lang="en" style={{ "--font-logo": sniglet.style.fontFamily } as React.CSSProperties}>
+    <html lang="en">
       <body>
-        <QueryProvider>
-          <NavigationProgress />
-          <ProgressSync />
-          <PastDueBanner />
-          <Header />
-          <ToastProvider />
-          {children}
-          <Footer />
-        </QueryProvider>
+        <main>{children}</main>
       </body>
     </html>
-  );
+  )
 }
