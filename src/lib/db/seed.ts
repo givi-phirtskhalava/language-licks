@@ -1,5 +1,5 @@
 import { getPayload } from "payload";
-import config from "../../payload.config";
+import config from "@payload-config";
 
 interface ISeedLesson {
   sentence: string;
@@ -585,7 +585,7 @@ async function seedLessons(payload: Awaited<ReturnType<typeof getPayload>>) {
       translation: lesson.translation,
       audio: lesson.audio,
       grammar: lesson.grammar,
-      liaisonTips: lesson.liaisonTips ?? null,
+      liaisonTips: lesson.liaisonTips ?? [],
       tags: lesson.tags,
       order: lesson.order,
     };
@@ -632,23 +632,9 @@ async function seedLessons(payload: Awaited<ReturnType<typeof getPayload>>) {
   return { updated, inserted, removed };
 }
 
-async function seed() {
+export async function runSeed() {
   const payload = await getPayload({ config });
-
-  console.log("Seeding tag groups and tags...");
   await seedTags(payload);
-
-  console.log("Seeding lessons...");
   const { updated, inserted, removed } = await seedLessons(payload);
-
-  console.log(
-    `Seed complete: ${updated} updated, ${inserted} inserted, ${removed} removed.`
-  );
-
-  process.exit(0);
+  return { updated, inserted, removed };
 }
-
-seed().catch((error) => {
-  console.error("Seed failed:", error);
-  process.exit(1);
-});
