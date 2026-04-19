@@ -26,7 +26,7 @@ export interface ISpeechScoreResult {
   inferenceMs?: number;
 }
 
-export const GOP_PASS_THRESHOLD = 0.5;
+export const GOP_PASS_THRESHOLD = 0.25;
 export const MAX_EXTRA_SEGMENTS = 1;
 
 export function didPass(score: ISpeechScoreResult): boolean {
