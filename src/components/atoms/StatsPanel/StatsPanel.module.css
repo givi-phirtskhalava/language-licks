@@ -6,56 +6,10 @@
   box-shadow: 0 0.0625em 0.1875em var(--shadow);
 }
 
-.checklist {
-  padding-bottom: 1.25em;
-  border-bottom: 0.0625em solid var(--border);
-}
-
-.checklistTitle {
-  font-size: 0.8125em;
-  font-weight: 600;
-  color: var(--text-muted);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  margin-bottom: 0.625em;
-}
-
-.checkItem {
-  display: flex;
-  align-items: center;
-  gap: 0.625em;
-  padding: 0.25em 0;
-}
-
-.checkEmoji {
-  font-size: 1.5em;
-  line-height: 1;
-  flex-shrink: 0;
-}
-
-.uncheckCircle {
-  flex-shrink: 0;
-  width: 1.5em;
-  height: 1.5em;
-  border-radius: 0.1875em;
-  border: 0.125em solid var(--border);
-}
-
-.checkLabel {
-  font-size: 0.9375em;
-  font-weight: 500;
-  color: var(--text-dark);
-}
-
-.checkLabelDone {
-  color: var(--text-muted);
-}
-
 .grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 0.75em;
-  padding-top: 1.25em;
 }
 
 .stat {
@@ -72,56 +26,4 @@
   font-size: 0.6875em;
   color: var(--text-light);
   margin-top: 0.125em;
-}
-
-.progress {
-  margin-top: 1.25em;
-  padding-top: 1.25em;
-  border-top: 0.0625em solid var(--border);
-}
-
-.progressTitle {
-  font-size: 0.8125em;
-  font-weight: 600;
-  color: var(--text-muted);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  margin-bottom: 0.625em;
-}
-
-.levelSquares {
-  display: flex;
-  gap: 0.3125em;
-}
-
-.levelSquareWrapper {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  flex: 1;
-}
-
-.levelSquareLabel {
-  font-size: 0.5625em;
-  color: var(--text-light);
-  margin-bottom: 0.25em;
-}
-
-.levelSquare {
-  width: 100%;
-  aspect-ratio: 1;
-  border-radius: 0.3125em;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.levelSquareEmpty {
-  opacity: 0.4;
-}
-
-.levelSquareCount {
-  font-size: 0.8125em;
-  font-weight: 700;
-  color: var(--text-dark);
 }

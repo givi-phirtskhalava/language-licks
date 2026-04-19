@@ -42,6 +42,11 @@ export const Lessons: CollectionConfig = {
       defaultValue: 0,
     },
     {
+      name: "isFree",
+      type: "checkbox",
+      defaultValue: false,
+    },
+    {
       name: "tags",
       type: "text",
       hasMany: true,

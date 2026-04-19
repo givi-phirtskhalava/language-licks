@@ -26,7 +26,6 @@ interface Props {
   lessonId: number;
   onBack: () => void;
   mode?: "lesson" | "review";
-  isFree?: boolean;
   onNextReview?: () => void;
 }
 
@@ -34,7 +33,6 @@ export default function LanguageCard({
   lessonId,
   onBack,
   mode = "lesson",
-  isFree = true,
   onNextReview,
 }: Props) {
   const { language } = useLanguage();
@@ -47,9 +45,8 @@ export default function LanguageCard({
     unlockSpeaking,
     markLessonLearned,
   } = useProgress(language);
-  const hasWritingAccess = isFree || isPremium;
-  const hasVoiceAccess = isPremium;
   const { data: lesson, isLoading } = useLesson(lessonId);
+  const isAccessible = !!lesson && (lesson.isFree || isPremium);
   const saved = getLesson(lessonId);
   const savedPhase =
     saved?.phase === "practice" || saved?.phase === "test"
@@ -123,9 +120,9 @@ export default function LanguageCard({
     isFirstTime &&
     ((phase === "practice-writing" && !saved?.speakingUnlocked) ||
       (phase === "practice-speaking" && !saved?.lessonLearned));
-  const showBack = mode !== "review" && !isFirstPhase && hasWritingAccess;
+  const showBack = mode !== "review" && !isFirstPhase && isAccessible;
   const showNext =
-    mode !== "review" && !isLastPhase && hasWritingAccess && !phaseGated;
+    mode !== "review" && !isLastPhase && isAccessible && !phaseGated;
 
   const phaseLabel =
     phase === "lesson"
@@ -169,38 +166,28 @@ export default function LanguageCard({
           )}
         </div>
 
-        {phase === "lesson" && (
+        {!isAccessible && (
+          <SignUpPrompt message="Sign up for $10/mo to unlock this lesson." />
+        )}
+
+        {isAccessible && phase === "lesson" && (
           <LessonPhase
             lesson={lesson}
-            onReady={() => {
-              if (hasWritingAccess) {
-                changePhase("practice-writing");
-              }
-            }}
+            onReady={() => changePhase("practice-writing")}
           />
         )}
 
-        {phase === "lesson" && !hasWritingAccess && (
-          <SignUpPrompt message="Sign up for $10/mo to practice writing, speaking, and unlock reviews." />
-        )}
-
-        {phase === "practice-writing" && hasWritingAccess && (
+        {isAccessible && phase === "practice-writing" && (
           <WritingPractice
             lesson={lesson}
             languageLabel={langConfig?.label ?? "French"}
             isFirstTime={isFirstTime}
-            onReady={() => {
-              if (hasVoiceAccess) {
-                changePhase("practice-speaking");
-              } else {
-                changePhase("complete");
-              }
-            }}
+            onReady={() => changePhase("practice-speaking")}
             initialSpeakingUnlocked={saved?.speakingUnlocked ?? false}
             onSpeakingUnlocked={() => unlockSpeaking(lessonId)}
           />
         )}
-        {phase === "practice-speaking" && hasVoiceAccess && (
+        {isAccessible && phase === "practice-speaking" && (
           <SpeakingPractice
             lesson={lesson}
             locale={locale}
@@ -217,7 +204,7 @@ export default function LanguageCard({
             onLessonLearned={() => markLessonLearned(lessonId)}
           />
         )}
-        {phase === "review" && hasVoiceAccess && (
+        {isAccessible && phase === "review" && (
           <Review
             lesson={lesson}
             locale={locale}

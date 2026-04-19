@@ -3,10 +3,9 @@
 import { useRouter } from "next/navigation";
 import classNames from "classnames";
 import Button from "@atoms/Button";
-import useAuth from "@lib/hooks/useAuth";
 import startNavigationProgressBar from "@lib/util/startNavigationProgressBar";
 import useLanguage from "@lib/useLanguage";
-import { LANGUAGES, FREE_LESSON_COUNT } from "@lib/projectConfig";
+import { LANGUAGES } from "@lib/projectConfig";
 import type { TLanguageId } from "@lib/projectConfig";
 import style from "./Landing.module.css";
 
@@ -45,7 +44,6 @@ const FEATURES = [
 
 export default function Landing() {
   const router = useRouter();
-  const { isPremium } = useAuth();
   const { language, setLanguage } = useLanguage();
 
   return (
@@ -84,7 +82,7 @@ export default function Landing() {
         </div>
 
         <span className={style.free}>
-          First {FREE_LESSON_COUNT} lessons free, no account required
+          Free lessons available, no account required
         </span>
 
         <div className={style.ctaButton}>

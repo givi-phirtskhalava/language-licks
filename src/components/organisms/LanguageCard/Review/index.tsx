@@ -44,6 +44,7 @@ export default function Review({
 
   const speaking = useSpeakingCheck(
     locale,
+    lesson.id,
     lesson.sentence,
     () => {
       setLastCorrect(true);

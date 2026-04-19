@@ -24,6 +24,7 @@ export async function GET(request: NextRequest) {
     sentence: doc.sentence,
     translation: doc.translation,
     tags: (doc.tags ?? []).filter((t): t is string => typeof t === "string"),
+    isFree: !!doc.isFree,
   }));
 
   return Response.json(lessons);

@@ -3,6 +3,7 @@ export interface ILessonListItem {
   sentence: string;
   translation: string;
   tags: string[];
+  isFree: boolean;
 }
 
 export interface ILesson {
@@ -13,6 +14,7 @@ export interface ILesson {
   grammar: { label: string; explanation: string }[];
   liaisonTips?: { phrase: string; explanation: string }[];
   tags: string[];
+  isFree: boolean;
 }
 
 export type TPhase = "lesson" | "practice" | "practice-writing" | "practice-speaking" | "test" | "review" | "complete";

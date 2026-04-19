@@ -66,11 +66,12 @@ See [CLAUDE.md](./CLAUDE.md) for full coding conventions. Below is a quick refer
 
 ## Free Tier
 
-- The first 10 lessons are fully accessible without an account (`FREE_LESSON_COUNT` in `src/lib/projectConfig.ts`)
-- Lessons beyond the free limit show the lesson phase only — writing, speaking, test, and reviews are gated behind auth
-- The `isFree` prop on `LanguageCard` controls phase gating; the `useAuth` hook provides `isLoggedIn`
-- Reviews in `Reviews` are filtered by free lesson IDs for unauthenticated users
+- Lessons flagged `isFree` on the Payload collection are fully accessible without an account
+- Non-free lessons appear in the list, but opening one shows only a `SignUpPrompt` in place of the lesson content
+- Access inside `LanguageCard` is a single check: `lesson.isFree || isPremium`
+- Reviews in `Reviews` exclude non-free lessons for unauthenticated users; when premium lapses, `pauseNonFreeReviews` clears their scheduled reviews
 - **Never** gate the lesson list itself — all lessons should be browsable by anyone
+- Speech-check tokens are minted per-lesson at `/api/speech/token`; the endpoint allows anonymous callers for free lessons and requires premium otherwise
 
 ## Authentication
 

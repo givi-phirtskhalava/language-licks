@@ -13,7 +13,6 @@ import useLanguage from "@lib/useLanguage";
 import useLessons from "@lib/hooks/useLessons";
 import useAuth from "@lib/hooks/useAuth";
 import useProgress, { getMasteryLevel, getToday, devAdvanceDay, devGetOffset } from "@lib/useProgress";
-import { FREE_LESSON_COUNT } from "@lib/projectConfig";
 import MasteryBar from "@/components/atoms/MasteryBar";
 import LessonSettings from "@/components/atoms/LessonSettings";
 import SignUpPrompt from "@atoms/SignUpPrompt";
@@ -91,9 +90,6 @@ export default function Reviews() {
   }
 
   const today = getToday();
-  const freeLessonIds = new Set(
-    lessons.slice(0, FREE_LESSON_COUNT).map((l) => l.id)
-  );
   const ready: { id: number; translation: string; level: number }[] = [];
   const comingUp: {
     id: number;
@@ -109,7 +105,7 @@ export default function Reviews() {
     const p = getLesson(lesson.id);
     if (!p || !p.completed || p.retired) return;
 
-    if (!isPremium && !freeLessonIds.has(lesson.id)) {
+    if (!isPremium && !lesson.isFree) {
       hasLockedReviews = true;
       return;
     }

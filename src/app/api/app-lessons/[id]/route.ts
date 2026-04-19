@@ -30,6 +30,7 @@ export async function GET(
       grammar: doc.grammar ?? [],
       liaisonTips: doc.liaisonTips ?? null,
       tags: (doc.tags ?? []).filter((t): t is string => typeof t === "string"),
+      isFree: !!doc.isFree,
     };
 
     return Response.json(lesson);

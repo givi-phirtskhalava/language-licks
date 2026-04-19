@@ -12,5 +12,3 @@ export const LANGUAGES: ILanguage[] = [
 export type TLanguageId = (typeof LANGUAGES)[number]["id"];
 
 export const DEFAULT_LANGUAGE: TLanguageId = "french";
-
-export const FREE_LESSON_COUNT = 10;

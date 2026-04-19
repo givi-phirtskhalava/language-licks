@@ -176,6 +176,7 @@ export interface Lesson {
   translation: string;
   audio: string;
   order: number;
+  isFree?: boolean | null;
   tags?: string[] | null;
   grammar: {
     label: string;
@@ -342,6 +343,7 @@ export interface LessonsSelect<T extends boolean = true> {
   translation?: T;
   audio?: T;
   order?: T;
+  isFree?: T;
   tags?: T;
   grammar?:
     | T

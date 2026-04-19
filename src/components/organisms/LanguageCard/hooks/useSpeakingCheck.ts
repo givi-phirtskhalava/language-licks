@@ -54,6 +54,7 @@ interface IUseSpeakingCheckReturn {
 
 export default function useSpeakingCheck(
   lang: string,
+  lessonId: number,
   sentence: string,
   onCorrect?: () => void,
   onWrong?: () => void,
@@ -66,7 +67,7 @@ export default function useSpeakingCheck(
     error,
     start,
     stop,
-  } = useSpeechCheck(lang.slice(0, 2));
+  } = useSpeechCheck(lang.slice(0, 2), lessonId);
 
   const [result, setResult] = useState<ISpeakResult | null>(null);
   const processedResultId = useRef(0);

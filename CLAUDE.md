@@ -84,7 +84,8 @@
 - Payload owns `lessons`, `tag-groups`, `media`; Drizzle owns `users`, `verification_codes`, `progress`, `daily_activity`
 - **When adding a Drizzle table**: add it to `src/lib/db/schema.ts` **and** register it in the `beforeSchemaInit` list in `src/payload.config.ts` — otherwise Payload will drop it on its next migration
 - **When adding a Payload collection**: make sure its slug/table name doesn't collide with a Drizzle table
-- After Drizzle changes: `npm run db:generate && npm run db:migrate`. After Payload collection changes: `npx payload migrate:create && npx payload migrate`
+- After Drizzle changes: `npm run db:generate && npm run db:migrate`
+- **Do NOT run `payload migrate:create` / `payload migrate` in dev.** Payload runs with `push: true` (default when `NODE_ENV !== 'production'`), so schema changes auto-sync on dev server start. Migrations are only generated before deploying to prod.
 
 ## Data Fetching
 

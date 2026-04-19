@@ -51,6 +51,7 @@ interface IUseSpeechCheckReturn {
 interface ISpeechCheckToken {
   token: string;
   expiresAtMs: number;
+  lessonId: number;
 }
 
 let cachedToken: ISpeechCheckToken | null = null;
@@ -65,8 +66,14 @@ const SAMPLE_RATE = 16000;
 const RETRY_ATTEMPTS = 3;
 const RETRY_BASE_MS = 400;
 
-async function fetchSpeechCheckToken(): Promise<ISpeechCheckToken> {
-  const res = await fetch("/api/speech/token", { method: "POST" });
+async function fetchSpeechCheckToken(
+  lessonId: number
+): Promise<ISpeechCheckToken> {
+  const res = await fetch("/api/speech/token", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ lessonId }),
+  });
   if (!res.ok) {
     throw new Error(`token request failed: ${res.status}`);
   }
@@ -77,16 +84,23 @@ async function fetchSpeechCheckToken(): Promise<ISpeechCheckToken> {
   return {
     token: data.token,
     expiresAtMs: Date.now() + data.expiresInSec * 1000,
+    lessonId,
   };
 }
 
-async function getSpeechCheckToken(): Promise<ISpeechCheckToken> {
-  if (cachedToken && cachedToken.expiresAtMs - Date.now() > REFRESH_MARGIN_MS) {
+async function getSpeechCheckToken(
+  lessonId: number
+): Promise<ISpeechCheckToken> {
+  if (
+    cachedToken &&
+    cachedToken.lessonId === lessonId &&
+    cachedToken.expiresAtMs - Date.now() > REFRESH_MARGIN_MS
+  ) {
     return cachedToken;
   }
   if (inFlight) return inFlight;
 
-  inFlight = fetchSpeechCheckToken()
+  inFlight = fetchSpeechCheckToken(lessonId)
     .then((t) => {
       cachedToken = t;
       return t;
@@ -154,6 +168,7 @@ function encodeWav(pcm: Float32Array, sampleRate: number): Blob {
 async function postToGateway(
   blob: Blob,
   lang: string,
+  lessonId: number,
   target?: string
 ): Promise<ISpeechScoreResult> {
   let lastError: unknown = null;
@@ -162,12 +177,12 @@ async function postToGateway(
     throw new Error("NEXT_PUBLIC_SPEECH_CHECK_GATEWAY_URL not configured");
   }
 
-  const params = new URLSearchParams({ lang });
+  const params = new URLSearchParams({ lang, lessonId: String(lessonId) });
   if (target) params.set("target", target);
 
   for (let attempt = 0; attempt < RETRY_ATTEMPTS; attempt++) {
     try {
-      const { token } = await getSpeechCheckToken();
+      const { token } = await getSpeechCheckToken(lessonId);
       const form = new FormData();
       form.append("audio", blob, "audio.wav");
 
@@ -204,7 +219,10 @@ async function postToGateway(
   throw lastError ?? new Error("gateway_failed");
 }
 
-export function useSpeechCheck(lang: string): IUseSpeechCheckReturn {
+export function useSpeechCheck(
+  lang: string,
+  lessonId: number
+): IUseSpeechCheckReturn {
   const [scoreResult, setScoreResult] = useState<ISpeechScoreResult | null>(
     null
   );
@@ -257,7 +275,12 @@ export function useSpeechCheck(lang: string): IUseSpeechCheckReturn {
       console.log(
         `[speech-check] sending audio — ${(blob.size / 1024).toFixed(1)} KB`
       );
-      const result = await postToGateway(blob, lang, targetRef.current);
+      const result = await postToGateway(
+        blob,
+        lang,
+        lessonId,
+        targetRef.current
+      );
       console.log("[speech-check] response:", result);
 
       if (result.perWord) {

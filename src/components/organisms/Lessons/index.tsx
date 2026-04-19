@@ -5,9 +5,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faChartSimple } from "@fortawesome/free-solid-svg-icons";
 import useLanguage from "@lib/useLanguage";
 import useLessons from "@lib/hooks/useLessons";
-import useAuth from "@lib/hooks/useAuth";
 import useProgress, { getMasteryLevel } from "@lib/useProgress";
-import { FREE_LESSON_COUNT } from "@lib/projectConfig";
 import MasteryBar from "@/components/atoms/MasteryBar";
 import LessonSettings from "@/components/atoms/LessonSettings";
 import classNames from "classnames";
@@ -18,11 +16,9 @@ import styles from "./Lessons.module.css";
 
 export default function Lessons() {
   const [selectedId, setSelectedId] = useState<number | null>(null);
-  const [selectedIndex, setSelectedIndex] = useState<number>(0);
   const [settingsId, setSettingsId] = useState<number | null>(null);
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const { language } = useLanguage();
-  const { isPremium } = useAuth();
   const { progress, dailyLog, getLesson, unretire, resetLesson } =
     useProgress(language);
   const { data: lessons, isLoading } = useLessons(language);
@@ -45,11 +41,9 @@ export default function Lessons() {
   }, []);
 
   if (selectedId !== null) {
-    const isFree = selectedIndex < FREE_LESSON_COUNT || isPremium;
     return (
       <LanguageCard
         lessonId={selectedId}
-        isFree={isFree}
         onBack={() => setSelectedId(null)}
       />
     );
@@ -106,10 +100,7 @@ export default function Lessons() {
                       completed && styles.completedItem,
                       retired && styles.retiredItem
                     )}
-                    onClick={() => {
-                      setSelectedId(lesson.id);
-                      setSelectedIndex(index);
-                    }}
+                    onClick={() => setSelectedId(lesson.id)}
                   >
                     <span
                       className={classNames(

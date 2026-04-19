@@ -33,6 +33,7 @@ export default function SpeakingPractice({
   const [lessonLearned, setLessonLearned] = useState(initialLessonLearned);
   const speaking = useSpeakingCheck(
     locale,
+    lesson.id,
     lesson.sentence,
     () => {
       if (!lessonLearned) {

@@ -239,18 +239,18 @@ Without the prefix, a route like `/api/lessons/route.ts` would shadow Payload's 
 | `/api/progress/clear`        | Wipe progress for the current user                              |
 | `/api/daily-activity`        | Per-day lessons/reviews count (for streak)                      |
 | `/api/daily-activity/sync`   | Bulk upload local daily-activity log on first login             |
-| `/api/speech/token`          | Mint a 15-min HS256 JWT for the speech-check gateway (premium-only) |
+| `/api/speech/token`          | Mint a 15-min HS256 JWT for the speech-check gateway (body: `{ lessonId }`; allowed if lesson is free or caller is premium) |
 | `/api/seed`                  | Dev-only: run `runSeed()` against the DB                        |
 
 ## Free Tier
 
 The app is accessible without an account. Unauthenticated users get:
 
-- **First 10 lessons**: Full access — lesson, writing practice, speaking practice, test, and reviews
-- **Lessons 11+**: Lesson phase only (read the sentence, grammar, liaison tips). Writing practice, speaking practice, tests, and reviews require signing up.
+- **Free lessons**: Full access — lesson, writing practice, speaking practice, and reviews
+- **Paid lessons**: Shown in the list, but opening one renders only a signup prompt
 - **Progress**: Stored in localStorage for both free and authenticated users; synced to the DB on login.
 
-The free lesson count is configured via `FREE_LESSON_COUNT` in `src/lib/projectConfig.ts`.
+Free vs. paid is controlled by the `isFree` boolean on each Payload lesson, curated in the admin UI.
 
 ## Authentication
 
@@ -322,7 +322,7 @@ Audio is captured client-side as **WAV** (16kHz, 16-bit, mono PCM). Recording au
 
 ### Architecture
 
-1. The client requests a short-lived HS256 JWT from `POST /api/speech/token` (premium-gated, 15-minute TTL, cached at module scope).
+1. The client requests a short-lived HS256 JWT from `POST /api/speech/token` with the target `lessonId`. The server allows anonymous callers for free lessons and requires premium for paid lessons. For non-premium callers the JWT carries a `lessonId` claim and the client must pass `lessonId` as a query param to the gateway, which rejects mismatches. Premium tokens carry no lesson claim (universal access). Tokens have a 15-minute TTL and are cached at module scope, keyed by lesson.
 2. The client captures PCM audio via `AudioContext`, encodes it as a WAV blob, and POSTs it directly to the speech-check gateway with the JWT as a bearer token.
 3. The gateway verifies the JWT, applies per-IP and per-user rate limits, and proxies the request to the Python inference server.
 
