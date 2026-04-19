@@ -2,34 +2,44 @@
 
 import { useCallback, useRef, useState } from "react";
 
-export interface IWhisperWordScore {
+export interface ISpeechWordScore {
   word: string;
-  whisperHeard: string | null;
   expectedIpa?: string;
   heardIpa?: string;
-  score: number;
-  insertions?: number;
-  deletions?: number;
-  added?: string;
-  dropped?: string;
-  flagged: boolean;
-  flagReason: string | null;
+  gopScore: number;
 }
 
-export interface IWhisperScoreResult {
-  transcript: string;
+export interface ISpeechExtraSegment {
+  afterWordIndex: number;
+  afterWord: string | null;
+  heardIpa: string;
+}
+
+export interface ISpeechScoreResult {
   target?: string;
+  expectedIpa?: string;
   heardIpa?: string;
-  overallScore?: number;
-  perWord?: IWhisperWordScore[];
+  perWord?: ISpeechWordScore[];
+  extraSegments?: ISpeechExtraSegment[];
   language?: string;
   durationMs?: number;
   inferenceMs?: number;
 }
 
-interface IUseWhisperSpeechReturn {
-  transcript: string;
-  scoreResult: IWhisperScoreResult | null;
+export const GOP_PASS_THRESHOLD = 0.5;
+export const MAX_EXTRA_SEGMENTS = 1;
+
+export function didPass(score: ISpeechScoreResult): boolean {
+  if (!score.perWord) return false;
+  const allWordsOk = score.perWord.every(
+    (w) => w.gopScore >= GOP_PASS_THRESHOLD
+  );
+  const extrasOk = (score.extraSegments ?? []).length <= MAX_EXTRA_SEGMENTS;
+  return allWordsOk && extrasOk;
+}
+
+interface IUseSpeechToTextReturn {
+  scoreResult: ISpeechScoreResult | null;
   resultId: number;
   isListening: boolean;
   isProcessing: boolean;
@@ -145,7 +155,7 @@ async function postToGateway(
   blob: Blob,
   lang: string,
   target?: string
-): Promise<IWhisperScoreResult> {
+): Promise<ISpeechScoreResult> {
   let lastError: unknown = null;
 
   if (!GATEWAY_URL) {
@@ -181,8 +191,7 @@ async function postToGateway(
         throw new Error(`gateway_${res.status}`);
       }
 
-      const data = (await res.json()) as IWhisperScoreResult;
-      return { ...data, transcript: data.transcript ?? "" };
+      return (await res.json()) as ISpeechScoreResult;
     } catch (err) {
       lastError = err;
       if (attempt < RETRY_ATTEMPTS - 1) {
@@ -195,9 +204,10 @@ async function postToGateway(
   throw lastError ?? new Error("gateway_failed");
 }
 
-export function useWhisperSpeech(lang: string): IUseWhisperSpeechReturn {
-  const [transcript, setTranscript] = useState("");
-  const [scoreResult, setScoreResult] = useState<IWhisperScoreResult | null>(null);
+export function useSpeechToText(lang: string): IUseSpeechToTextReturn {
+  const [scoreResult, setScoreResult] = useState<ISpeechScoreResult | null>(
+    null
+  );
   const [resultId, setResultId] = useState(0);
   const [isListening, setIsListening] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -244,12 +254,13 @@ export function useWhisperSpeech(lang: string): IUseWhisperSpeechReturn {
     setIsProcessing(true);
 
     try {
-      console.log(`[whisper] sending audio — ${(blob.size / 1024).toFixed(1)} KB`);
+      console.log(
+        `[whisper] sending audio — ${(blob.size / 1024).toFixed(1)} KB`
+      );
       const result = await postToGateway(blob, lang, targetRef.current);
       console.log("[whisper] response:", result);
 
-      if (result.transcript) {
-        setTranscript(result.transcript);
+      if (result.perWord) {
         setScoreResult(result);
         setResultId((id) => id + 1);
       }
@@ -329,72 +340,75 @@ export function useWhisperSpeech(lang: string): IUseWhisperSpeechReturn {
     rafRef.current = requestAnimationFrame(check);
   }
 
-  const start = useCallback(async (target?: string): Promise<boolean> => {
-    if (busyRef.current) return false;
-    busyRef.current = true;
-    targetRef.current = target;
+  const start = useCallback(
+    async (target?: string): Promise<boolean> => {
+      if (busyRef.current) return false;
+      busyRef.current = true;
+      targetRef.current = target;
 
-    const permission = await checkMicPermission();
-    if (permission === "denied") {
-      busyRef.current = false;
-      return false;
-    }
-
-    setError(null);
-    setTranscript("");
-    setScoreResult(null);
-    setIsProcessing(false);
-    speechDetectedRef.current = false;
-    silenceStartRef.current = null;
-    stoppedRef.current = false;
-    pcmChunksRef.current = [];
-
-    let micStream: MediaStream;
-    try {
-      micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
-    } catch {
-      busyRef.current = false;
-      return false;
-    }
-
-    micStreamRef.current = micStream;
-
-    const audioContext = new AudioContext({ sampleRate: SAMPLE_RATE });
-    audioContextRef.current = audioContext;
-    const source = audioContext.createMediaStreamSource(micStream);
-
-    const analyser = audioContext.createAnalyser();
-    analyser.fftSize = 2048;
-    source.connect(analyser);
-    analyserRef.current = analyser;
-
-    const processor = audioContext.createScriptProcessor(4096, 1, 1);
-    processor.onaudioprocess = (e: AudioProcessingEvent) => {
-      if (!stoppedRef.current) {
-        pcmChunksRef.current.push(new Float32Array(e.inputBuffer.getChannelData(0)));
+      const permission = await checkMicPermission();
+      if (permission === "denied") {
+        busyRef.current = false;
+        return false;
       }
-    };
-    source.connect(processor);
-    processor.connect(audioContext.destination);
-    processorRef.current = processor;
 
-    setIsListening(true);
+      setError(null);
+      setScoreResult(null);
+      setIsProcessing(false);
+      speechDetectedRef.current = false;
+      silenceStartRef.current = null;
+      stoppedRef.current = false;
+      pcmChunksRef.current = [];
 
-    monitorSilence();
+      let micStream: MediaStream;
+      try {
+        micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      } catch {
+        busyRef.current = false;
+        return false;
+      }
 
-    timeoutRef.current = setTimeout(() => {
-      stopRecording();
-    }, MAX_RECORDING_MS);
+      micStreamRef.current = micStream;
 
-    return true;
-  }, [lang]);
+      const audioContext = new AudioContext({ sampleRate: SAMPLE_RATE });
+      audioContextRef.current = audioContext;
+      const source = audioContext.createMediaStreamSource(micStream);
+
+      const analyser = audioContext.createAnalyser();
+      analyser.fftSize = 2048;
+      source.connect(analyser);
+      analyserRef.current = analyser;
+
+      const processor = audioContext.createScriptProcessor(4096, 1, 1);
+      processor.onaudioprocess = (e: AudioProcessingEvent) => {
+        if (!stoppedRef.current) {
+          pcmChunksRef.current.push(
+            new Float32Array(e.inputBuffer.getChannelData(0))
+          );
+        }
+      };
+      source.connect(processor);
+      processor.connect(audioContext.destination);
+      processorRef.current = processor;
+
+      setIsListening(true);
+
+      monitorSilence();
+
+      timeoutRef.current = setTimeout(() => {
+        stopRecording();
+      }, MAX_RECORDING_MS);
+
+      return true;
+    },
+    [lang]
+  );
 
   const stop = useCallback(() => {
     stopRecording();
   }, []);
 
   return {
-    transcript,
     scoreResult,
     resultId,
     isListening,
