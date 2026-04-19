@@ -1,7 +1,9 @@
 import type { NextRequest } from "next/server";
+import { getPayload } from "payload";
+import config from "@payload-config";
 import { db } from "@lib/db";
-import { progress, lessons } from "@lib/db/schema";
-import { eq, and } from "drizzle-orm";
+import { progress } from "@lib/db/schema";
+import { eq, and, inArray } from "drizzle-orm";
 import { requireAuth, AuthError } from "@lib/auth";
 import { languageIdSchema } from "@lib/validation";
 
@@ -18,27 +20,41 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const rows = await db
-      .select({
-        lessonId: progress.lessonId,
-        phase: progress.phase,
-        completed: progress.completed,
-        completedAt: progress.completedAt,
-        firstCompletedAt: progress.firstCompletedAt,
-        interval: progress.interval,
-        nextReview: progress.nextReview,
-        retired: progress.retired,
-        writingStreak: progress.writingStreak,
-        speakingStreak: progress.speakingStreak,
-        reviewPassCount: progress.reviewPassCount,
-        reviewFailCount: progress.reviewFailCount,
-        consecutiveFails: progress.consecutiveFails,
-      })
-      .from(progress)
-      .innerJoin(lessons, eq(progress.lessonId, lessons.id))
-      .where(
-        and(eq(progress.userId, userId), eq(lessons.language, parsed.data))
-      );
+    const payload = await getPayload({ config });
+    const lessonsResult = await payload.find({
+      collection: "lessons",
+      where: { language: { equals: parsed.data } },
+      limit: 10000,
+      pagination: false,
+    });
+    const lessonIds = lessonsResult.docs.map((doc) => doc.id as number);
+
+    const rows =
+      lessonIds.length === 0
+        ? []
+        : await db
+            .select({
+              lessonId: progress.lessonId,
+              phase: progress.phase,
+              completed: progress.completed,
+              completedAt: progress.completedAt,
+              firstCompletedAt: progress.firstCompletedAt,
+              interval: progress.interval,
+              nextReview: progress.nextReview,
+              retired: progress.retired,
+              writingStreak: progress.writingStreak,
+              speakingStreak: progress.speakingStreak,
+              reviewPassCount: progress.reviewPassCount,
+              reviewFailCount: progress.reviewFailCount,
+              consecutiveFails: progress.consecutiveFails,
+            })
+            .from(progress)
+            .where(
+              and(
+                eq(progress.userId, userId),
+                inArray(progress.lessonId, lessonIds)
+              )
+            );
 
     const result: Record<number, Record<string, unknown>> = {};
     for (const row of rows) {

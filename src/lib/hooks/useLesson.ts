@@ -4,7 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { ILesson } from "@lib/types";
 
 async function fetchLesson(id: number): Promise<ILesson> {
-  const response = await fetch(`/api/lessons/${id}`);
+  const response = await fetch(`/api/app-lessons/${id}`);
   if (!response.ok) throw new Error("Failed to fetch lesson");
   return response.json();
 }

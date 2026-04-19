@@ -1,12 +1,10 @@
 import {
   pgTable,
   serial,
-  text,
   varchar,
   integer,
   boolean,
   timestamp,
-  jsonb,
   real,
   uniqueIndex,
 } from "drizzle-orm/pg-core";
@@ -33,18 +31,6 @@ export const verificationCodes = pgTable("verification_codes", {
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
-export const lessons = pgTable("lessons", {
-  id: serial("id").primaryKey(),
-  language: varchar("language", { length: 50 }).notNull(),
-  sentence: text("sentence").notNull(),
-  translation: text("translation").notNull(),
-  audio: varchar("audio", { length: 255 }).notNull(),
-  grammar: jsonb("grammar").notNull().$type<{ label: string; explanation: string }[]>(),
-  liaisonTips: jsonb("liaison_tips").$type<{ phrase: string; explanation: string }[]>(),
-  tags: jsonb("tags").notNull().$type<string[]>().default([]),
-  order: integer("order").notNull(),
-});
-
 export const progress = pgTable(
   "progress",
   {
@@ -52,9 +38,7 @@ export const progress = pgTable(
     userId: integer("user_id")
       .notNull()
       .references(() => users.id),
-    lessonId: integer("lesson_id")
-      .notNull()
-      .references(() => lessons.id),
+    lessonId: integer("lesson_id").notNull(),
     phase: varchar("phase", { length: 50 }).notNull().default("lesson"),
     completed: boolean("completed").notNull().default(false),
     completedAt: timestamp("completed_at"),

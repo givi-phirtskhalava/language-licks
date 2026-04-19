@@ -1,16 +1,21 @@
+import { getPayload } from "payload";
+import config from "@payload-config";
 import { db } from "@lib/db";
-import { progress, lessons } from "@lib/db/schema";
+import { progress } from "@lib/db/schema";
 import { eq, and, isNotNull, notInArray } from "drizzle-orm";
 import { FREE_LESSON_COUNT } from "@lib/projectConfig";
 
 export async function pauseNonFreeReviews(userId: number) {
-  const freeLessonRows = await db
-    .select({ id: lessons.id })
-    .from(lessons)
-    .orderBy(lessons.order)
-    .limit(FREE_LESSON_COUNT);
+  const payload = await getPayload({ config });
 
-  const freeLessonIds = freeLessonRows.map((r) => r.id);
+  const result = await payload.find({
+    collection: "lessons",
+    sort: "order",
+    limit: FREE_LESSON_COUNT,
+    pagination: false,
+  });
+
+  const freeLessonIds = result.docs.map((doc) => doc.id as number);
 
   if (freeLessonIds.length === 0) return;
 

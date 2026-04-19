@@ -6,7 +6,7 @@ import { faSliders } from "@fortawesome/free-solid-svg-icons";
 import classNames from "classnames";
 import Modal from "@atoms/Modal";
 import FilterChip from "@atoms/FilterChip";
-import { TAG_GROUPS } from "@lib/tags";
+import useTags from "@lib/hooks/useTags";
 import style from "./LessonFilters.module.css";
 
 interface Props {
@@ -16,6 +16,7 @@ interface Props {
 
 export default function LessonFilters({ selectedTags, onChange }: Props) {
   const [isOpen, setIsOpen] = useState(false);
+  const { data: tagGroups } = useTags();
 
   function toggleTag(tag: string) {
     if (selectedTags.includes(tag)) {
@@ -81,7 +82,7 @@ export default function LessonFilters({ selectedTags, onChange }: Props) {
               )}
             </div>
 
-            {TAG_GROUPS.map((group) => (
+            {(tagGroups ?? []).map((group) => (
               <section key={group.id} className={style.group}>
                 <p className={style.groupLabel}>{group.label}</p>
                 <div className={style.groupChips}>

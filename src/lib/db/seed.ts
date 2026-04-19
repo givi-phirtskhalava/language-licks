@@ -1,8 +1,5 @@
-import { Pool } from "pg";
-import { drizzle } from "drizzle-orm/node-postgres";
-import { eq, and, notInArray } from "drizzle-orm";
-import * as schema from "./schema";
-import { lessons } from "./schema";
+import { getPayload } from "payload";
+import config from "../../payload.config";
 
 interface ISeedLesson {
   sentence: string;
@@ -12,6 +9,58 @@ interface ISeedLesson {
   liaisonTips?: { phrase: string; explanation: string }[];
   tags: string[];
 }
+
+interface ISeedTagGroup {
+  id: "tenses" | "topics" | "grammar";
+  label: string;
+  tags: string[];
+}
+
+const TAG_GROUPS: ISeedTagGroup[] = [
+  {
+    id: "tenses",
+    label: "Tenses & Moods",
+    tags: [
+      "Present",
+      "Passé Composé",
+      "Imperfect",
+      "Future",
+      "Conditional",
+      "Subjunctive",
+      "Imperative",
+      "Continuous",
+    ],
+  },
+  {
+    id: "topics",
+    label: "Topics",
+    tags: [
+      "Animals",
+      "Shopping",
+      "Health",
+      "Family",
+      "Technology",
+      "Sports",
+      "Errands",
+      "Time",
+      "Work",
+      "Feelings",
+    ],
+  },
+  {
+    id: "grammar",
+    label: "Grammar",
+    tags: [
+      "Negation",
+      "Pronouns",
+      "Reflexive",
+      "Comparatives",
+      "Impersonal",
+      "Conjunctions",
+      "Idioms",
+    ],
+  },
+];
 
 const FRENCH_LESSONS: ISeedLesson[] = [
   {
@@ -442,22 +491,52 @@ const ITALIAN_LESSONS: ISeedLesson[] = [
   },
 ];
 
-async function seed() {
-  const pool = new Pool({
-    connectionString: process.env.DATABASE_URL,
-  });
-  const db = drizzle(pool, { schema });
+async function seedTags(payload: Awaited<ReturnType<typeof getPayload>>) {
+  const tagIdByName: Record<string, number> = {};
+  let order = 0;
 
-  console.log("Seeding lessons...");
+  for (const group of TAG_GROUPS) {
+    for (const name of group.tags) {
+      const existing = await payload.find({
+        collection: "tags",
+        where: { name: { equals: name } },
+        limit: 1,
+      });
 
+      if (existing.docs.length > 0) {
+        const doc = existing.docs[0];
+        await payload.update({
+          collection: "tags",
+          id: doc.id,
+          data: { group: group.id, order },
+        });
+        tagIdByName[name] = doc.id as number;
+      } else {
+        const created = await payload.create({
+          collection: "tags",
+          data: { name, group: group.id, order },
+        });
+        tagIdByName[name] = created.id as number;
+      }
+      order++;
+    }
+  }
+
+  return tagIdByName;
+}
+
+async function seedLessons(
+  payload: Awaited<ReturnType<typeof getPayload>>,
+  tagIdByName: Record<string, number>
+) {
   const allLessons = [
     ...FRENCH_LESSONS.map((lesson, index) => ({
-      language: "french",
+      language: "french" as const,
       ...lesson,
       order: index + 1,
     })),
     ...ITALIAN_LESSONS.map((lesson, index) => ({
-      language: "italian",
+      language: "italian" as const,
       ...lesson,
       order: index + 1,
     })),
@@ -467,71 +546,77 @@ async function seed() {
   let inserted = 0;
 
   for (const lesson of allLessons) {
-    const existing = await db
-      .select({ id: lessons.id })
-      .from(lessons)
-      .where(
-        and(
-          eq(lessons.language, lesson.language),
-          eq(lessons.sentence, lesson.sentence)
-        )
-      )
-      .limit(1);
+    const tagIds = lesson.tags
+      .map((name) => tagIdByName[name])
+      .filter((id): id is number => typeof id === "number");
 
-    if (existing.length > 0) {
-      await db
-        .update(lessons)
-        .set({
-          translation: lesson.translation,
-          audio: lesson.audio,
-          grammar: lesson.grammar,
-          liaisonTips: lesson.liaisonTips ?? null,
-          tags: lesson.tags,
-          order: lesson.order,
-        })
-        .where(eq(lessons.id, existing[0].id));
+    const data = {
+      language: lesson.language,
+      sentence: lesson.sentence,
+      translation: lesson.translation,
+      audio: lesson.audio,
+      grammar: lesson.grammar,
+      liaisonTips: lesson.liaisonTips ?? null,
+      tags: tagIds,
+      order: lesson.order,
+    };
+
+    const existing = await payload.find({
+      collection: "lessons",
+      where: {
+        and: [
+          { language: { equals: lesson.language } },
+          { sentence: { equals: lesson.sentence } },
+        ],
+      },
+      limit: 1,
+    });
+
+    if (existing.docs.length > 0) {
+      await payload.update({
+        collection: "lessons",
+        id: existing.docs[0].id,
+        data,
+      });
       updated++;
     } else {
-      await db.insert(lessons).values({
-        language: lesson.language,
-        sentence: lesson.sentence,
-        translation: lesson.translation,
-        audio: lesson.audio,
-        grammar: lesson.grammar,
-        liaisonTips: lesson.liaisonTips ?? null,
-        tags: lesson.tags,
-        order: lesson.order,
-      });
+      await payload.create({ collection: "lessons", data });
       inserted++;
     }
   }
 
-  const keepIds = (
-    await db
-      .select({ id: lessons.id })
-      .from(lessons)
-      .where(
-        notInArray(
-          lessons.sentence,
-          allLessons.map((l) => l.sentence)
-        )
-      )
-  ).map((r) => r.id);
+  const keepSentences = new Set(allLessons.map((l) => l.sentence));
+  const all = await payload.find({
+    collection: "lessons",
+    limit: 10000,
+    pagination: false,
+  });
 
   let removed = 0;
-  if (keepIds.length > 0) {
-    for (const id of keepIds) {
-      await db.delete(schema.progress).where(eq(schema.progress.lessonId, id));
-      await db.delete(lessons).where(eq(lessons.id, id));
+  for (const doc of all.docs) {
+    if (!keepSentences.has(doc.sentence)) {
+      await payload.delete({ collection: "lessons", id: doc.id });
       removed++;
     }
   }
+
+  return { updated, inserted, removed };
+}
+
+async function seed() {
+  const payload = await getPayload({ config });
+
+  console.log("Seeding tags...");
+  const tagIdByName = await seedTags(payload);
+
+  console.log("Seeding lessons...");
+  const { updated, inserted, removed } = await seedLessons(payload, tagIdByName);
 
   console.log(
     `Seed complete: ${updated} updated, ${inserted} inserted, ${removed} removed.`
   );
 
-  await pool.end();
+  process.exit(0);
 }
 
 seed().catch((error) => {
