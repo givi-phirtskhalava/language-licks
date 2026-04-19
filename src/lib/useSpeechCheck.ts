@@ -38,7 +38,7 @@ export function didPass(score: ISpeechScoreResult): boolean {
   return allWordsOk && extrasOk;
 }
 
-interface IUseSpeechToTextReturn {
+interface IUseSpeechCheckReturn {
   scoreResult: ISpeechScoreResult | null;
   resultId: number;
   isListening: boolean;
@@ -48,15 +48,15 @@ interface IUseSpeechToTextReturn {
   stop: () => void;
 }
 
-interface IWhisperToken {
+interface ISpeechCheckToken {
   token: string;
   expiresAtMs: number;
 }
 
-let cachedToken: IWhisperToken | null = null;
-let inFlight: Promise<IWhisperToken> | null = null;
+let cachedToken: ISpeechCheckToken | null = null;
+let inFlight: Promise<ISpeechCheckToken> | null = null;
 
-const GATEWAY_URL = process.env.NEXT_PUBLIC_WHISPER_GATEWAY_URL;
+const GATEWAY_URL = process.env.NEXT_PUBLIC_SPEECH_CHECK_GATEWAY_URL;
 const REFRESH_MARGIN_MS = 60_000;
 const SILENCE_THRESHOLD = 0.01;
 const SILENCE_DURATION = 1500;
@@ -65,7 +65,7 @@ const SAMPLE_RATE = 16000;
 const RETRY_ATTEMPTS = 3;
 const RETRY_BASE_MS = 400;
 
-async function fetchWhisperToken(): Promise<IWhisperToken> {
+async function fetchSpeechCheckToken(): Promise<ISpeechCheckToken> {
   const res = await fetch("/api/speech/token", { method: "POST" });
   if (!res.ok) {
     throw new Error(`token request failed: ${res.status}`);
@@ -80,13 +80,13 @@ async function fetchWhisperToken(): Promise<IWhisperToken> {
   };
 }
 
-async function getWhisperToken(): Promise<IWhisperToken> {
+async function getSpeechCheckToken(): Promise<ISpeechCheckToken> {
   if (cachedToken && cachedToken.expiresAtMs - Date.now() > REFRESH_MARGIN_MS) {
     return cachedToken;
   }
   if (inFlight) return inFlight;
 
-  inFlight = fetchWhisperToken()
+  inFlight = fetchSpeechCheckToken()
     .then((t) => {
       cachedToken = t;
       return t;
@@ -159,7 +159,7 @@ async function postToGateway(
   let lastError: unknown = null;
 
   if (!GATEWAY_URL) {
-    throw new Error("NEXT_PUBLIC_WHISPER_GATEWAY_URL not configured");
+    throw new Error("NEXT_PUBLIC_SPEECH_CHECK_GATEWAY_URL not configured");
   }
 
   const params = new URLSearchParams({ lang });
@@ -167,7 +167,7 @@ async function postToGateway(
 
   for (let attempt = 0; attempt < RETRY_ATTEMPTS; attempt++) {
     try {
-      const { token } = await getWhisperToken();
+      const { token } = await getSpeechCheckToken();
       const form = new FormData();
       form.append("audio", blob, "audio.wav");
 
@@ -204,7 +204,7 @@ async function postToGateway(
   throw lastError ?? new Error("gateway_failed");
 }
 
-export function useSpeechToText(lang: string): IUseSpeechToTextReturn {
+export function useSpeechCheck(lang: string): IUseSpeechCheckReturn {
   const [scoreResult, setScoreResult] = useState<ISpeechScoreResult | null>(
     null
   );
@@ -255,17 +255,17 @@ export function useSpeechToText(lang: string): IUseSpeechToTextReturn {
 
     try {
       console.log(
-        `[whisper] sending audio — ${(blob.size / 1024).toFixed(1)} KB`
+        `[speech-check] sending audio — ${(blob.size / 1024).toFixed(1)} KB`
       );
       const result = await postToGateway(blob, lang, targetRef.current);
-      console.log("[whisper] response:", result);
+      console.log("[speech-check] response:", result);
 
       if (result.perWord) {
         setScoreResult(result);
         setResultId((id) => id + 1);
       }
     } catch (err) {
-      console.log("[whisper] error:", err);
+      console.log("[speech-check] error:", err);
       setError("Speech recognition failed");
     }
 

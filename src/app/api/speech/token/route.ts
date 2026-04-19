@@ -7,11 +7,11 @@ export async function POST() {
   try {
     const { userId } = await requirePremium();
 
-    const secret = process.env.WHISPER_JWT_SECRET;
+    const secret = process.env.SPEECH_CHECK_JWT_SECRET;
 
     if (!secret) {
       return Response.json(
-        { error: "Whisper service not configured" },
+        { error: "Speech-check service not configured" },
         { status: 503 }
       );
     }

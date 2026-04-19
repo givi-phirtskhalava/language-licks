@@ -41,8 +41,8 @@ JWT_ACCESS_SECRET=     # openssl rand -base64 64
 JWT_REFRESH_SECRET=    # openssl rand -base64 64 (must be different from access)
 RESEND_API_KEY=        # from resend.com
 EMAIL_FROM=            # verified sender in Resend
-WHISPER_JWT_SECRET=    # HS256 secret, must match the whisper-service gateway
-NEXT_PUBLIC_WHISPER_GATEWAY_URL=   # e.g. http://localhost:8080 in dev
+SPEECH_CHECK_JWT_SECRET=    # HS256 secret, must match the speech-check service gateway
+NEXT_PUBLIC_SPEECH_CHECK_GATEWAY_URL=   # e.g. http://localhost:8080 in dev
 ```
 
 4. Generate and run migrations:
@@ -258,7 +258,7 @@ All auth cookies are set with:
 
 ## Speech Recognition
 
-Speech recognition is powered by a self-hosted Whisper service (`language-licks-whisper-service`) running `faster-whisper` (`large-v3`) behind a TypeScript gateway. Only authenticated premium users can call it.
+Pronunciation scoring is powered by a self-hosted speech-check service (`language-licks-whisper-service`) running a French-specific wav2vec2 phoneme model (`Cnam-LMSSC/wav2vec2-french-phonemizer`) behind a TypeScript gateway. Only authenticated premium users can call it.
 
 ### Audio Format
 
@@ -267,7 +267,7 @@ Audio is captured client-side as **WAV** (16kHz, 16-bit, mono PCM). Recording au
 ### Architecture
 
 1. The client requests a short-lived HS256 JWT from `POST /api/speech/token` (premium-gated, 15-minute TTL, cached at module scope).
-2. The client captures PCM audio via `AudioContext`, encodes it as a WAV blob, and POSTs it directly to the Whisper gateway with the JWT as a bearer token.
+2. The client captures PCM audio via `AudioContext`, encodes it as a WAV blob, and POSTs it directly to the speech-check gateway with the JWT as a bearer token.
 3. The gateway verifies the JWT, applies per-IP and per-user rate limits, and proxies the request to the Python inference server.
 
 The Next.js app only issues tokens — it never sees the audio. This keeps GPU traffic off the web tier.
@@ -276,11 +276,11 @@ The Next.js app only issues tokens — it never sees the audio. This keeps GPU t
 
 | Route | Method | Description |
 |---|---|---|
-| `/api/speech/token` | POST | Issues a short-lived JWT for the Whisper gateway (premium-only) |
+| `/api/speech/token` | POST | Issues a short-lived JWT for the speech-check gateway (premium-only) |
 
-### Running the Whisper service locally
+### Running the speech-check service locally
 
-The Whisper service lives in a sibling repo (`language-licks-whisper-service`) and is **not** started by `npm run dev`. It runs a Python inference server on `:8000` and a TypeScript gateway on `:8080`; both must be up for speech to work in dev.
+The speech-check service lives in a sibling repo (`language-licks-whisper-service`) and is **not** started by `npm run dev`. It runs a Python inference server on `:8000` and a TypeScript gateway on `:8080`; both must be up for speech to work in dev.
 
 1. Clone and install the service (from the parent directory of this repo):
 
@@ -298,22 +298,22 @@ The Whisper service lives in a sibling repo (`language-licks-whisper-service`) a
    openssl rand -base64 64 | tr -d '\n'
    ```
 
-   Paste the same value into **both** `language-licks-whisper-service/gateway/.env` (as `WHISPER_JWT_SECRET`) and this app's `.env.local`. It must match byte-for-byte.
+   Paste the same value into **both** `language-licks-whisper-service/gateway/.env` (as `SPEECH_CHECK_JWT_SECRET`) and this app's `.env.local`. It must match byte-for-byte.
 
 3. In this app's `.env.local`:
 
    ```
-   WHISPER_JWT_SECRET=<shared secret>
-   NEXT_PUBLIC_WHISPER_GATEWAY_URL=http://localhost:8080
+   SPEECH_CHECK_JWT_SECRET=<shared secret>
+   NEXT_PUBLIC_SPEECH_CHECK_GATEWAY_URL=http://localhost:8080
    ```
 
-4. Start Python + gateway in parallel (from the whisper-service repo root):
+4. Start Python + gateway in parallel (from the speech-check service repo root):
 
    ```bash
    ./dev.sh
    ```
 
-   First run downloads the `large-v3` model weights (~3 GB) from Hugging Face; subsequent runs use the cache.
+   First run downloads the `Cnam-LMSSC/wav2vec2-french-phonemizer` weights (~360 MB) from Hugging Face; subsequent runs use the cache.
 
 5. Sanity check:
 
@@ -321,7 +321,7 @@ The Whisper service lives in a sibling repo (`language-licks-whisper-service`) a
    curl http://localhost:8080/healthz
    ```
 
-See the whisper-service README for Docker, GPU, and deployment details.
+See the speech-check service README for Docker, GPU, and deployment details.
 
 ## Project Structure
 

@@ -1,4 +1,4 @@
-import type { CollectionConfig } from "payload";
+import type { CollectionConfig, TextFieldValidation } from "payload";
 
 export const TagGroups: CollectionConfig = {
   slug: "tag-groups",
@@ -50,7 +50,7 @@ export const TagGroups: CollectionConfig = {
               name: "name",
               type: "text",
               required: true,
-              validate: (value, { data }) => {
+              validate: ((value, { data }) => {
                 if (typeof value !== "string" || !value.trim()) return true;
                 const normalized = value.trim().toLowerCase();
                 const doc = data as { groups?: { tags?: { name?: string }[] }[] };
@@ -62,7 +62,7 @@ export const TagGroups: CollectionConfig = {
                 }
                 if (count > 1) return `Tag "${value}" already exists in another group`;
                 return true;
-              },
+              }) as TextFieldValidation,
             },
           ],
         },

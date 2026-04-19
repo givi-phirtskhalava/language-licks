@@ -3,11 +3,11 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import toast from "react-hot-toast";
 import {
-  useSpeechToText,
+  useSpeechCheck,
   ISpeechScoreResult,
   GOP_PASS_THRESHOLD,
   didPass,
-} from "@/lib/useSpeechToText";
+} from "@/lib/useSpeechCheck";
 import { IWriteWordResult } from "@/components/organisms/LanguageCard/hooks/useWritingCheck";
 
 interface ISpeakResult {
@@ -66,7 +66,7 @@ export default function useSpeakingCheck(
     error,
     start,
     stop,
-  } = useSpeechToText(lang.slice(0, 2));
+  } = useSpeechCheck(lang.slice(0, 2));
 
   const [result, setResult] = useState<ISpeakResult | null>(null);
   const processedResultId = useRef(0);
