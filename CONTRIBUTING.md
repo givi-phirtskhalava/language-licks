@@ -6,9 +6,10 @@ See [CLAUDE.md](./CLAUDE.md) for full coding conventions. Below is a quick refer
 
 1. `npm install`
 2. Create a local Postgres database: `createdb language_licks`
-3. Copy `.env.example` to `.env.local` and set your `DATABASE_URL`
-4. `npm run db:generate && npm run db:migrate && npm run db:seed`
+3. Copy `.env.sample` to `.env.local` and fill in the required variables (see [README.md](./README.md#environment-variables))
+4. `npm run db:migrate && npx payload migrate`
 5. `npm run dev`
+6. Visit [http://localhost:3000/seed](http://localhost:3000/seed) to seed lessons + tags
 
 ## Database
 

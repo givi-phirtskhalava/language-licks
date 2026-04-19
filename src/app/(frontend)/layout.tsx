@@ -16,7 +16,7 @@ const sniglet = Sniglet({
 
 export const metadata: Metadata = {
   title: "LanguageLicks",
-  description: "Practice French pronunciation",
+  description: "Practice French and Italian sentences — comprehension, writing, and pronunciation",
 };
 
 export default function RootLayout({

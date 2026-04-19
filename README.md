@@ -1,97 +1,116 @@
 # Language Licks
 
-A language learning app for practicing sentence comprehension, writing, and speaking. Built with Next.js, PostgreSQL, and Drizzle ORM.
+A language learning app for practicing sentence comprehension, writing, and speaking. Built with Next.js 16, PostgreSQL, Drizzle ORM, and Payload CMS.
 
-Each lesson presents a sentence in the target language with grammar breakdowns, liaison/pronunciation tips, writing practice, speaking practice, and a review test. Progress is tracked with a spaced repetition system.
+Each lesson presents a sentence in the target language with grammar breakdowns, liaison/pronunciation tips, writing practice, speaking practice, and a review test. Progress is tracked with a spaced repetition system. French and Italian are supported.
 
 ## Tech Stack
 
 - **Framework**: Next.js 16 (App Router)
-- **Database**: PostgreSQL (Heroku Postgres)
+- **Database**: PostgreSQL (Heroku Postgres in prod)
 - **ORM**: Drizzle (runtime/transactional tables)
 - **CMS**: Payload 3 (content tables + admin UI at `/admin`)
 - **Data Fetching**: React Query
+- **Auth**: Passwordless email OTP + HS256 JWT in httpOnly cookies
+- **Billing**: Paddle (sandbox in dev, production in prod)
+- **Speech scoring**: Self-hosted [`language-licks-speech-check`](../language-licks-speech-check) service (sibling repo)
 - **Styling**: CSS Modules
 - **Animations**: Motion (Framer Motion)
 
 ## Prerequisites
 
-- Node.js 20+
+- Node.js 22+
 - PostgreSQL (recommended: [Postgres.app](https://postgresapp.com/) on Mac)
+- The sibling `language-licks-speech-check` repo cloned next to this one, if you want speaking practice to work locally
 
 ## Getting Started
 
 1. Install dependencies:
 
-```bash
-npm install
-```
+   ```bash
+   npm install
+   ```
 
 2. Create a local database:
 
+   ```bash
+   createdb language_training
+   ```
+
+3. Copy `.env.sample` to `.env.local` and fill it in. See [Environment Variables](#environment-variables) for what each value is for.
+
+4. Run migrations (both ORMs):
+
+   ```bash
+   npm run db:migrate
+   npx payload migrate
+   ```
+
+5. Start the dev server:
+
+   ```bash
+   npm run dev
+   ```
+
+   Open [http://localhost:3000](http://localhost:3000).
+
+6. Seed the database with lesson + tag data — visit [http://localhost:3000/seed](http://localhost:3000/seed) and run the seeder (dev-only; the `/api/seed` route is a 404 in production).
+
+7. (Optional) Start the speech-check service if you want to test speaking practice. See [Running the speech-check service locally](#running-the-speech-check-service-locally).
+
+## Environment Variables
+
+All vars live in `.env.local` (gitignored). A template is in `.env.sample`.
+
+| Var                                    | Required | Purpose                                                                 |
+| -------------------------------------- | -------- | ----------------------------------------------------------------------- |
+| `DATABASE_URL`                         | yes      | Postgres connection string                                              |
+| `JWT_ACCESS_SECRET`                    | yes      | HS256 secret for access tokens (15-min TTL)                             |
+| `JWT_REFRESH_SECRET`                   | yes      | HS256 secret for refresh tokens (90-day TTL). **Must differ** from access. |
+| `RESEND_API_KEY`                       | yes      | Resend API key used to send OTP emails                                  |
+| `EMAIL_FROM`                           | yes      | Verified sender address in Resend                                       |
+| `PAYLOAD_SECRET`                       | yes      | Secret used to sign Payload admin sessions                              |
+| `INITIAL_ADMIN_EMAIL`                  | yes      | Email of the first admin user created on boot                           |
+| `SPEECH_CHECK_JWT_SECRET`              | yes      | Shared secret with the speech-check gateway (byte-for-byte match)       |
+| `NEXT_PUBLIC_SPEECH_CHECK_GATEWAY_URL` | yes      | Public URL of the speech-check gateway (e.g. `http://localhost:8080`)   |
+| `PADDLE_API_KEY`                       | yes      | Paddle server-side key (sandbox for dev, prod for prod)                 |
+| `PADDLE_WEBHOOK_SECRET`                | yes      | Used to verify Paddle webhook signatures                                |
+| `NEXT_PUBLIC_PADDLE_CLIENT_TOKEN`      | yes      | Paddle client token (exposed to the browser)                            |
+| `NEXT_PUBLIC_PADDLE_PRICE_ID`          | yes      | Paddle price ID for the subscription product                            |
+| `NEXT_PUBLIC_PADDLE_ENV`               | yes      | `sandbox` or `production`                                               |
+| `GCS_PROJECT_ID` / `GCS_BUCKET` / `GCS_CREDENTIALS` | no       | Google Cloud Storage for Payload media uploads. Optional in dev.        |
+
+Generate JWT secrets with:
+
 ```bash
-createdb language_licks
+openssl rand -base64 64 | tr -d '\n'
 ```
-
-3. Create a `.env.local` file:
-
-```
-DATABASE_URL=postgresql://localhost:5432/language_training
-JWT_ACCESS_SECRET=     # openssl rand -base64 64
-JWT_REFRESH_SECRET=    # openssl rand -base64 64 (must be different from access)
-RESEND_API_KEY=        # from resend.com
-EMAIL_FROM=            # verified sender in Resend
-SPEECH_CHECK_JWT_SECRET=    # HS256 secret, must match the speech-check service gateway
-NEXT_PUBLIC_SPEECH_CHECK_GATEWAY_URL=   # e.g. http://localhost:8080 in dev
-```
-
-4. Generate and run migrations:
-
-```bash
-npm run db:generate
-npm run db:migrate
-```
-
-5. Seed the database with lesson data:
-
-```bash
-npm run db:seed
-```
-
-6. Start the dev server:
-
-```bash
-npm run dev
-```
-
-Open [http://localhost:3000](http://localhost:3000).
 
 ## Scripts
 
-| Script                | Description                                  |
-| --------------------- | -------------------------------------------- |
-| `npm run dev`         | Start development server                     |
-| `npm run build`       | Build for production                         |
-| `npm run start`       | Start production server                      |
-| `npm run lint`        | Run ESLint                                   |
-| `npm run db:generate` | Generate Drizzle migration files from schema changes |
-| `npm run db:migrate`  | Apply pending Drizzle migrations             |
-| `npm run db:seed`     | Seed the database with lesson + tag data     |
-| `npm run db:studio`   | Open Drizzle Studio (DB browser)             |
-| `npx payload migrate:create` | Generate a Payload migration from collection changes |
-| `npx payload migrate` | Apply pending Payload migrations             |
-| `npx payload migrate:status` | List which Payload migrations have run |
+| Script                           | Description                                              |
+| -------------------------------- | -------------------------------------------------------- |
+| `npm run dev`                    | Start development server                                 |
+| `npm run build`                  | Build for production                                     |
+| `npm run start`                  | Start production server                                  |
+| `npm run lint`                   | Run ESLint                                               |
+| `npm run db:generate`            | Generate Drizzle migration files from schema changes     |
+| `npm run db:migrate`             | Apply pending Drizzle migrations                         |
+| `npm run db:studio`              | Open Drizzle Studio (DB browser)                         |
+| `npm run payload:migrate:create` | Generate a Payload migration from collection changes     |
+| `npm run payload:migrate`        | Apply pending Payload migrations                         |
+| `npm run payload:migrate:status` | List which Payload migrations have run                   |
 
 ## Database
 
-The app uses **one Postgres database** shared by two ORMs that own disjoint sets of tables. The split is deliberate: each tool is used where its strengths matter.
+The app uses **one Postgres database** shared by two ORMs that own disjoint sets of tables. Each tool is used where its strengths matter.
 
 ### Ownership split
 
 | Tool        | Owns                                                                              | Why                                                                                                     |
 | ----------- | --------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------- |
-| **Payload** | `lessons`, `tag-groups`, `media` (and Payload's internal bookkeeping tables)      | Content authored by humans. The admin UI, access control, and field validation are net wins here.       |
-| **Drizzle** | `users`, `verification_codes`, `progress`, `daily_activity`                        | Runtime/transactional data written by the app on every interaction. Needs raw SQL control, low overhead, bulk operations, and isn't browsed in an admin UI. |
+| **Payload** | `lessons`, `tag-groups`, `media`, `admins` (and Payload's internal bookkeeping)   | Content authored by humans. The admin UI, access control, and field validation are net wins here.       |
+| **Drizzle** | `users`, `verification_codes`, `progress`, `daily_activity`                       | Runtime/transactional data written on every interaction. Needs raw SQL control and low overhead.        |
 
 **Rule of thumb**: if a non-developer would ever edit it, it goes in Payload. If the app writes to it on every lesson interaction, it goes in Drizzle.
 
@@ -121,7 +140,7 @@ db: postgresAdapter({
 
 ### Drizzle (runtime data)
 
-Schema lives in `src/lib/db/schema.ts`. Migrations are stored in `./drizzle/` and applied with the `db:migrate` script. Use `db:studio` to browse the data.
+Schema lives in `src/lib/db/schema.ts`. Migrations are stored in `./drizzle/` and applied with `db:migrate`. Use `db:studio` to browse the data.
 
 After changing `schema.ts`:
 
@@ -138,13 +157,13 @@ Current collections:
 
 - **lessons** — sentence, translation, grammar breakdown, liaison tips, language, tags (string array). Lessons reference tags by name (string), not by FK.
 - **tag-groups** — one document per language. Each document has a nested array of groups; each group has a nested array of tags. Edit all groups + tags for a language on a single page.
-- **media** — uploads (currently unused on the frontend, available for future use).
-- **users** — Payload's auth-managed collection, used only for logging in to `/admin`. **Not** the same as the Drizzle `users` table that holds app accounts (see "Two `users` tables" below).
+- **media** — uploads used by Payload admin (GCS-backed in prod).
+- **admins** — Payload's auth-managed collection, used only for logging in to `/admin`. **Not** the same as the Drizzle `users` table that holds app accounts (see [Two user tables](#two-user-tables)).
 
 After changing a collection:
 
 ```bash
-npx payload migrate:create   # generates a SQL migration under src/migrations/
+npx payload migrate:create   # generates a migration; run this whenever collection config changes
 npx payload migrate          # applies pending migrations
 ```
 
@@ -165,16 +184,16 @@ if (!user) return Response.json({ error: "unauthorized" }, { status: 401 });
 // ...query Drizzle, return JSON
 ```
 
-Then either fetch that route from a custom admin view component (registered under `admin.components` in `payload.config.ts`) or build a separate Next.js page with the same auth check. This keeps the hot path off Payload while still giving admins a UI.
+Then either fetch that route from a custom admin view component (registered under `admin.components` in `payload.config.ts`) or build a separate Next.js page with the same auth check.
 
-### Two `users` tables — known split
+### Two user tables
 
-There are currently two collections both called `users`:
+There are two distinct user-like tables, intentionally:
 
 - **Drizzle `users`** (`src/lib/db/schema.ts`) — the app's actual user accounts: email, Paddle subscription, daily target, OTP-issued JWT auth. Used by every authenticated app route.
-- **Payload `users`** (`src/collections/Users.ts`) — Payload's built-in auth collection, used only to log in to `/admin`.
+- **Payload `admins`** (`src/collections/Admins.ts`) — Payload's built-in auth collection, used only to log in to `/admin`.
 
-These are separate identities in separate tables. App users do not get an admin login by signing up, and admin users do not appear in the Drizzle `users` table. This is fine while the admin is internal-only, but worth being aware of.
+App users do not get an admin login by signing up; admins do not appear in the Drizzle `users` table. Fine while the admin is internal-only.
 
 ### Naming convention for app-facing API routes
 
@@ -184,7 +203,44 @@ To avoid collisions with Payload's REST API at `/api/<collection-slug>`, the app
 - `/api/app-lessons/[id]` — full lesson detail
 - `/api/app-tag-groups` — flattened tag groups for the filter modal
 
-Without the prefix, a route like `/api/lessons/route.ts` would shadow Payload's `/api/lessons` REST endpoint and break the admin UI (this is what caused "Method Not Allowed" errors during development).
+Without the prefix, a route like `/api/lessons/route.ts` would shadow Payload's `/api/lessons` REST endpoint and break the admin UI.
+
+## App Routes
+
+### Pages (under `src/app/(frontend)/`)
+
+| Route              | Purpose                                                         |
+| ------------------ | --------------------------------------------------------------- |
+| `/`                | Home / lesson list                                              |
+| `/lessons/[id]`    | Single lesson detail + practice flow                            |
+| `/reviews`         | Due reviews for the user's selected language                    |
+| `/login`           | Email OTP login                                                 |
+| `/profile`         | Account / subscription / daily target                           |
+| `/settings`        | App settings (language, dev tools)                              |
+| `/faq`             | FAQ / help                                                      |
+| `/seed`            | Dev-only seed runner (hits `/api/seed`)                         |
+
+### API routes (under `src/app/api/`)
+
+| Route                        | Purpose                                                         |
+| ---------------------------- | --------------------------------------------------------------- |
+| `/api/app-lessons`           | Lightweight lesson list (id, sentence, translation)             |
+| `/api/app-lessons/[id]`      | Full lesson detail                                              |
+| `/api/app-tag-groups`        | Flattened tag groups for filters                                |
+| `/api/auth/send-code`        | Email the user a 6-digit OTP                                    |
+| `/api/auth/verify`           | Verify OTP, issue access + refresh cookies                      |
+| `/api/auth/refresh`          | Silently renew access token via refresh cookie                  |
+| `/api/auth/logout`           | Clear auth cookies                                              |
+| `/api/auth/me`               | Return the current user (or 401)                                |
+| `/api/billing/*`             | Paddle checkout / portal / cancel endpoints                     |
+| `/api/paddle/webhook`        | Paddle subscription webhook                                     |
+| `/api/progress`              | Read/write per-lesson progress for the current user             |
+| `/api/progress/sync`         | Bulk upload local progress on first login                       |
+| `/api/progress/clear`        | Wipe progress for the current user                              |
+| `/api/daily-activity`        | Per-day lessons/reviews count (for streak)                      |
+| `/api/daily-activity/sync`   | Bulk upload local daily-activity log on first login             |
+| `/api/speech/token`          | Mint a 15-min HS256 JWT for the speech-check gateway (premium-only) |
+| `/api/seed`                  | Dev-only: run `runSeed()` against the DB                        |
 
 ## Free Tier
 
@@ -192,7 +248,7 @@ The app is accessible without an account. Unauthenticated users get:
 
 - **First 10 lessons**: Full access — lesson, writing practice, speaking practice, test, and reviews
 - **Lessons 11+**: Lesson phase only (read the sentence, grammar, liaison tips). Writing practice, speaking practice, tests, and reviews require signing up.
-- **Progress**: Stored in localStorage for both free and authenticated users
+- **Progress**: Stored in localStorage for both free and authenticated users; synced to the DB on login.
 
 The free lesson count is configured via `FREE_LESSON_COUNT` in `src/lib/projectConfig.ts`.
 
@@ -258,7 +314,7 @@ All auth cookies are set with:
 
 ## Speech Recognition
 
-Pronunciation scoring is powered by a self-hosted speech-check service (`language-licks-whisper-service`) running a French-specific wav2vec2 phoneme model (`Cnam-LMSSC/wav2vec2-french-phonemizer`) behind a TypeScript gateway. Only authenticated premium users can call it.
+Pronunciation scoring is powered by a self-hosted [`language-licks-speech-check`](../language-licks-speech-check) service running language-specific wav2vec2 phoneme models (`Cnam-LMSSC/wav2vec2-french-phonemizer` for French, `Cnam-LMSSC/wav2vec2-italian-phonemizer` for Italian) behind a TypeScript gateway. Only authenticated premium users can call it.
 
 ### Audio Format
 
@@ -272,20 +328,14 @@ Audio is captured client-side as **WAV** (16kHz, 16-bit, mono PCM). Recording au
 
 The Next.js app only issues tokens — it never sees the audio. This keeps GPU traffic off the web tier.
 
-### Speech API Routes
-
-| Route | Method | Description |
-|---|---|---|
-| `/api/speech/token` | POST | Issues a short-lived JWT for the speech-check gateway (premium-only) |
-
 ### Running the speech-check service locally
 
-The speech-check service lives in a sibling repo (`language-licks-whisper-service`) and is **not** started by `npm run dev`. It runs a Python inference server on `:8000` and a TypeScript gateway on `:8080`; both must be up for speech to work in dev.
+The speech-check service lives in a sibling repo (`language-licks-speech-check`) and is **not** started by `npm run dev`. It runs a Python inference server on `:8000` and a TypeScript gateway on `:8080`; both must be up for speaking practice to work in dev.
 
 1. Clone and install the service (from the parent directory of this repo):
 
    ```bash
-   cd ../language-licks-whisper-service
+   cd ../language-licks-speech-check
    python3 -m venv .venv
    source .venv/bin/activate
    pip install -r requirements.txt
@@ -298,7 +348,7 @@ The speech-check service lives in a sibling repo (`language-licks-whisper-servic
    openssl rand -base64 64 | tr -d '\n'
    ```
 
-   Paste the same value into **both** `language-licks-whisper-service/gateway/.env` (as `SPEECH_CHECK_JWT_SECRET`) and this app's `.env.local`. It must match byte-for-byte.
+   Paste the same value into **both** `language-licks-speech-check/gateway/.env` (as `SPEECH_CHECK_JWT_SECRET`) and this app's `.env.local`. It must match byte-for-byte.
 
 3. In this app's `.env.local`:
 
@@ -313,7 +363,7 @@ The speech-check service lives in a sibling repo (`language-licks-whisper-servic
    ./dev.sh
    ```
 
-   First run downloads the `Cnam-LMSSC/wav2vec2-french-phonemizer` weights (~360 MB) from Hugging Face; subsequent runs use the cache.
+   First run downloads the CNAM-LMSSC phonemizer weights (~360 MB per language) from Hugging Face; subsequent runs use the cache.
 
 5. Sanity check:
 
@@ -329,51 +379,54 @@ See the speech-check service README for Docker, GPU, and deployment details.
 src/
   app/
     (payload)/            # Payload's mounted admin + REST API (/admin, /api/[...slug])
+    (frontend)/           # User-facing pages (home, lessons, reviews, login, profile, settings, faq, seed)
     api/
-      auth/               # Auth API routes (send-code, verify, refresh, logout, me)
-      app-lessons/        # App-facing lesson routes (prefixed to avoid clashing with Payload's /api/lessons)
-      app-tag-groups/     # App-facing tag groups route
-      speech/             # Speech recognition proxy and usage tracking
-    login/                # Login page
-    settings/             # Settings page
-    reviews/              # Reviews page
-    profile/              # Profile page
-    page.tsx              # Home page (lesson list)
-    layout.tsx            # Root layout
-  collections/            # Payload collections (Lessons, TagGroups, Media, Users)
+      auth/               # Email OTP: send-code, verify, refresh, logout, me
+      app-lessons/        # App-facing lesson list + detail (prefixed to avoid Payload collision)
+      app-tag-groups/     # App-facing tag groups for the filter UI
+      billing/            # Paddle checkout / portal / cancel
+      paddle/             # Paddle webhook receiver
+      progress/           # Per-user lesson progress (GET/POST + sync + clear)
+      daily-activity/     # Per-day lessons/reviews counts for streaks
+      speech/             # Mints short-lived JWTs for the speech-check gateway
+      seed/               # Dev-only seed runner
+  collections/            # Payload collections (Admins, Lessons, TagGroups, Media)
   components/
     atoms/                # Stateless, reusable UI components
     organisms/            # Stateful, composed components
   lib/
-    auth/                 # JWT helpers, cookies, OTP, email, origin check, requireAuth
+    auth/                 # JWT helpers, cookies, OTP, email, origin check, requireAuth/requirePremium
     db/                   # Drizzle connection, schema, seed
-    hooks/                # React Query hooks (useLessons, useLesson, useAuth, useTags)
+    hooks/                # React Query hooks (useLessons, useLesson, useAuth, useTags, ...)
     providers/            # React Query provider
     types.ts              # Shared TypeScript interfaces
-    projectConfig.ts      # Language configuration
-    useProgress.ts        # SRS progress tracking (localStorage)
+    projectConfig.ts      # Language configuration + free-lesson count
+    useProgress.ts        # SRS progress tracking (localStorage → DB on login)
     useLanguage.ts        # Language selection state
-  migrations/             # Payload-generated SQL migrations
-  payload.config.ts       # Payload config (collections, db adapter, admin)
+    useSpeechCheck.ts     # Mic recording + gateway call
+  payload.config.ts       # Payload config (collections, db adapter, admin, beforeSchemaInit)
   payload-types.ts        # Generated Payload TypeScript types
+drizzle/                  # Drizzle-generated SQL migrations
 ```
+
+Note: Payload-generated migrations will appear under `src/migrations/` after the first `npx payload migrate:create`.
 
 ## Deployment (Heroku)
 
 The app runs on a single Heroku dyno with Heroku Postgres.
 
 1. Create a Heroku app and add the Heroku Postgres addon
-2. Set the `DATABASE_URL` config var (Heroku does this automatically with the addon)
+2. Set the config vars from [Environment Variables](#environment-variables) (`DATABASE_URL` is wired automatically by the addon)
 3. Deploy via git push
 
-The `Procfile` handles migrations automatically on each deploy. Both ORMs need to be migrated:
+The `Procfile` handles migrations automatically on each release:
 
 ```
 release: npm run db:migrate && npx payload migrate
 web: npm run start
 ```
 
-Order matters only if a single deploy adds tables in both systems that reference each other — currently they don't, so either order works. Both commands are idempotent and skip already-applied migrations.
+Both migrate commands are idempotent and skip already-applied migrations. Order matters only if a single deploy adds tables in both systems that reference each other — currently they don't.
 
 ## Contributing
 

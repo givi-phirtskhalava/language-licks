@@ -205,53 +205,21 @@ function syncDailyLogToApi(
   }).catch((err) => console.error("Failed to sync daily activity:", err));
 }
 
-type TLegacyProgress = ILessonProgress & {
-  writingStreak?: number;
-  speakingStreak?: number;
-  writingBestTime?: number | null;
-  speakingBestTime?: number | null;
-};
-
 function migrateProgress(p: ILessonProgress): ILessonProgress {
-  let next: ILessonProgress = p;
-
-  if (next.interval > 1000) {
-    next = {
-      ...next,
-      interval: Math.max(1, Math.round(next.interval / (24 * 60 * 60 * 1000))),
+  if (p.interval > 1000) {
+    return {
+      ...p,
+      interval: Math.max(1, Math.round(p.interval / (24 * 60 * 60 * 1000))),
       nextReview:
-        next.nextReview && typeof next.nextReview === "number"
+        p.nextReview && typeof p.nextReview === "number"
           ? (() => {
-              const d = new Date(next.nextReview as unknown as number);
+              const d = new Date(p.nextReview as unknown as number);
               return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
             })()
-          : next.nextReview,
+          : p.nextReview,
     };
   }
-
-  const legacy = next as TLegacyProgress;
-  if (
-    "writingStreak" in legacy ||
-    "speakingStreak" in legacy ||
-    "writingBestTime" in legacy ||
-    "speakingBestTime" in legacy
-  ) {
-    const {
-      writingStreak,
-      speakingStreak,
-      writingBestTime: _wbt,
-      speakingBestTime: _sbt,
-      ...rest
-    } = legacy;
-    next = {
-      ...rest,
-      speakingUnlocked:
-        rest.speakingUnlocked ?? (writingStreak ?? 0) > 0,
-      lessonLearned: rest.lessonLearned ?? (speakingStreak ?? 0) > 0,
-    };
-  }
-
-  return next;
+  return p;
 }
 
 function defaultProgress(): ILessonProgress {

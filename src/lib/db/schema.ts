@@ -5,7 +5,6 @@ import {
   integer,
   boolean,
   timestamp,
-  real,
   uniqueIndex,
 } from "drizzle-orm/pg-core";
 
@@ -45,10 +44,8 @@ export const progress = pgTable(
     interval: integer("interval").notNull().default(1),
     nextReview: varchar("next_review", { length: 10 }),
     retired: boolean("retired").notNull().default(false),
-    writingBestTime: real("writing_best_time"),
-    speakingBestTime: real("speaking_best_time"),
-    writingStreak: integer("writing_streak").notNull().default(0),
-    speakingStreak: integer("speaking_streak").notNull().default(0),
+    speakingUnlocked: boolean("speaking_unlocked").notNull().default(false),
+    lessonLearned: boolean("lesson_learned").notNull().default(false),
     firstCompletedAt: timestamp("first_completed_at"),
     reviewPassCount: integer("review_pass_count").notNull().default(0),
     reviewFailCount: integer("review_fail_count").notNull().default(0),
