@@ -24,16 +24,14 @@ export default function Header() {
   const { data: lessons } = useLessons(language);
 
   const today = getToday();
-  const hasDueReviews = !pausedAt && lessons?.some((lesson) => {
-    const p = getLesson(lesson.id);
-    return (
-      p &&
-      p.completed &&
-      !p.retired &&
-      p.nextReview &&
-      p.nextReview <= today
-    );
-  });
+  const hasDueReviews =
+    !pausedAt &&
+    lessons?.some((lesson) => {
+      const p = getLesson(lesson.id);
+      return (
+        p && p.completed && !p.retired && p.nextReview && p.nextReview <= today
+      );
+    });
 
   const authItem = isLoggedIn
     ? { href: "/profile", label: "Profile" }
@@ -43,15 +41,11 @@ export default function Header() {
 
   return (
     <header className={style.header}>
-      <span className={style.logo}>LanguageLicks</span>
       {navItems.map(({ href, label }) => (
         <Link
           key={href}
           href={href}
-          className={classNames(
-            style.link,
-            pathname === href && style.active
-          )}
+          className={classNames(style.link, pathname === href && style.active)}
           onClick={() => {
             if (pathname === href) {
               window.dispatchEvent(new CustomEvent("nav-reset"));

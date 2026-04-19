@@ -9,14 +9,6 @@
   height: var(--header-height);
 }
 
-.logo {
-  font-family: var(--font-logo), cursive;
-  font-size: 1em;
-  font-weight: 400;
-  color: var(--text-dark);
-  margin-right: 0.5em;
-}
-
 .link {
   position: relative;
   font-size: 0.875em;
@@ -25,7 +17,9 @@
   text-decoration: none;
   padding: 0.5em 0.75em;
   border-radius: 0.5em;
-  transition: color 0.2s, background 0.2s;
+  transition:
+    color 0.2s,
+    background 0.2s;
 }
 
 .link:hover {
