@@ -13,7 +13,6 @@ import {
   users,
   verificationCodes,
   progress,
-  speechCredits,
   dailyActivity,
 } from "./lib/db/schema";
 
@@ -45,7 +44,6 @@ export default buildConfig({
           users,
           verificationCodes,
           progress,
-          speechCredits,
           dailyActivity,
         },
       }),

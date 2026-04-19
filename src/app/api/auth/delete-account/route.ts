@@ -1,6 +1,6 @@
 import type { NextRequest } from "next/server";
 import { db } from "@lib/db";
-import { users, progress, speechCredits, dailyActivity } from "@lib/db/schema";
+import { users, progress, dailyActivity } from "@lib/db/schema";
 import { eq } from "drizzle-orm";
 import {
   requireAuth,
@@ -55,7 +55,6 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    await db.delete(speechCredits).where(eq(speechCredits.userId, userId));
     await db.delete(progress).where(eq(progress.userId, userId));
     await db.delete(dailyActivity).where(eq(dailyActivity.userId, userId));
     await db.delete(users).where(eq(users.id, userId));

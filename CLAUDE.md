@@ -81,7 +81,7 @@
 - Languages are configured in `src/lib/projectConfig.ts`, not stored in the database
 - Lesson grammar and liaison tips are stored as JSON columns
 - Use the `db` instance from `src/lib/db/index.ts` for all queries
-- Payload owns `lessons`, `tag-groups`, `media`; Drizzle owns `users`, `verification_codes`, `progress`, `daily_activity`, `speech_credits`
+- Payload owns `lessons`, `tag-groups`, `media`; Drizzle owns `users`, `verification_codes`, `progress`, `daily_activity`
 - **When adding a Drizzle table**: add it to `src/lib/db/schema.ts` **and** register it in the `beforeSchemaInit` list in `src/payload.config.ts` — otherwise Payload will drop it on its next migration
 - **When adding a Payload collection**: make sure its slug/table name doesn't collide with a Drizzle table
 - After Drizzle changes: `npm run db:generate && npm run db:migrate`. After Payload collection changes: `npx payload migrate:create && npx payload migrate`

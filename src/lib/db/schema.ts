@@ -57,16 +57,6 @@ export const progress = pgTable(
   (table) => [uniqueIndex("progress_user_lesson_idx").on(table.userId, table.lessonId)]
 );
 
-export const speechCredits = pgTable("speech_credits", {
-  id: serial("id").primaryKey(),
-  userId: integer("user_id")
-    .notNull()
-    .references(() => users.id)
-    .unique(),
-  balance: integer("balance").notNull().default(30),
-  lastCreditDate: varchar("last_credit_date", { length: 10 }).notNull(),
-});
-
 export const dailyActivity = pgTable(
   "daily_activity",
   {

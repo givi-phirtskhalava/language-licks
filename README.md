@@ -91,7 +91,7 @@ The app uses **one Postgres database** shared by two ORMs that own disjoint sets
 | Tool        | Owns                                                                              | Why                                                                                                     |
 | ----------- | --------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------- |
 | **Payload** | `lessons`, `tag-groups`, `media` (and Payload's internal bookkeeping tables)      | Content authored by humans. The admin UI, access control, and field validation are net wins here.       |
-| **Drizzle** | `users`, `verification_codes`, `progress`, `daily_activity`, `speech_credits`     | Runtime/transactional data written by the app on every interaction. Needs raw SQL control, low overhead, bulk operations, and isn't browsed in an admin UI. |
+| **Drizzle** | `users`, `verification_codes`, `progress`, `daily_activity`                        | Runtime/transactional data written by the app on every interaction. Needs raw SQL control, low overhead, bulk operations, and isn't browsed in an admin UI. |
 
 **Rule of thumb**: if a non-developer would ever edit it, it goes in Payload. If the app writes to it on every lesson interaction, it goes in Drizzle.
 
@@ -110,7 +110,6 @@ db: postgresAdapter({
         users,
         verificationCodes,
         progress,
-        speechCredits,
         dailyActivity,
       },
     }),
