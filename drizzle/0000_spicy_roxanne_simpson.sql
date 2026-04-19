@@ -7,18 +7,6 @@ CREATE TABLE "daily_activity" (
 	"reviews" integer DEFAULT 0 NOT NULL
 );
 --> statement-breakpoint
-CREATE TABLE "lessons" (
-	"id" serial PRIMARY KEY NOT NULL,
-	"language" varchar(50) NOT NULL,
-	"sentence" text NOT NULL,
-	"translation" text NOT NULL,
-	"audio" varchar(255) NOT NULL,
-	"grammar" jsonb NOT NULL,
-	"liaison_tips" jsonb,
-	"tags" jsonb DEFAULT '[]'::jsonb NOT NULL,
-	"order" integer NOT NULL
-);
---> statement-breakpoint
 CREATE TABLE "progress" (
 	"id" serial PRIMARY KEY NOT NULL,
 	"user_id" integer NOT NULL,
@@ -37,14 +25,6 @@ CREATE TABLE "progress" (
 	"review_pass_count" integer DEFAULT 0 NOT NULL,
 	"review_fail_count" integer DEFAULT 0 NOT NULL,
 	"consecutive_fails" integer DEFAULT 0 NOT NULL
-);
---> statement-breakpoint
-CREATE TABLE "speech_credits" (
-	"id" serial PRIMARY KEY NOT NULL,
-	"user_id" integer NOT NULL,
-	"balance" integer DEFAULT 30 NOT NULL,
-	"last_credit_date" varchar(10) NOT NULL,
-	CONSTRAINT "speech_credits_user_id_unique" UNIQUE("user_id")
 );
 --> statement-breakpoint
 CREATE TABLE "users" (
@@ -72,7 +52,5 @@ CREATE TABLE "verification_codes" (
 --> statement-breakpoint
 ALTER TABLE "daily_activity" ADD CONSTRAINT "daily_activity_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "progress" ADD CONSTRAINT "progress_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "progress" ADD CONSTRAINT "progress_lesson_id_lessons_id_fk" FOREIGN KEY ("lesson_id") REFERENCES "public"."lessons"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "speech_credits" ADD CONSTRAINT "speech_credits_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 CREATE UNIQUE INDEX "daily_activity_user_lang_date_idx" ON "daily_activity" USING btree ("user_id","language","date_key");--> statement-breakpoint
 CREATE UNIQUE INDEX "progress_user_lesson_idx" ON "progress" USING btree ("user_id","lesson_id");

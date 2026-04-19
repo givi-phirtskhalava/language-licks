@@ -1,1 +1,0 @@
-DROP TABLE "speech_credits" CASCADE;

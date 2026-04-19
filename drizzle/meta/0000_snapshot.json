@@ -1,5 +1,5 @@
 {
-  "id": "867aa4a4-15bb-42dd-9522-0a8b2f0734fa",
+  "id": "4da22727-b970-4cae-8a97-b9174c37302f",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -91,74 +91,6 @@
           "onUpdate": "no action"
         }
       },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "policies": {},
-      "checkConstraints": {},
-      "isRLSEnabled": false
-    },
-    "public.lessons": {
-      "name": "lessons",
-      "schema": "",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "serial",
-          "primaryKey": true,
-          "notNull": true
-        },
-        "language": {
-          "name": "language",
-          "type": "varchar(50)",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "sentence": {
-          "name": "sentence",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "translation": {
-          "name": "translation",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "audio": {
-          "name": "audio",
-          "type": "varchar(255)",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "grammar": {
-          "name": "grammar",
-          "type": "jsonb",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "liaison_tips": {
-          "name": "liaison_tips",
-          "type": "jsonb",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "tags": {
-          "name": "tags",
-          "type": "jsonb",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "'[]'::jsonb"
-        },
-        "order": {
-          "name": "order",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {},
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
       "policies": {},
@@ -317,83 +249,10 @@
           ],
           "onDelete": "no action",
           "onUpdate": "no action"
-        },
-        "progress_lesson_id_lessons_id_fk": {
-          "name": "progress_lesson_id_lessons_id_fk",
-          "tableFrom": "progress",
-          "tableTo": "lessons",
-          "columnsFrom": [
-            "lesson_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
-      "policies": {},
-      "checkConstraints": {},
-      "isRLSEnabled": false
-    },
-    "public.speech_credits": {
-      "name": "speech_credits",
-      "schema": "",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "serial",
-          "primaryKey": true,
-          "notNull": true
-        },
-        "user_id": {
-          "name": "user_id",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "balance": {
-          "name": "balance",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "default": 30
-        },
-        "last_credit_date": {
-          "name": "last_credit_date",
-          "type": "varchar(10)",
-          "primaryKey": false,
-          "notNull": true
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {
-        "speech_credits_user_id_users_id_fk": {
-          "name": "speech_credits_user_id_users_id_fk",
-          "tableFrom": "speech_credits",
-          "tableTo": "users",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {
-        "speech_credits_user_id_unique": {
-          "name": "speech_credits_user_id_unique",
-          "nullsNotDistinct": false,
-          "columns": [
-            "user_id"
-          ]
-        }
-      },
       "policies": {},
       "checkConstraints": {},
       "isRLSEnabled": false

@@ -7,10 +7,10 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "db:generate": "drizzle-kit generate",
-    "db:migrate": "drizzle-kit migrate",
+    "db:generate": "drizzle-kit generate --config=drizzle.config.ts",
+    "db:migrate": "drizzle-kit migrate --config=drizzle.config.ts",
     "db:seed": "npx tsx --env-file=.env src/lib/db/seed.ts",
-    "db:studio": "drizzle-kit studio",
+    "db:studio": "drizzle-kit studio --config=drizzle.config.ts",
     "payload:migrate:create": "payload migrate:create",
     "payload:migrate": "payload migrate",
     "payload:migrate:status": "payload migrate:status"
