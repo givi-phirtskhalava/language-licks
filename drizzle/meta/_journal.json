@@ -8,6 +8,13 @@
       "when": 1776446882636,
       "tag": "0000_deep_professor_monster",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1776582652526,
+      "tag": "0001_wide_shotgun",
+      "breakpoints": true
     }
   ]
 }

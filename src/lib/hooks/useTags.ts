@@ -2,23 +2,23 @@
 
 import { useQuery } from "@tanstack/react-query";
 
-export type TTagGroupId = "tenses" | "topics" | "grammar";
-
 export interface ITagGroup {
-  id: TTagGroupId;
+  id: string;
   label: string;
   tags: string[];
 }
 
-async function fetchTagGroups(): Promise<ITagGroup[]> {
-  const response = await fetch("/api/tag-groups");
+async function fetchTagGroups(language: string): Promise<ITagGroup[]> {
+  const response = await fetch(
+    `/api/app-tag-groups?language=${encodeURIComponent(language)}`
+  );
   if (!response.ok) throw new Error("Failed to fetch tags");
   return response.json();
 }
 
-export default function useTags() {
+export default function useTags(language: string) {
   return useQuery({
-    queryKey: ["tags"],
-    queryFn: fetchTagGroups,
+    queryKey: ["tags", language],
+    queryFn: () => fetchTagGroups(language),
   });
 }

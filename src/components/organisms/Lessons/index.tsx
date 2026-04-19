@@ -77,6 +77,7 @@ export default function Lessons() {
 
         <div className={styles.filters}>
           <LessonFilters
+            language={language}
             selectedTags={selectedTags}
             onChange={setSelectedTags}
           />

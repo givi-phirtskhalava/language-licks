@@ -5,22 +5,29 @@ import { buildConfig } from "payload";
 import { fileURLToPath } from "url";
 import sharp from "sharp";
 
-import { Users } from "./collections/Users";
+import { Admins } from "./collections/Admins";
 import { Media } from "./collections/Media";
 import { Lessons } from "./collections/Lessons";
-import { Tags } from "./collections/Tags";
+import { TagGroups } from "./collections/TagGroups";
+import {
+  users,
+  verificationCodes,
+  progress,
+  speechCredits,
+  dailyActivity,
+} from "./lib/db/schema";
 
 const filename = fileURLToPath(import.meta.url);
 const dirname = path.dirname(filename);
 
 export default buildConfig({
   admin: {
-    user: Users.slug,
+    user: Admins.slug,
     importMap: {
       baseDir: path.resolve(dirname),
     },
   },
-  collections: [Users, Media, Lessons, Tags],
+  collections: [Admins, Media, Lessons, TagGroups],
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET || "",
   typescript: {
@@ -30,6 +37,19 @@ export default buildConfig({
     pool: {
       connectionString: process.env.DATABASE_URL || "",
     },
+    beforeSchemaInit: [
+      ({ schema }) => ({
+        ...schema,
+        tables: {
+          ...schema.tables,
+          users,
+          verificationCodes,
+          progress,
+          speechCredits,
+          dailyActivity,
+        },
+      }),
+    ],
   }),
   sharp,
   plugins: [],

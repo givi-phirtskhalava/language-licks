@@ -70,7 +70,7 @@ export interface Config {
     users: User;
     media: Media;
     lessons: Lesson;
-    tags: Tag;
+    'tag-groups': TagGroup;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -81,7 +81,7 @@ export interface Config {
     users: UsersSelect<false> | UsersSelect<true>;
     media: MediaSelect<false> | MediaSelect<true>;
     lessons: LessonsSelect<false> | LessonsSelect<true>;
-    tags: TagsSelect<false> | TagsSelect<true>;
+    'tag-groups': TagGroupsSelect<false> | TagGroupsSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -176,7 +176,7 @@ export interface Lesson {
   translation: string;
   audio: string;
   order: number;
-  tags?: (number | Tag)[] | null;
+  tags?: string[] | null;
   grammar: {
     label: string;
     explanation: string;
@@ -196,11 +196,25 @@ export interface Lesson {
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "tags".
  */
-export interface Tag {
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "tag-groups".
+ */
+export interface TagGroup {
   id: number;
-  name: string;
-  group: 'tenses' | 'topics' | 'grammar';
-  order: number;
+  language: 'french' | 'italian';
+  groups?:
+    | {
+        name: string;
+        tags?:
+          | {
+              name: string;
+              id?: string | null;
+            }[]
+          | null;
+        id?: string | null;
+      }[]
+    | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -350,10 +364,24 @@ export interface LessonsSelect<T extends boolean = true> {
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "tags_select".
  */
-export interface TagsSelect<T extends boolean = true> {
-  name?: T;
-  group?: T;
-  order?: T;
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "tag-groups_select".
+ */
+export interface TagGroupsSelect<T extends boolean = true> {
+  language?: T;
+  groups?:
+    | T
+    | {
+        name?: T;
+        tags?:
+          | T
+          | {
+              name?: T;
+              id?: T;
+            };
+        id?: T;
+      };
   updatedAt?: T;
   createdAt?: T;
 }

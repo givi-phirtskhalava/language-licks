@@ -29,11 +29,7 @@ export async function GET(
       audio: doc.audio,
       grammar: doc.grammar ?? [],
       liaisonTips: doc.liaisonTips ?? null,
-      tags: (doc.tags ?? [])
-        .map((tag) =>
-          typeof tag === "object" && tag !== null ? tag.name : null
-        )
-        .filter((name): name is string => Boolean(name)),
+      tags: (doc.tags ?? []).filter((t): t is string => typeof t === "string"),
     };
 
     return Response.json(lesson);

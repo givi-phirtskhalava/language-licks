@@ -1,0 +1,53 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75em;
+  margin-bottom: 1.5em;
+}
+
+.hint {
+  color: var(--theme-elevation-500);
+  font-size: 0.85em;
+  margin: 0;
+}
+
+.error {
+  color: var(--theme-error-500);
+  font-size: 0.85em;
+  margin: 0;
+}
+
+.group {
+  border: 1px solid var(--theme-elevation-150);
+  border-radius: 0.25em;
+  padding: 0.75em;
+  margin: 0;
+}
+
+.groupLabel {
+  font-size: 0.85em;
+  font-weight: 600;
+  padding: 0 0.4em;
+  color: var(--theme-elevation-700);
+}
+
+.tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5em 1em;
+  margin-top: 0.4em;
+}
+
+.tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4em;
+  font-size: 0.9em;
+  cursor: pointer;
+}
+
+.summary {
+  font-size: 0.8em;
+  color: var(--theme-elevation-600);
+  margin: 0;
+}

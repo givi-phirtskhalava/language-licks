@@ -8,7 +8,8 @@ Each lesson presents a sentence in the target language with grammar breakdowns, 
 
 - **Framework**: Next.js 16 (App Router)
 - **Database**: PostgreSQL (Heroku Postgres)
-- **ORM**: Drizzle
+- **ORM**: Drizzle (runtime/transactional tables)
+- **CMS**: Payload 3 (content tables + admin UI at `/admin`)
 - **Data Fetching**: React Query
 - **Styling**: CSS Modules
 - **Animations**: Motion (Framer Motion)
@@ -73,27 +74,118 @@ Open [http://localhost:3000](http://localhost:3000).
 | `npm run build`       | Build for production                         |
 | `npm run start`       | Start production server                      |
 | `npm run lint`        | Run ESLint                                   |
-| `npm run db:generate` | Generate migration files from schema changes |
-| `npm run db:migrate`  | Apply pending migrations                     |
-| `npm run db:seed`     | Seed the database with lesson data           |
+| `npm run db:generate` | Generate Drizzle migration files from schema changes |
+| `npm run db:migrate`  | Apply pending Drizzle migrations             |
+| `npm run db:seed`     | Seed the database with lesson + tag data     |
 | `npm run db:studio`   | Open Drizzle Studio (DB browser)             |
+| `npx payload migrate:create` | Generate a Payload migration from collection changes |
+| `npx payload migrate` | Apply pending Payload migrations             |
+| `npx payload migrate:status` | List which Payload migrations have run |
 
 ## Database
 
-### Schema
+The app uses **one Postgres database** shared by two ORMs that own disjoint sets of tables. The split is deliberate: each tool is used where its strengths matter.
 
-- **users** - User accounts with email, name, and selected language
-- **lessons** - Lesson content per language (sentence, translation, grammar, liaison tips) stored with JSON columns
-- **progress** - Per-user lesson progress tracking (phase, completion, SRS intervals)
+### Ownership split
 
-### Migrations
+| Tool        | Owns                                                                              | Why                                                                                                     |
+| ----------- | --------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------- |
+| **Payload** | `lessons`, `tag-groups`, `media` (and Payload's internal bookkeeping tables)      | Content authored by humans. The admin UI, access control, and field validation are net wins here.       |
+| **Drizzle** | `users`, `verification_codes`, `progress`, `daily_activity`, `speech_credits`     | Runtime/transactional data written by the app on every interaction. Needs raw SQL control, low overhead, bulk operations, and isn't browsed in an admin UI. |
 
-Schema is defined in `src/lib/db/schema.ts`. After changing the schema:
+**Rule of thumb**: if a non-developer would ever edit it, it goes in Payload. If the app writes to it on every lesson interaction, it goes in Drizzle.
+
+### Registering Drizzle tables with Payload
+
+Payload's postgres adapter will drop/ignore any tables it doesn't know about. To keep Drizzle-owned tables safe, they are registered with Payload via the `beforeSchemaInit` hook in `src/payload.config.ts`:
+
+```ts
+db: postgresAdapter({
+  pool: { connectionString: process.env.DATABASE_URL || "" },
+  beforeSchemaInit: [
+    ({ schema }) => ({
+      ...schema,
+      tables: {
+        ...schema.tables,
+        users,
+        verificationCodes,
+        progress,
+        speechCredits,
+        dailyActivity,
+      },
+    }),
+  ],
+}),
+```
+
+**When adding a new Drizzle table**: add it to `src/lib/db/schema.ts` **and** register it in the `beforeSchemaInit` list in `src/payload.config.ts`. Forgetting the second step means Payload will try to drop the table on its next migration. Table names must also not collide with any Payload collection slug.
+
+### Drizzle (runtime data)
+
+Schema lives in `src/lib/db/schema.ts`. Migrations are stored in `./drizzle/` and applied with the `db:migrate` script. Use `db:studio` to browse the data.
+
+After changing `schema.ts`:
 
 ```bash
-npm run db:generate   # generates SQL migration in ./drizzle/
-npm run db:migrate    # applies it to the database
+npm run db:generate   # diffs schema.ts against the DB and writes a SQL migration
+npm run db:migrate    # applies pending migrations
 ```
+
+### Payload (content)
+
+Collections live in `src/collections/`, wired up in `src/payload.config.ts`. Generated TypeScript types are in `src/payload-types.ts`. The admin UI is at `/admin`.
+
+Current collections:
+
+- **lessons** — sentence, translation, grammar breakdown, liaison tips, language, tags (string array). Lessons reference tags by name (string), not by FK.
+- **tag-groups** — one document per language. Each document has a nested array of groups; each group has a nested array of tags. Edit all groups + tags for a language on a single page.
+- **media** — uploads (currently unused on the frontend, available for future use).
+- **users** — Payload's auth-managed collection, used only for logging in to `/admin`. **Not** the same as the Drizzle `users` table that holds app accounts (see "Two `users` tables" below).
+
+After changing a collection:
+
+```bash
+npx payload migrate:create   # generates a SQL migration under src/migrations/
+npx payload migrate          # applies pending migrations
+```
+
+`push: false` is set on the postgres adapter, so the dev server will **not** auto-sync schema. Migrations are the only way to change the DB. This is intentional — push is interactive, non-transactional in places, and leaves the DB in half-applied states when it fails. Migrations are reviewable, reproducible, and run the same in dev and prod.
+
+### Bridging Drizzle data into the Payload admin
+
+When you want to surface Drizzle-managed data (e.g. user progress) inside the admin UI, **don't** move it into a Payload collection. Instead, write a normal Next.js route that queries Drizzle directly, and gate it on the Payload session:
+
+```ts
+import { headers as nextHeaders } from "next/headers";
+import { getPayload } from "payload";
+import config from "@payload-config";
+
+const payload = await getPayload({ config });
+const { user } = await payload.auth({ headers: await nextHeaders() });
+if (!user) return Response.json({ error: "unauthorized" }, { status: 401 });
+// ...query Drizzle, return JSON
+```
+
+Then either fetch that route from a custom admin view component (registered under `admin.components` in `payload.config.ts`) or build a separate Next.js page with the same auth check. This keeps the hot path off Payload while still giving admins a UI.
+
+### Two `users` tables — known split
+
+There are currently two collections both called `users`:
+
+- **Drizzle `users`** (`src/lib/db/schema.ts`) — the app's actual user accounts: email, Paddle subscription, daily target, OTP-issued JWT auth. Used by every authenticated app route.
+- **Payload `users`** (`src/collections/Users.ts`) — Payload's built-in auth collection, used only to log in to `/admin`.
+
+These are separate identities in separate tables. App users do not get an admin login by signing up, and admin users do not appear in the Drizzle `users` table. This is fine while the admin is internal-only, but worth being aware of.
+
+### Naming convention for app-facing API routes
+
+To avoid collisions with Payload's REST API at `/api/<collection-slug>`, the app's own data-shaping routes are prefixed with `app-`:
+
+- `/api/app-lessons` — lightweight lesson list for the lesson grid
+- `/api/app-lessons/[id]` — full lesson detail
+- `/api/app-tag-groups` — flattened tag groups for the filter modal
+
+Without the prefix, a route like `/api/lessons/route.ts` would shadow Payload's `/api/lessons` REST endpoint and break the admin UI (this is what caused "Method Not Allowed" errors during development).
 
 ## Free Tier
 
@@ -237,9 +329,11 @@ See the whisper-service README for Docker, GPU, and deployment details.
 ```
 src/
   app/
+    (payload)/            # Payload's mounted admin + REST API (/admin, /api/[...slug])
     api/
       auth/               # Auth API routes (send-code, verify, refresh, logout, me)
-      lessons/            # API routes for lesson data
+      app-lessons/        # App-facing lesson routes (prefixed to avoid clashing with Payload's /api/lessons)
+      app-tag-groups/     # App-facing tag groups route
       speech/             # Speech recognition proxy and usage tracking
     login/                # Login page
     settings/             # Settings page
@@ -247,18 +341,22 @@ src/
     profile/              # Profile page
     page.tsx              # Home page (lesson list)
     layout.tsx            # Root layout
+  collections/            # Payload collections (Lessons, TagGroups, Media, Users)
   components/
     atoms/                # Stateless, reusable UI components
     organisms/            # Stateful, composed components
   lib/
     auth/                 # JWT helpers, cookies, OTP, email, origin check, requireAuth
-    db/                   # Database connection, schema, seed
-    hooks/                # React Query hooks (useLessons, useLesson, useAuth)
+    db/                   # Drizzle connection, schema, seed
+    hooks/                # React Query hooks (useLessons, useLesson, useAuth, useTags)
     providers/            # React Query provider
     types.ts              # Shared TypeScript interfaces
     projectConfig.ts      # Language configuration
     useProgress.ts        # SRS progress tracking (localStorage)
     useLanguage.ts        # Language selection state
+  migrations/             # Payload-generated SQL migrations
+  payload.config.ts       # Payload config (collections, db adapter, admin)
+  payload-types.ts        # Generated Payload TypeScript types
 ```
 
 ## Deployment (Heroku)
@@ -269,12 +367,14 @@ The app runs on a single Heroku dyno with Heroku Postgres.
 2. Set the `DATABASE_URL` config var (Heroku does this automatically with the addon)
 3. Deploy via git push
 
-The `Procfile` handles migrations automatically on each deploy:
+The `Procfile` handles migrations automatically on each deploy. Both ORMs need to be migrated:
 
 ```
-release: npm run db:migrate
+release: npm run db:migrate && npx payload migrate
 web: npm run start
 ```
+
+Order matters only if a single deploy adds tables in both systems that reference each other — currently they don't, so either order works. Both commands are idempotent and skip already-applied migrations.
 
 ## Contributing
 

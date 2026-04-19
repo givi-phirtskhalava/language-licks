@@ -16,16 +16,14 @@ export async function GET(request: NextRequest) {
     where: { language: { equals: language } },
     sort: "order",
     limit: 1000,
-    depth: 1,
+    depth: 0,
   });
 
   const lessons = result.docs.map((doc) => ({
     id: doc.id,
     sentence: doc.sentence,
     translation: doc.translation,
-    tags: (doc.tags ?? [])
-      .map((tag) => (typeof tag === "object" && tag !== null ? tag.name : null))
-      .filter((name): name is string => Boolean(name)),
+    tags: (doc.tags ?? []).filter((t): t is string => typeof t === "string"),
   }));
 
   return Response.json(lessons);

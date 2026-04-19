@@ -43,9 +43,13 @@ export const Lessons: CollectionConfig = {
     },
     {
       name: "tags",
-      type: "relationship",
-      relationTo: "tags",
+      type: "text",
       hasMany: true,
+      admin: {
+        components: {
+          Field: "@/collections/Lessons/TagsField#default",
+        },
+      },
     },
     {
       name: "grammar",

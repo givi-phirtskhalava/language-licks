@@ -10,7 +10,10 @@
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
     "db:seed": "npx tsx --env-file=.env src/lib/db/seed.ts",
-    "db:studio": "drizzle-kit studio"
+    "db:studio": "drizzle-kit studio",
+    "payload:migrate:create": "payload migrate:create",
+    "payload:migrate": "payload migrate",
+    "payload:migrate:status": "payload migrate:status"
   },
   "dependencies": {
     "@fortawesome/fontawesome-svg-core": "^7.2.0",

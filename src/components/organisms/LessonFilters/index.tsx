@@ -10,13 +10,18 @@ import useTags from "@lib/hooks/useTags";
 import style from "./LessonFilters.module.css";
 
 interface Props {
+  language: string;
   selectedTags: string[];
   onChange: (tags: string[]) => void;
 }
 
-export default function LessonFilters({ selectedTags, onChange }: Props) {
+export default function LessonFilters({
+  language,
+  selectedTags,
+  onChange,
+}: Props) {
   const [isOpen, setIsOpen] = useState(false);
-  const { data: tagGroups } = useTags();
+  const { data: tagGroups } = useTags(language);
 
   function toggleTag(tag: string) {
     if (selectedTags.includes(tag)) {

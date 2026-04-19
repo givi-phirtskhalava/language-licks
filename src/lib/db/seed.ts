@@ -11,56 +11,98 @@ interface ISeedLesson {
 }
 
 interface ISeedTagGroup {
-  id: "tenses" | "topics" | "grammar";
-  label: string;
+  name: string;
   tags: string[];
 }
 
-const TAG_GROUPS: ISeedTagGroup[] = [
-  {
-    id: "tenses",
-    label: "Tenses & Moods",
-    tags: [
-      "Present",
-      "Passé Composé",
-      "Imperfect",
-      "Future",
-      "Conditional",
-      "Subjunctive",
-      "Imperative",
-      "Continuous",
-    ],
-  },
-  {
-    id: "topics",
-    label: "Topics",
-    tags: [
-      "Animals",
-      "Shopping",
-      "Health",
-      "Family",
-      "Technology",
-      "Sports",
-      "Errands",
-      "Time",
-      "Work",
-      "Feelings",
-    ],
-  },
-  {
-    id: "grammar",
-    label: "Grammar",
-    tags: [
-      "Negation",
-      "Pronouns",
-      "Reflexive",
-      "Comparatives",
-      "Impersonal",
-      "Conjunctions",
-      "Idioms",
-    ],
-  },
-];
+type TLanguage = "french" | "italian";
+
+const TAG_GROUPS_BY_LANGUAGE: Record<TLanguage, ISeedTagGroup[]> = {
+  french: [
+    {
+      name: "Tenses & Moods",
+      tags: [
+        "Present",
+        "Passé Composé",
+        "Imperfect",
+        "Future",
+        "Conditional",
+        "Subjunctive",
+        "Imperative",
+        "Continuous",
+      ],
+    },
+    {
+      name: "Topics",
+      tags: [
+        "Animals",
+        "Shopping",
+        "Health",
+        "Family",
+        "Technology",
+        "Sports",
+        "Errands",
+        "Time",
+        "Work",
+        "Feelings",
+      ],
+    },
+    {
+      name: "Grammar",
+      tags: [
+        "Negation",
+        "Pronouns",
+        "Reflexive",
+        "Comparatives",
+        "Impersonal",
+        "Conjunctions",
+        "Idioms",
+      ],
+    },
+  ],
+  italian: [
+    {
+      name: "Tenses & Moods",
+      tags: [
+        "Present",
+        "Passato Prossimo",
+        "Imperfect",
+        "Future",
+        "Conditional",
+        "Subjunctive",
+        "Imperative",
+        "Continuous",
+      ],
+    },
+    {
+      name: "Topics",
+      tags: [
+        "Animals",
+        "Shopping",
+        "Health",
+        "Family",
+        "Technology",
+        "Sports",
+        "Errands",
+        "Time",
+        "Work",
+        "Feelings",
+      ],
+    },
+    {
+      name: "Grammar",
+      tags: [
+        "Negation",
+        "Pronouns",
+        "Reflexive",
+        "Comparatives",
+        "Impersonal",
+        "Conjunctions",
+        "Idioms",
+      ],
+    },
+  ],
+};
 
 const FRENCH_LESSONS: ISeedLesson[] = [
   {
@@ -492,43 +534,34 @@ const ITALIAN_LESSONS: ISeedLesson[] = [
 ];
 
 async function seedTags(payload: Awaited<ReturnType<typeof getPayload>>) {
-  const tagIdByName: Record<string, number> = {};
-  let order = 0;
+  for (const language of Object.keys(TAG_GROUPS_BY_LANGUAGE) as TLanguage[]) {
+    const groups = TAG_GROUPS_BY_LANGUAGE[language].map((group) => ({
+      name: group.name,
+      tags: group.tags.map((name) => ({ name })),
+    }));
 
-  for (const group of TAG_GROUPS) {
-    for (const name of group.tags) {
-      const existing = await payload.find({
-        collection: "tags",
-        where: { name: { equals: name } },
-        limit: 1,
+    const existing = await payload.find({
+      collection: "tag-groups",
+      where: { language: { equals: language } },
+      limit: 1,
+    });
+
+    if (existing.docs.length > 0) {
+      await payload.update({
+        collection: "tag-groups",
+        id: existing.docs[0].id,
+        data: { language, groups },
       });
-
-      if (existing.docs.length > 0) {
-        const doc = existing.docs[0];
-        await payload.update({
-          collection: "tags",
-          id: doc.id,
-          data: { group: group.id, order },
-        });
-        tagIdByName[name] = doc.id as number;
-      } else {
-        const created = await payload.create({
-          collection: "tags",
-          data: { name, group: group.id, order },
-        });
-        tagIdByName[name] = created.id as number;
-      }
-      order++;
+    } else {
+      await payload.create({
+        collection: "tag-groups",
+        data: { language, groups },
+      });
     }
   }
-
-  return tagIdByName;
 }
 
-async function seedLessons(
-  payload: Awaited<ReturnType<typeof getPayload>>,
-  tagIdByName: Record<string, number>
-) {
+async function seedLessons(payload: Awaited<ReturnType<typeof getPayload>>) {
   const allLessons = [
     ...FRENCH_LESSONS.map((lesson, index) => ({
       language: "french" as const,
@@ -546,10 +579,6 @@ async function seedLessons(
   let inserted = 0;
 
   for (const lesson of allLessons) {
-    const tagIds = lesson.tags
-      .map((name) => tagIdByName[name])
-      .filter((id): id is number => typeof id === "number");
-
     const data = {
       language: lesson.language,
       sentence: lesson.sentence,
@@ -557,7 +586,7 @@ async function seedLessons(
       audio: lesson.audio,
       grammar: lesson.grammar,
       liaisonTips: lesson.liaisonTips ?? null,
-      tags: tagIds,
+      tags: lesson.tags,
       order: lesson.order,
     };
 
@@ -606,11 +635,11 @@ async function seedLessons(
 async function seed() {
   const payload = await getPayload({ config });
 
-  console.log("Seeding tags...");
-  const tagIdByName = await seedTags(payload);
+  console.log("Seeding tag groups and tags...");
+  await seedTags(payload);
 
   console.log("Seeding lessons...");
-  const { updated, inserted, removed } = await seedLessons(payload, tagIdByName);
+  const { updated, inserted, removed } = await seedLessons(payload);
 
   console.log(
     `Seed complete: ${updated} updated, ${inserted} inserted, ${removed} removed.`
