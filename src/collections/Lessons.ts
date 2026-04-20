@@ -9,6 +9,30 @@ export const Lessons: CollectionConfig = {
   access: {
     read: () => true,
   },
+  hooks: {
+    beforeChange: [
+      async ({ data, operation, req }) => {
+        if (operation !== "create") return data;
+
+        const result = await req.payload.find({
+          collection: "lessons",
+          where: {
+            language: { equals: data.language },
+            cefr: { equals: data.cefr },
+          },
+          sort: "-order",
+          limit: 1,
+          depth: 0,
+          req,
+        });
+
+        const maxOrder =
+          typeof result.docs[0]?.order === "number" ? result.docs[0].order : 0;
+        data.order = maxOrder + 1;
+        return data;
+      },
+    ],
+  },
   fields: [
     {
       name: "language",
@@ -18,6 +42,11 @@ export const Lessons: CollectionConfig = {
         { label: "French", value: "french" },
         { label: "Italian", value: "italian" },
       ],
+      defaultValue: ({ req }) => {
+        const fromQuery = req.query?.language;
+        if (fromQuery === "french" || fromQuery === "italian") return fromQuery;
+        return undefined;
+      },
     },
     {
       name: "sentence",
@@ -40,6 +69,7 @@ export const Lessons: CollectionConfig = {
       type: "number",
       required: true,
       defaultValue: 0,
+      admin: { hidden: true },
     },
     {
       name: "isFree",
@@ -49,7 +79,20 @@ export const Lessons: CollectionConfig = {
     {
       name: "cefr",
       type: "select",
-      defaultValue: "A1",
+      defaultValue: ({ req }) => {
+        const fromQuery = req.query?.cefr;
+        if (
+          fromQuery === "A1" ||
+          fromQuery === "A2" ||
+          fromQuery === "B1" ||
+          fromQuery === "B2" ||
+          fromQuery === "C1" ||
+          fromQuery === "C2"
+        ) {
+          return fromQuery;
+        }
+        return "A1";
+      },
       options: [
         { label: "A1", value: "A1" },
         { label: "A2", value: "A2" },

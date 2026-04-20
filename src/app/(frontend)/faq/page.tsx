@@ -7,80 +7,14 @@ export default function FaqPage() {
         <h1 className={styles.title}>FAQ</h1>
         <div className={styles.list}>
           <div className={styles.item}>
-            <h2 className={styles.question}>Who is this for?</h2>
-            <p className={styles.answer}>
-              Anyone who wants to learn a language, at any level. Whether
-              you&apos;re a complete beginner or looking to sharpen what you
-              already know, the lessons are designed to help you make meaningful
-              progress through focused, hands-on practice.
-            </p>
-          </div>
-
-          <div className={styles.item}>
             <h2 className={styles.question}>
               What&apos;s different about Language Licks?
             </h2>
             <p className={styles.answer}>
               It focuses on active recall &mdash; the hardest but most effective
-              part of language learning. You can&apos;t pass a review unless you
-              get it right. There&apos;s no multiple choice or passive
-              scrolling. You have to write and speak the sentence from memory,
-              which is what actually builds fluency.
-            </p>
-          </div>
-
-          <div className={styles.item}>
-            <h2 className={styles.question}>
-              Do I have to memorize everything?
-            </h2>
-            <p className={styles.answer}>
-              Yes, but the first step is to understand every part of what
-              you&apos;re going to memorize. Spend a few minutes &mdash; or
-              longer &mdash; studying the lesson, its grammar notes, and
-              pronunciation tips. Then use the practice mode to repeat the
-              sentence until you can recall it from memory. The more you
-              practice, the easier it becomes to internalize the grammar and
-              vocabulary naturally.
-            </p>
-          </div>
-          <div className={styles.item}>
-            <h2 className={styles.question}>
-              Is this method guaranteed to work?
-            </h2>
-            <p className={styles.answer}>
-              It's not for everyone — different people learn in different ways,
-              and you should supplement your learning. But every sentence you
-              memorize and actively recall means you're one sentence and a few
-              vocabulary words ahead. As long as you keep learning new sentences
-              and reviewing them so you don't forget, you're getting closer to
-              fluency.
-            </p>
-          </div>
-
-          <div className={styles.item}>
-            <h2 className={styles.question}>
-              Do you teach grammar and vocabulary?
-            </h2>
-            <p className={styles.answer}>
-              We don&apos;t teach grammar or vocabulary in isolation. Instead,
-              you learn how words connect inside real sentences &mdash; the way
-              native speakers actually use them. Every lesson includes a
-              breakdown of the sentence &mdash; grammar rules, word meanings,
-              and pronunciation notes &mdash; so you understand what you&apos;re
-              memorizing, not just how to repeat it.
-            </p>
-          </div>
-
-          <div className={styles.item}>
-            <h2 className={styles.question}>
-              Should I still use other resources?
-            </h2>
-            <p className={styles.answer}>
-              Absolutely. Immerse yourself in the language with movies, music,
-              books, and conversations. Language Licks is designed to complement
-              your learning by providing focused practice on real sentences, but
-              exposure to the language in various contexts is essential for
-              fluency.
+              part of language learning. There&apos;s no multiple choice or
+              passive scrolling. You're asked to write and speak the sentences
+              you're learning with regular reviews at increasing intervals.
             </p>
           </div>
 
@@ -89,14 +23,46 @@ export default function FaqPage() {
               What&apos;s the goal of memorizing every sentence?
             </h2>
             <p className={styles.answer}>
-              The goal is to say the sentence until it becomes instinctive
-              &mdash; so you can use it without thinking. Once a phrase is
-              second nature, you can pull parts of it into other contexts, remix
-              it with different words, and adapt it on the fly. Speaking is
-              natural and we don&apos;t usually think before we speak (although
-              it would be nice if people did that more often) &mdash; and
-              that&apos;s exactly what we want to achieve with a new language
-              too.
+              If you practice and repeat a sentence enough times, it becomes
+              second nature. You will no longer translate in your head, and
+              you'll start expressing yourself in ways that a native speaker
+              would. You also won't second guess yourself when speaking that
+              sentence.
+            </p>
+          </div>
+
+          <div className={styles.item}>
+            <h2 className={styles.question}>
+              Is this method guaranteed to work?
+            </h2>
+            <p className={styles.answer}>
+              It may not be for everyone — different people learn in different
+              ways, and you should supplement your learning. But every sentence
+              you learn and actively recall means you're building up your
+              language skills. As long as you keep learning new sentences and
+              reviewing them so you don't forget, you're getting closer to
+              fluency. The spaced repetition system is based on scientific
+              research, and you can{" "}
+              <a
+                href="https://en.wikipedia.org/wiki/Spaced_repetition"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                read more about it here
+              </a>
+            </p>
+          </div>
+
+          <div className={styles.item}>
+            <h2 className={styles.question}>
+              Do you teach grammar and vocabulary?
+            </h2>
+            <p className={styles.answer}>
+              Yes, we break down the grammar and vocabulary that's relevant for
+              the lesson. The lessons are designed to introduce you to different
+              tenses, conjugation, and vocabulary over time, focusing only on
+              the relevant grammar and vocab for each sentence to make it easier
+              to absorb, one step at a time.
             </p>
           </div>
 
@@ -106,44 +72,50 @@ export default function FaqPage() {
             </h2>
             <p className={styles.answer}>
               We recommend 1 or 2 new lessons per day. At that pace, your daily
-              reviews will never grow past 8&ndash;16 &mdash; very manageable.
-              If you have more time, you can do more, but make sure you can keep
-              up with reviews every day. Reviews are where the real learning
-              happens, so it&apos;s better to do fewer new lessons and stay on
-              top of your reviews than to rush ahead and let them pile up.
+              reviews queue will never grow too large. If you have more time,
+              you can do more, but make sure you can keep up with reviews every
+              day. It's recommended to do fewer new lessons and stay on top of
+              your reviews than to rush ahead and let them pile up.
             </p>
           </div>
 
           <div className={styles.item}>
             <h2 className={styles.question}>
-              How does the lesson format work?
+              Can I learn multiple languages with one account?
             </h2>
             <p className={styles.answer}>
-              Each lesson centers on a real sentence. You listen to native
-              recordings at natural and slow speeds, then practice by writing
-              and speaking the sentence back. Grammar tips and pronunciation
-              notes are provided alongside each sentence to help you understand
-              what you&apos;re learning.
+              Yes. You can change your language at any time from the home page
+              or settings. Your progress is saved separately for each language,
+              so you can switch back and forth without losing anything. Make
+              sure to pause your reviews in one language before switching to
+              another if you think they're going to pile up.
             </p>
           </div>
 
           <div className={styles.item}>
-            <h2 className={styles.question}>Is Language Licks free?</h2>
+            <h2 className={styles.question}>
+              How accurate is your audio recognition system for speaking
+              practice?
+            </h2>
             <p className={styles.answer}>
-              The first 10 lessons in each language are completely free and
-              don&apos;t require an account. After that, a premium subscription
-              unlocks the full library of lessons and all future content.
-              Speaking practice and tests are exclusive to premium users because
-              they require additional processing power for speech recognition.
+              We're using a machine learning model, and it won't always be
+              perfect. On top of that, we've also intentionally set the pass
+              threshold low enough that people with different accents, speech
+              impediments, and levels of confidence can take part. If you've
+              passed the writing test, chances are you know the sentence well
+              enough. The goal is to do a cursory check on your speaking and
+              provide another opportunity to reinforce what you already know.
             </p>
           </div>
 
           <div className={styles.item}>
-            <h2 className={styles.question}>How much does premium cost?</h2>
+            <h2 className={styles.question}>
+              Should I still use other resources?
+            </h2>
             <p className={styles.answer}>
-              Premium is $10 a month. All payments are handled by Paddle, a
-              secure third-party payment provider. We never see or store your
-              card details.
+              Absolutely, immerse yourself in the language with movies, music,
+              books, and conversations. Language Licks is designed to complement
+              your learning by providing a way to practice active recall.
             </p>
           </div>
 
@@ -151,21 +123,13 @@ export default function FaqPage() {
             <h2 className={styles.question}>What about privacy and cookies?</h2>
             <p className={styles.answer}>
               We only store what&apos;s necessary to run the app &mdash; your
-              email, progress, and subscription status. We don&apos;t do any
+              email, progress, subscription status, and anonymous analytics data
+              to see how users interact with the site. We don&apos;t do any
               invasive marketing tracking, we don&apos;t sell your data, and we
               don&apos;t use cookies beyond what&apos;s needed for
               authentication. Your voice recordings are processed in real time
-              on our own speech recognition servers and are never stored or
-              used to train any AI model.
-            </p>
-          </div>
-
-          <div className={styles.item}>
-            <h2 className={styles.question}>Can I switch languages?</h2>
-            <p className={styles.answer}>
-              Yes. You can change your language at any time from the home page
-              or settings. Your progress is saved separately for each language,
-              so you can switch back and forth without losing anything.
+              on our own speech recognition servers and are never stored or used
+              to train any AI model.
             </p>
           </div>
 
@@ -173,30 +137,7 @@ export default function FaqPage() {
             <h2 className={styles.question}>Who built this website?</h2>
             <p className={styles.answer}>
               This website was built by Givi, a guitar player and web developer
-              from Georgia with over ten years of experience, and Marie, a
-              seamstress and teacher from France.
-            </p>
-          </div>
-
-          <div className={styles.item}>
-            <h2 className={styles.question}>
-              What was the inspiration behind it?
-            </h2>
-            <p className={styles.answer}>
-              Givi was waiting for Marie outside a supermarket in Paris, reading
-              the sign at the entrance to pass the time. The sign read "Nos amis
-              les animaux ne sont pas admis dans ce magasin" (our friends the
-              animals are not allowed in this shop). It sounded cute and had a
-              nice ring to it, so he kept repeating the phrase all the way back
-              home, asking Marie to correct his pronunciation. Every now and
-              then Marie would ask him if he still remembered it. With the
-              natural spaced repetition of the phrase, it became ingrained in
-              his memory and he could say it in his sleep. Some time later, on
-              one sunny morning in Batumi, Georgia, he made the connection. To
-              be able to improvise on the guitar and come up with melodies on
-              the spot without thinking, he had to have the "licks" and scales
-              in muscle memory, so it comes without thinking. And that's how
-              Language Licks was born.
+              from Georgia with over ten years of experience in web development.
             </p>
           </div>
         </div>

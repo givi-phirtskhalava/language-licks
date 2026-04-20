@@ -25,6 +25,15 @@ export default buildConfig({
     importMap: {
       baseDir: path.resolve(dirname),
     },
+    components: {
+      afterNavLinks: ["@/views/LessonBoardNavLink#default"],
+      views: {
+        lessonBoard: {
+          Component: "@/views/LessonBoard#default",
+          path: "/lesson-board",
+        },
+      },
+    },
   },
   collections: [Admins, Media, Lessons, TagGroups],
   editor: lexicalEditor(),

@@ -14,7 +14,7 @@ export async function GET(request: NextRequest) {
   const result = await payload.find({
     collection: "lessons",
     where: { language: { equals: language } },
-    sort: "order",
+    sort: ["cefr", "order", "id"],
     limit: 1000,
     depth: 0,
   });

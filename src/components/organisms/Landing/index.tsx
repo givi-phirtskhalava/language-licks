@@ -16,27 +16,17 @@ const LANGUAGE_EMOJIS: Record<string, string> = {
 
 const FEATURES = [
   {
-    title: "Writing & Speaking Tests",
+    title: "Lessons with natural, native sentences",
     description:
-      "Type what you hear, then speak it back. Active recall through writing and pronunciation practice.",
+      "Learn through sentences spoken by native speakers, with a breakdown of the relevant grammar you need to know to understand and use each sentence.",
   },
   {
-    title: "Human Recordings",
+    title: "Active recall with writing & speaking tests",
     description:
-      "Every sentence recorded by native speakers at both natural and slow speeds. No robotic TTS.",
+      "Type what you hear, then speak it back. Active recall through writing and speaking.",
   },
   {
-    title: "Learn Words in Context",
-    description:
-      "Instead of memorizing vocabulary in isolation, learn how words connect inside real sentences — the way native speakers actually use them.",
-  },
-  {
-    title: "Lessons with Explanations",
-    description:
-      "Grammar breakdowns, liaison rules, and pronunciation tips alongside each sentence.",
-  },
-  {
-    title: "Spaced Repetition",
+    title: "Spaced repetition",
     description:
       "A review system that schedules sentences at optimal intervals so they stick in long-term memory.",
   },
@@ -51,14 +41,19 @@ export default function Landing() {
       <section className={style.hero}>
         <h1 className={style.title}>LanguageLicks</h1>
 
-        <p className={style.tagline}>
+        {/* <p className={style.tagline}>
           Improve your fluency with just one phrase a day.
+        </p> */}
+
+        <p className={style.pitch}>
+          A language learning tool inspired by guitar "licks", short phrases
+          that musicians practice and use in solos and improvisation.
         </p>
 
         <p className={style.pitch}>
-          Learn a new language through active recall and spaced repetition.
-          Understand a phrase, and pass writing and speaking reviews until they
-          become second nature.
+          Build up a library of phrases through repetition and active recall
+          until they become instinctive parts of your language skills, ready to
+          be pulled out and used in conversation naturally and effortlessly.
         </p>
       </section>
 
@@ -81,9 +76,7 @@ export default function Landing() {
           ))}
         </div>
 
-        <span className={style.free}>
-          Free lessons available, no account required
-        </span>
+        <span className={style.free}>10 free lessons, no account required</span>
 
         <div className={style.ctaButton}>
           <Button
@@ -121,16 +114,6 @@ export default function Landing() {
             Find out more
           </Button>
         </div>
-
-        <blockquote className={style.definition}>
-          <div className={style.word}>lick</div>
-          <div className={style.pos}>noun</div>
-          <p className={style.meaning}>
-            A short musical phrase &mdash; a building block that musicians learn
-            through repetition until it becomes instinctive, often used in solos
-            and improvisation.
-          </p>
-        </blockquote>
       </section>
     </div>
   );
