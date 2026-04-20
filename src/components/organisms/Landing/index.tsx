@@ -16,19 +16,23 @@ const LANGUAGE_EMOJIS: Record<string, string> = {
 
 const FEATURES = [
   {
-    title: "Lessons with natural, native sentences",
+    title: "1. Learn",
     description:
-      "Learn through sentences spoken by native speakers, with a breakdown of the relevant grammar you need to know to understand and use each sentence.",
+      "Each lesson is a natural, native-level sentence with a full breakdown of the required grammar and vocabulary.",
   },
   {
-    title: "Active recall with writing & speaking tests",
-    description:
-      "Type what you hear, then speak it back. Active recall through writing and speaking.",
+    title: "2. Write",
+    description: "Write it from memory with the correct grammar and spelling.",
   },
   {
-    title: "Spaced repetition",
+    title: "3. Speak",
     description:
-      "A review system that schedules sentences at optimal intervals so they stick in long-term memory.",
+      "Speak it from memory to reinforce the sentence and practice your pronunciation.",
+  },
+  {
+    title: "4. Review",
+    description:
+      "We'll prompt you at regular intervals to review each sentence until it becomes instinctive to say.",
   },
 ];
 
@@ -41,11 +45,7 @@ export default function Landing() {
       <section className={style.hero}>
         <h1 className={style.title}>LanguageLicks</h1>
 
-        {/* <p className={style.tagline}>
-          Improve your fluency with just one phrase a day.
-        </p> */}
-
-        <p className={style.pitch}>
+        {/* <p className={style.pitch}>
           A language learning tool inspired by guitar "licks", short phrases
           that musicians practice and use in solos and improvisation.
         </p>
@@ -54,7 +54,7 @@ export default function Landing() {
           Build up a library of phrases through repetition and active recall
           until they become instinctive parts of your language skills, ready to
           be pulled out and used in conversation naturally and effortlessly.
-        </p>
+        </p> */}
       </section>
 
       <section className={style.cta}>
@@ -100,9 +100,6 @@ export default function Landing() {
       </section>
 
       <section className={style.more}>
-        <span className={style.moreTitle}>
-          Want to know a little more about the process in detail?
-        </span>
         <div className={style.moreButton}>
           <Button
             theme="secondary"
