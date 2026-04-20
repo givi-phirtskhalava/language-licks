@@ -16,11 +16,8 @@ function getLevelColor(level: number): string {
 
 export default function MasteryBar({ level }: Props) {
   return (
-    <span
-      className={styles.badge}
-      style={{ background: getLevelColor(level) }}
-    >
-      lvl.{level}
+    <span className={styles.badge} style={{ background: getLevelColor(level) }}>
+      {9 - level} review{level === 8 ? "" : "s"} to go
     </span>
   );
 }

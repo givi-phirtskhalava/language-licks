@@ -1,16 +1,17 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faChartSimple } from "@fortawesome/free-solid-svg-icons";
+import { faCircleInfo } from "@fortawesome/free-solid-svg-icons";
 import useLanguage from "@lib/useLanguage";
 import useLessons from "@lib/hooks/useLessons";
+import useAuth from "@lib/hooks/useAuth";
 import useProgress, { getMasteryLevel } from "@lib/useProgress";
 import { CEFR_LEVELS, TCefrLevel } from "@lib/types";
 import MasteryBar from "@/components/atoms/MasteryBar";
 import LessonSettings from "@/components/atoms/LessonSettings";
 import classNames from "classnames";
-import LanguageCard from "@/components/organisms/LanguageCard";
 import LessonFilters from "@/components/organisms/LessonFilters";
 import StatsPanel from "@/components/atoms/StatsPanel";
 import styles from "./Lessons.module.css";
@@ -18,11 +19,11 @@ import styles from "./Lessons.module.css";
 const LEVEL_STORAGE_KEY = "lessons:cefrLevel";
 
 export default function Lessons() {
-  const [selectedId, setSelectedId] = useState<number | null>(null);
   const [settingsId, setSettingsId] = useState<number | null>(null);
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [level, setLevel] = useState<TCefrLevel>("A1");
   const { language } = useLanguage();
+  const router = useRouter();
 
   useEffect(() => {
     const stored = localStorage.getItem(LEVEL_STORAGE_KEY);
@@ -38,32 +39,7 @@ export default function Lessons() {
   const { progress, dailyLog, getLesson, unretire, resetLesson } =
     useProgress(language);
   const { data: lessons, isLoading } = useLessons(language);
-
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const openParam = params.get("open");
-    if (openParam) {
-      setSelectedId(Number(openParam));
-      window.history.replaceState({}, "", "/lessons");
-    }
-  }, []);
-
-  useEffect(() => {
-    function handleNavReset() {
-      setSelectedId(null);
-    }
-    window.addEventListener("nav-reset", handleNavReset);
-    return () => window.removeEventListener("nav-reset", handleNavReset);
-  }, []);
-
-  if (selectedId !== null) {
-    return (
-      <LanguageCard
-        lessonId={selectedId}
-        onBack={() => setSelectedId(null)}
-      />
-    );
-  }
+  const { isPremium } = useAuth();
 
   if (isLoading || !lessons) {
     return null;
@@ -72,12 +48,12 @@ export default function Lessons() {
   const settingsLesson = settingsId !== null ? getLesson(settingsId) : null;
 
   const filteredLessons = lessons
-    .map((lesson, index) => ({ lesson, index }))
-    .filter(({ lesson }) => lesson.cefr === level)
-    .filter(({ lesson }) => {
+    .filter((lesson) => lesson.cefr === level)
+    .filter((lesson) => {
       if (selectedTags.length === 0) return true;
       return selectedTags.some((tag) => lesson.tags.includes(tag));
-    });
+    })
+    .map((lesson, index) => ({ lesson, index }));
 
   return (
     <div className={styles.container}>
@@ -86,29 +62,31 @@ export default function Lessons() {
       <section>
         <h2 className={styles.sectionTitle}>Lessons</h2>
 
-        <div className={styles.levelTabs} role="tablist">
-          {CEFR_LEVELS.map((l) => (
-            <button
-              key={l}
-              role="tab"
-              aria-selected={l === level}
-              className={classNames(
-                styles.levelTab,
-                l === level && styles.levelTabActive
-              )}
-              onClick={() => handleLevelChange(l)}
-            >
-              {l}
-            </button>
-          ))}
-        </div>
+        <div className={styles.stickyHeader}>
+          <div className={styles.levelTabs} role="tablist">
+            {CEFR_LEVELS.map((l) => (
+              <button
+                key={l}
+                role="tab"
+                aria-selected={l === level}
+                className={classNames(
+                  styles.levelTab,
+                  l === level && styles.levelTabActive
+                )}
+                onClick={() => handleLevelChange(l)}
+              >
+                {l}
+              </button>
+            ))}
+          </div>
 
-        <div className={styles.filters}>
-          <LessonFilters
-            language={language}
-            selectedTags={selectedTags}
-            onChange={setSelectedTags}
-          />
+          <div className={styles.filters}>
+            <LessonFilters
+              language={language}
+              selectedTags={selectedTags}
+              onChange={setSelectedTags}
+            />
+          </div>
         </div>
 
         {filteredLessons.length === 0 && (
@@ -126,16 +104,26 @@ export default function Lessons() {
               const level = getMasteryLevel(p);
               const hasProgress = p && (p.completed || p.phase !== "lesson");
 
+              function openLesson() {
+                router.push(`/lessons/${language}/${lesson.id}`);
+              }
+
               return (
-                <div key={lesson.id} className={styles.item}>
-                  <button
-                    className={classNames(
-                      styles.itemBtn,
-                      completed && styles.completedItem,
-                      retired && styles.retiredItem
-                    )}
-                    onClick={() => setSelectedId(lesson.id)}
-                  >
+                <div
+                  key={lesson.id}
+                  className={styles.item}
+                  role="button"
+                  tabIndex={0}
+                  onClick={openLesson}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      openLesson();
+                    }
+                  }}
+                  aria-label={`Open lesson ${index + 1}: ${lesson.sentence}`}
+                >
+                  <div className={styles.itemBtn}>
                     <span
                       className={classNames(
                         styles.number,
@@ -143,29 +131,50 @@ export default function Lessons() {
                         retired && styles.numberRetired
                       )}
                     >
-                      {completed || retired ? "\u2713" : index + 1}
+                      {index + 1}
                     </span>
+
                     <div className={styles.itemContent}>
                       <p className={styles.sentence}>{lesson.sentence}</p>
+
                       {p && !p.completed && (
                         <p className={styles.tag}>In progress</p>
                       )}
-                      {completed && <MasteryBar level={level} />}
+
                       {retired && (
                         <p className={styles.tag}>
                           {"Mastered \u2014 tap to review"}
                         </p>
                       )}
                     </div>
-                  </button>
-                  {hasProgress && (
-                    <button
-                      className={styles.gearBtn}
-                      onClick={() => setSettingsId(lesson.id)}
-                    >
-                      <FontAwesomeIcon icon={faChartSimple} />
-                    </button>
-                  )}
+                  </div>
+
+                  <div className={styles.statusRow}>
+                    {!isPremium && lesson.isFree && (
+                      <span className={styles.freeBadge}>Free</span>
+                    )}
+
+                    {completed && <MasteryBar level={level} />}
+
+                    {(completed || retired) && (
+                      <span className={styles.check} aria-label="Completed">
+                        {"\u2713"}
+                      </span>
+                    )}
+
+                    {hasProgress && (
+                      <button
+                        className={styles.gearBtn}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setSettingsId(lesson.id);
+                        }}
+                        aria-label="Lesson info and stats"
+                      >
+                        <FontAwesomeIcon icon={faCircleInfo} />
+                      </button>
+                    )}
+                  </div>
                 </div>
               );
             })}

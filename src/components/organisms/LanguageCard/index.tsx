@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -13,8 +13,8 @@ import WritingPractice from "./WritingPractice";
 import SpeakingPractice from "./SpeakingPractice";
 import Review from "./Review";
 import Complete from "./Complete";
-import SignUpPrompt from "@atoms/SignUpPrompt";
-import useLesson from "@lib/hooks/useLesson";
+import Spinner from "@atoms/Spinner";
+import useLesson, { LessonFetchError } from "@lib/hooks/useLesson";
 import useAuth from "@lib/hooks/useAuth";
 import { TPhase } from "@lib/types";
 import useLanguage from "@lib/useLanguage";
@@ -45,8 +45,18 @@ export default function LanguageCard({
     unlockSpeaking,
     markLessonLearned,
   } = useProgress(language);
-  const { data: lesson, isLoading } = useLesson(lessonId);
+  const { data: lesson, isLoading, error } = useLesson(lessonId);
   const isAccessible = !!lesson && (lesson.isFree || isPremium);
+  const isForbidden =
+    error instanceof LessonFetchError &&
+    (error.status === 401 || error.status === 403);
+
+  useEffect(() => {
+    if (mode === "review") return;
+    if (isForbidden || (lesson && !isAccessible)) {
+      router.replace("/premium");
+    }
+  }, [lesson, isAccessible, isForbidden, mode, router]);
   const saved = getLesson(lessonId);
   const savedPhase =
     saved?.phase === "practice" || saved?.phase === "test"
@@ -79,8 +89,8 @@ export default function LanguageCard({
   }, [lessonId, failReview]);
 
   const handleViewLesson = useCallback(() => {
-    router.push(`/lessons?open=${lessonId}`);
-  }, [lessonId, router]);
+    router.push(`/lessons/${language}/${lessonId}`);
+  }, [lessonId, language, router]);
 
   const phases: TPhase[] = [
     "lesson",
@@ -110,7 +120,15 @@ export default function LanguageCard({
   }
 
   if (isLoading || !lesson) {
-    return null;
+    return (
+      <div className={styles.wrapper}>
+        <div className={styles.card}>
+          <div className={styles.loading}>
+            <Spinner color="var(--primary)" />
+          </div>
+        </div>
+      </div>
+    );
   }
 
   const isFirstTime = !saved?.completed;
@@ -165,10 +183,6 @@ export default function LanguageCard({
             <span className={styles.circlePlaceholder} />
           )}
         </div>
-
-        {!isAccessible && (
-          <SignUpPrompt message="Sign up for $10/mo to unlock this lesson." />
-        )}
 
         {isAccessible && phase === "lesson" && (
           <LessonPhase

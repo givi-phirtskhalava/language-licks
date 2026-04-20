@@ -4,11 +4,11 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
 import useAuth from "@lib/hooks/useAuth";
-import usePaddle from "@lib/hooks/usePaddle";
 import useLanguage from "@lib/useLanguage";
 import { clearDbMode, clearAllProgress } from "@lib/useProgress";
 import Modal from "@/components/atoms/Modal";
 import Button from "@atoms/Button";
+import GoPremium from "@atoms/GoPremium";
 import styles from "./Profile.module.css";
 import pageStyles from "../page.module.css";
 
@@ -28,7 +28,6 @@ export default function ProfilePage() {
   const router = useRouter();
   const queryClient = useQueryClient();
   const { user, isLoggedIn, isPremium, isLoading } = useAuth();
-  const { openCheckout } = usePaddle();
   const { language } = useLanguage();
 
   const [modal, setModal] = useState<TModal>(null);
@@ -259,13 +258,6 @@ export default function ProfilePage() {
     }
   }
 
-  function handleSubscribe() {
-    if (!user) return;
-    openCheckout(user.email, user.id, () => {
-      queryClient.invalidateQueries({ queryKey: ["auth", "me"] });
-    });
-  }
-
   useEffect(() => {
     if (!isLoading && !isLoggedIn) {
       router.push("/login?redirect=/profile");
@@ -296,7 +288,7 @@ export default function ProfilePage() {
           </div>
           <div>
             <p className={styles.email}>{user?.email}</p>
-            <p className={styles.plan}>{isPremium ? "Premium" : "Free"}</p>
+            <p className={styles.plan}>{isPremium ? "Paid Member" : "Free"}</p>
           </div>
         </div>
 
@@ -336,7 +328,7 @@ export default function ProfilePage() {
           {isActive && (
             <div className={styles.section}>
               <div className={styles.statusRow}>
-                <span className={styles.badge}>Premium</span>
+                <span className={styles.badge}>Paid Member</span>
               </div>
               {user?.subscriptionPlanEnd && (
                 <p className={styles.billingDetail}>
@@ -344,7 +336,9 @@ export default function ProfilePage() {
                   You will be billed a few days before renewal.
                 </p>
               )}
-              {billingError && <p className={styles.billingError}>{billingError}</p>}
+              {billingError && (
+                <p className={styles.billingError}>{billingError}</p>
+              )}
               <Button
                 theme="danger"
                 loading={billingLoading}
@@ -365,8 +359,13 @@ export default function ProfilePage() {
                 Your subscription was canceled, but you can still use premium
                 features until {formatDate(user.subscriptionPlanEnd!)}.
               </p>
-              {billingError && <p className={styles.billingError}>{billingError}</p>}
-              <Button loading={billingLoading} onClick={handleResumeSubscription}>
+              {billingError && (
+                <p className={styles.billingError}>{billingError}</p>
+              )}
+              <Button
+                loading={billingLoading}
+                onClick={handleResumeSubscription}
+              >
                 Resume subscription
               </Button>
             </div>
@@ -378,25 +377,13 @@ export default function ProfilePage() {
                 Your payment was declined. Paddle will retry automatically, but
                 your premium access is suspended until the payment succeeds.
               </p>
-              {billingError && <p className={styles.billingError}>{billingError}</p>}
+              {billingError && (
+                <p className={styles.billingError}>{billingError}</p>
+              )}
             </div>
           )}
 
-          {!isPremium && !isPastDue && !inGracePeriod && (
-            <div className={styles.section}>
-              <p className={styles.planTitle}>Go Premium</p>
-              <p className={styles.price}>$10 / month</p>
-              <ul className={styles.features}>
-                <li>All lessons in every language</li>
-                <li>Spaced repetition reviews for all lessons</li>
-                <li>Speaking practice with voice recognition</li>
-                <li>Audio tests and review mode</li>
-                <li>Progress synced to the cloud</li>
-              </ul>
-              {billingError && <p className={styles.billingError}>{billingError}</p>}
-              <Button onClick={handleSubscribe}>Subscribe</Button>
-            </div>
-          )}
+          {!isPremium && !isPastDue && !inGracePeriod && <GoPremium />}
         </section>
 
         <section className={styles.group}>

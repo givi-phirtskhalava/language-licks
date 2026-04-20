@@ -1,6 +1,7 @@
 import type { NextRequest } from "next/server";
 import { getPayload } from "payload";
 import config from "@payload-config";
+import { requirePremium, AuthError } from "@lib/auth";
 
 export async function GET(
   _request: NextRequest,
@@ -15,26 +16,41 @@ export async function GET(
 
   const payload = await getPayload({ config });
 
+  let doc;
   try {
-    const doc = await payload.findByID({
+    doc = await payload.findByID({
       collection: "lessons",
       id: lessonId,
       depth: 1,
     });
-
-    const lesson = {
-      id: doc.id,
-      sentence: doc.sentence,
-      translation: doc.translation,
-      audio: doc.audio,
-      grammar: doc.grammar ?? [],
-      liaisonTips: doc.liaisonTips ?? null,
-      tags: (doc.tags ?? []).filter((t): t is string => typeof t === "string"),
-      isFree: !!doc.isFree,
-    };
-
-    return Response.json(lesson);
   } catch {
     return Response.json({ error: "Lesson not found" }, { status: 404 });
   }
+
+  if (!doc.isFree) {
+    try {
+      await requirePremium();
+    } catch (error) {
+      if (error instanceof AuthError) {
+        return Response.json(
+          { error: error.message },
+          { status: error.status }
+        );
+      }
+      throw error;
+    }
+  }
+
+  const lesson = {
+    id: doc.id,
+    sentence: doc.sentence,
+    translation: doc.translation,
+    audio: doc.audio,
+    grammar: doc.grammar ?? [],
+    liaisonTips: doc.liaisonTips ?? null,
+    tags: (doc.tags ?? []).filter((t): t is string => typeof t === "string"),
+    isFree: !!doc.isFree,
+  };
+
+  return Response.json(lesson);
 }

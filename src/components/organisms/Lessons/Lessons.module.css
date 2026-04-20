@@ -13,10 +13,18 @@
   margin-bottom: 0.75em;
 }
 
+.stickyHeader {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  padding: 0.5em 0;
+  padding-bottom: 1em;
+}
+
 .levelTabs {
   display: flex;
   gap: 0.25em;
-  margin-bottom: 0.75em;
+  margin-bottom: 0.5em;
   background: var(--bg-subtle);
   padding: 0.25em;
   border-radius: 0.5em;
@@ -30,7 +38,9 @@
   font-weight: 600;
   color: var(--text-muted);
   background: transparent;
-  transition: background 0.15s, color 0.15s;
+  transition:
+    background 0.15s,
+    color 0.15s;
 }
 
 .levelTab:hover {
@@ -44,7 +54,7 @@
 }
 
 .filters {
-  margin-bottom: 1em;
+  margin-bottom: 0;
 }
 
 .emptyState {
@@ -61,7 +71,16 @@
 }
 
 .item {
-  position: relative;
+  border-radius: 0.75em;
+  background: var(--bg-white);
+  box-shadow: 0 0.0625em 0.1875em var(--shadow);
+  transition: box-shadow 0.2s;
+  overflow: hidden;
+  cursor: pointer;
+}
+
+.item:hover {
+  box-shadow: 0 0.25em 0.75em var(--shadow-hover);
 }
 
 .itemBtn {
@@ -70,15 +89,12 @@
   gap: 1em;
   width: 100%;
   padding: 1em 1.25em;
-  border-radius: 0.75em;
-  background: var(--bg-white);
-  box-shadow: 0 0.0625em 0.1875em var(--shadow);
+  background: transparent;
   text-align: left;
-  transition: box-shadow 0.2s;
 }
 
-.itemBtn:hover {
-  box-shadow: 0 0.25em 0.75em var(--shadow-hover);
+.item:has(.statusRow:not(:empty)) .itemBtn {
+  padding-bottom: 0;
 }
 
 .itemContent {
@@ -112,10 +128,37 @@
   margin-top: 0.25em;
 }
 
+.freeBadge {
+  display: inline-block;
+  padding: 0.2em 0.6em;
+  background: var(--success-bright);
+  color: var(--bg-white);
+  border-radius: 0.25em;
+  font-size: 0.6875em;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.statusRow {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.5em;
+  padding: 0.5em 0.75em;
+}
+
+.statusRow:empty {
+  display: none;
+}
+
+.check {
+  color: var(--success-bright);
+  font-weight: 700;
+  font-size: 0.875em;
+}
+
 .gearBtn {
-  position: absolute;
-  bottom: 0.5em;
-  right: 0.5em;
   width: 1.75em;
   height: 1.75em;
   border-radius: 50%;
@@ -131,16 +174,8 @@
   opacity: 0.5;
 }
 
-.completedItem {
-  opacity: 0.5;
-}
-
 .numberCompleted {
   background: var(--primary-soft);
-}
-
-.retiredItem {
-  opacity: 0.5;
 }
 
 .numberRetired {

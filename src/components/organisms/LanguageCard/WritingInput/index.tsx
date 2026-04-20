@@ -39,7 +39,11 @@ export default function WritingInput({
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    if (disabled) setInput("");
+    if (disabled) {
+      setInput("");
+      return;
+    }
+    inputRef.current?.focus();
   }, [disabled]);
 
   function handleSubmit(e: React.FormEvent) {
