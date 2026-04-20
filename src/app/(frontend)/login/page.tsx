@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
 import { z } from "zod";
 import Button from "@atoms/Button";
+import Turnstile from "@atoms/Turnstile";
 import useLanguage from "@lib/useLanguage";
 import usePaddle from "@lib/hooks/usePaddle";
 import { syncAndClear } from "@lib/useProgress";
@@ -29,6 +30,9 @@ export default function LoginPage() {
   const [error, setError] = useState("");
   const [emailError, setEmailError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [turnstileToken, setTurnstileToken] = useState("");
+
+  const turnstileEnabled = Boolean(process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY);
 
   async function handleSendCode(e: React.FormEvent) {
     e.preventDefault();
@@ -41,13 +45,18 @@ export default function LoginPage() {
       return;
     }
 
+    if (turnstileEnabled && !turnstileToken) {
+      setError("Please complete the captcha");
+      return;
+    }
+
     setLoading(true);
 
     try {
       const res = await fetch("/api/auth/send-code", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email }),
+        body: JSON.stringify({ email, turnstileToken }),
       });
 
       if (!res.ok) {
@@ -139,7 +148,16 @@ export default function LoginPage() {
               autoFocus
             />
             {emailError && <p className={style.error}>{emailError}</p>}
+
+            {turnstileEnabled && (
+              <Turnstile
+                onVerify={setTurnstileToken}
+                onExpire={() => setTurnstileToken("")}
+              />
+            )}
+
             {error && <p className={style.error}>{error}</p>}
+
             <Button type="submit" loading={loading}>
               Send code
             </Button>
