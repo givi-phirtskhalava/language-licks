@@ -6,6 +6,7 @@ import { faChartSimple } from "@fortawesome/free-solid-svg-icons";
 import useLanguage from "@lib/useLanguage";
 import useLessons from "@lib/hooks/useLessons";
 import useProgress, { getMasteryLevel } from "@lib/useProgress";
+import { CEFR_LEVELS, TCefrLevel } from "@lib/types";
 import MasteryBar from "@/components/atoms/MasteryBar";
 import LessonSettings from "@/components/atoms/LessonSettings";
 import classNames from "classnames";
@@ -14,11 +15,26 @@ import LessonFilters from "@/components/organisms/LessonFilters";
 import StatsPanel from "@/components/atoms/StatsPanel";
 import styles from "./Lessons.module.css";
 
+const LEVEL_STORAGE_KEY = "lessons:cefrLevel";
+
 export default function Lessons() {
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const [settingsId, setSettingsId] = useState<number | null>(null);
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
+  const [level, setLevel] = useState<TCefrLevel>("A1");
   const { language } = useLanguage();
+
+  useEffect(() => {
+    const stored = localStorage.getItem(LEVEL_STORAGE_KEY);
+    if (stored && CEFR_LEVELS.includes(stored as TCefrLevel)) {
+      setLevel(stored as TCefrLevel);
+    }
+  }, []);
+
+  function handleLevelChange(next: TCefrLevel) {
+    setLevel(next);
+    localStorage.setItem(LEVEL_STORAGE_KEY, next);
+  }
   const { progress, dailyLog, getLesson, unretire, resetLesson } =
     useProgress(language);
   const { data: lessons, isLoading } = useLessons(language);
@@ -57,6 +73,7 @@ export default function Lessons() {
 
   const filteredLessons = lessons
     .map((lesson, index) => ({ lesson, index }))
+    .filter(({ lesson }) => lesson.cefr === level)
     .filter(({ lesson }) => {
       if (selectedTags.length === 0) return true;
       return selectedTags.some((tag) => lesson.tags.includes(tag));
@@ -68,6 +85,23 @@ export default function Lessons() {
 
       <section>
         <h2 className={styles.sectionTitle}>Lessons</h2>
+
+        <div className={styles.levelTabs} role="tablist">
+          {CEFR_LEVELS.map((l) => (
+            <button
+              key={l}
+              role="tab"
+              aria-selected={l === level}
+              className={classNames(
+                styles.levelTab,
+                l === level && styles.levelTabActive
+              )}
+              onClick={() => handleLevelChange(l)}
+            >
+              {l}
+            </button>
+          ))}
+        </div>
 
         <div className={styles.filters}>
           <LessonFilters

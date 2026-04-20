@@ -1,9 +1,14 @@
+export type TCefrLevel = "A1" | "A2" | "B1" | "B2" | "C1" | "C2";
+
+export const CEFR_LEVELS: TCefrLevel[] = ["A1", "A2", "B1", "B2", "C1", "C2"];
+
 export interface ILessonListItem {
   id: number;
   sentence: string;
   translation: string;
   tags: string[];
   isFree: boolean;
+  cefr: TCefrLevel;
 }
 
 export interface ILesson {

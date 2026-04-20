@@ -177,6 +177,7 @@ export interface Lesson {
   audio: string;
   order: number;
   isFree?: boolean | null;
+  cefr?: ('A1' | 'A2' | 'B1' | 'B2' | 'C1' | 'C2') | null;
   tags?: string[] | null;
   grammar: {
     label: string;
@@ -344,6 +345,7 @@ export interface LessonsSelect<T extends boolean = true> {
   audio?: T;
   order?: T;
   isFree?: T;
+  cefr?: T;
   tags?: T;
   grammar?:
     | T
