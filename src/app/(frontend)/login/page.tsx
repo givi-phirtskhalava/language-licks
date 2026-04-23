@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
 import { z } from "zod";
 import Button from "@atoms/Button";
@@ -18,9 +18,6 @@ type TStep = "email" | "code";
 export default function LoginPage() {
   const router = useRouter();
   const queryClient = useQueryClient();
-  const searchParams = useSearchParams();
-  const redirect = searchParams.get("redirect") || "/";
-  const checkout = searchParams.get("checkout") === "true";
   const { language } = useLanguage();
   const { openCheckout } = usePaddle();
 
@@ -31,6 +28,14 @@ export default function LoginPage() {
   const [emailError, setEmailError] = useState("");
   const [loading, setLoading] = useState(false);
   const [turnstileToken, setTurnstileToken] = useState("");
+  const [redirect, setRedirect] = useState("/");
+  const [checkout, setCheckout] = useState(false);
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    setRedirect(params.get("redirect") || "/");
+    setCheckout(params.get("checkout") === "true");
+  }, []);
 
   const turnstileEnabled = Boolean(process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY);
 
