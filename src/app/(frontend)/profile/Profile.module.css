@@ -9,41 +9,28 @@
 .profileHeader {
   display: flex;
   align-items: center;
-  gap: 0.75em;
+  gap: 1em;
 }
 
-.avatarWrapper {
-  position: relative;
-  flex-shrink: 0;
+.profileInfo {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.375em;
 }
 
 .avatar {
-  width: 2.5em;
-  height: 2.5em;
+  flex-shrink: 0;
+  width: 3em;
+  height: 3em;
   border-radius: 50%;
   background: var(--primary);
   color: var(--bg-white);
-  font-size: 1em;
+  font-size: 1.125em;
   font-weight: 600;
   display: flex;
   align-items: center;
   justify-content: center;
-}
-
-.premiumBadge {
-  position: absolute;
-  bottom: -0.125em;
-  right: -0.125em;
-  width: 1.125em;
-  height: 1.125em;
-  background: var(--warning, #f5a623);
-  color: var(--bg-white);
-  font-size: 0.625em;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border: 0.125em solid var(--bg-white);
 }
 
 .email {
@@ -160,7 +147,7 @@
   background: var(--bg-white);
   padding: 1.25em;
   border-radius: 0.75em;
-  border: 0.0625em solid var(--error);
+  border: 0.0625em solid #fca5a5;
 }
 
 .modalTitle {

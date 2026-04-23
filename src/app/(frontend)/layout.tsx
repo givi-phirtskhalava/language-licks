@@ -16,9 +16,52 @@ const googleSansFlex = Google_Sans_Flex({
   variable: "--font-google-sans-flex",
 });
 
+const siteUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
+const siteName = "LanguageLicks";
+const siteDescription =
+  "Practice real French and Italian sentences — comprehension, writing, and speaking. Build fluency one sentence at a time.";
+
 export const metadata: Metadata = {
-  title: "LanguageLicks",
-  description: "Practice French and Italian sentences — comprehension, writing, and pronunciation",
+  metadataBase: new URL(siteUrl),
+  title: {
+    default: `${siteName} — Practice French & Italian Sentences`,
+    template: `%s — ${siteName}`,
+  },
+  description: siteDescription,
+  applicationName: siteName,
+  keywords: [
+    "learn French",
+    "learn Italian",
+    "French sentences",
+    "Italian sentences",
+    "French pronunciation",
+    "Italian pronunciation",
+    "language learning",
+    "spaced repetition",
+    "French practice",
+    "Italian practice",
+    "speaking practice",
+    "writing practice",
+  ],
+  authors: [{ name: siteName }],
+  creator: siteName,
+  publisher: siteName,
+  openGraph: {
+    type: "website",
+    url: siteUrl,
+    siteName,
+    title: `${siteName} — Practice French & Italian Sentences`,
+    description: siteDescription,
+  },
+  twitter: {
+    card: "summary",
+    title: `${siteName} — Practice French & Italian Sentences`,
+    description: siteDescription,
+  },
+  robots: {
+    index: true,
+    follow: true,
+  },
 };
 
 export default function RootLayout({

@@ -329,7 +329,11 @@ export function clearDbMode() {
 }
 
 export async function clearAllProgress(language: TLanguageId) {
-  const res = await fetch("/api/progress/clear", { method: "POST" });
+  const res = await fetch("/api/progress/clear", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ language }),
+  });
   if (!res.ok) throw new Error("Failed to clear progress");
   dbData.set(storageKey(language), {});
   emitChange();

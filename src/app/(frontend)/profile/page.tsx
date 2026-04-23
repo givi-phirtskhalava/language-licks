@@ -4,8 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
 import useAuth from "@lib/hooks/useAuth";
-import useLanguage from "@lib/useLanguage";
-import { clearDbMode, clearAllProgress } from "@lib/useProgress";
+import { clearDbMode } from "@lib/useProgress";
 import Modal from "@/components/atoms/Modal";
 import Button from "@atoms/Button";
 import GoPremium from "@atoms/GoPremium";
@@ -20,7 +19,7 @@ function formatDate(timestamp: number): string {
   });
 }
 
-type TModal = null | "change-email" | "delete-account" | "clear-progress";
+type TModal = null | "change-email" | "delete-account";
 type TEmailStep = "email" | "code";
 type TDeleteStep = "send" | "confirm";
 
@@ -28,13 +27,10 @@ export default function ProfilePage() {
   const router = useRouter();
   const queryClient = useQueryClient();
   const { user, isLoggedIn, isPremium, isLoading } = useAuth();
-  const { language } = useLanguage();
 
   const [modal, setModal] = useState<TModal>(null);
   const [billingLoading, setBillingLoading] = useState(false);
   const [billingError, setBillingError] = useState("");
-  const [clearLoading, setClearLoading] = useState(false);
-  const [clearError, setClearError] = useState("");
 
   // Change email state
   const [emailStep, setEmailStep] = useState<TEmailStep>("email");
@@ -191,19 +187,6 @@ export default function ProfilePage() {
     }
   }
 
-  async function handleClearProgress() {
-    setClearError("");
-    setClearLoading(true);
-    try {
-      await clearAllProgress(language);
-      closeModal();
-    } catch {
-      setClearError("Something went wrong");
-    } finally {
-      setClearLoading(false);
-    }
-  }
-
   async function handleCancelSubscription() {
     setBillingError("");
     setBillingLoading(true);
@@ -262,44 +245,21 @@ export default function ProfilePage() {
     <main className={pageStyles.main}>
       <div className={styles.container}>
         <div className={styles.profileHeader}>
-          <div className={styles.avatarWrapper}>
-            <div className={styles.avatar}>
-              {user?.email?.charAt(0).toUpperCase()}
-            </div>
-            {isPremium && <span className={styles.premiumBadge}>★</span>}
+          <div className={styles.avatar}>
+            {user?.email?.charAt(0).toUpperCase()}
           </div>
-          <div>
+          <div className={styles.profileInfo}>
             <p className={styles.email}>{user?.email}</p>
-            <p className={styles.plan}>{isPremium ? "Paid Member" : "Free"}</p>
+            {isPremium && <span className={styles.badge}>Paid Member</span>}
+            {!isPremium && <p className={styles.plan}>Free</p>}
           </div>
         </div>
-
-        <section className={styles.group}>
-          <p className={styles.sectionTitle}>Account</p>
-          <div className={styles.section}>
-            {user?.name && (
-              <div>
-                <p className={styles.label}>Name</p>
-                <p className={styles.value}>{user.name}</p>
-              </div>
-            )}
-            <Button theme="primary" onClick={() => setModal("change-email")}>
-              Change email
-            </Button>
-            <Button theme="secondary" onClick={handleLogout}>
-              Log out
-            </Button>
-          </div>
-        </section>
 
         <section className={styles.group}>
           <p className={styles.sectionTitle}>Billing</p>
 
           {isActive && (
             <div className={styles.section}>
-              <div className={styles.statusRow}>
-                <span className={styles.badge}>Paid Member</span>
-              </div>
               {user?.subscriptionPlanEnd && (
                 <p className={styles.billingDetail}>
                   Current period ends {formatDate(user.subscriptionPlanEnd)}.
@@ -310,7 +270,7 @@ export default function ProfilePage() {
                 <p className={styles.billingError}>{billingError}</p>
               )}
               <Button
-                theme="danger"
+                theme="secondary"
                 loading={billingLoading}
                 onClick={handleCancelSubscription}
               >
@@ -322,7 +282,6 @@ export default function ProfilePage() {
           {inGracePeriod && (
             <div className={styles.section}>
               <div className={styles.statusRow}>
-                <span className={styles.badge}>Premium</span>
                 <span className={styles.canceledNote}>Canceling</span>
               </div>
               <p className={styles.billingDetail}>
@@ -357,12 +316,27 @@ export default function ProfilePage() {
         </section>
 
         <section className={styles.group}>
+          <p className={styles.sectionTitle}>Account</p>
+          <div className={styles.section}>
+            {user?.name && (
+              <div>
+                <p className={styles.label}>Name</p>
+                <p className={styles.value}>{user.name}</p>
+              </div>
+            )}
+            <Button theme="primary" onClick={() => setModal("change-email")}>
+              Change email
+            </Button>
+            <Button theme="secondary" onClick={handleLogout}>
+              Log out
+            </Button>
+          </div>
+        </section>
+
+        <section className={styles.group}>
           <p className={styles.dangerTitle}>Danger zone</p>
           <div className={styles.dangerSection}>
-            <Button theme="danger" onClick={() => setModal("clear-progress")}>
-              Clear progress
-            </Button>
-            <Button theme="danger" onClick={() => setModal("delete-account")}>
+            <Button theme="secondary" onClick={() => setModal("delete-account")}>
               Delete account
             </Button>
           </div>
@@ -435,31 +409,6 @@ export default function ProfilePage() {
               </div>
             </form>
           )}
-        </Modal>
-      )}
-
-      {modal === "clear-progress" && (
-        <Modal onClose={closeModal}>
-          <p className={styles.modalTitle}>Clear all progress</p>
-          <div className={styles.modalForm}>
-            <p className={styles.modalText}>
-              This will permanently erase all your lesson progress, review
-              schedules, streaks, and best times. This cannot be undone.
-            </p>
-            {clearError && <p className={styles.modalError}>{clearError}</p>}
-            <div className={styles.modalActions}>
-              <Button theme="secondary" onClick={closeModal}>
-                Cancel
-              </Button>
-              <Button
-                theme="danger"
-                loading={clearLoading}
-                onClick={handleClearProgress}
-              >
-                Clear all progress
-              </Button>
-            </div>
-          </div>
         </Modal>
       )}
 
