@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faChevronRight,
@@ -48,6 +48,24 @@ export default function WritingPractice({
   function handleWriteInputChange() {
     if (writing.result !== null) writing.clear();
   }
+
+  useEffect(
+    function listenForDevPass() {
+      if (process.env.NODE_ENV !== "development") return;
+      function handleDevPass() {
+        if (!speakingUnlocked) {
+          setSpeakingUnlocked(true);
+          onSpeakingUnlocked?.();
+        }
+        onReady();
+      }
+      window.addEventListener("dev:pass-writing", handleDevPass);
+      return () => {
+        window.removeEventListener("dev:pass-writing", handleDevPass);
+      };
+    },
+    [speakingUnlocked, onSpeakingUnlocked, onReady]
+  );
 
   return (
     <div className={styles.body}>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faLock, faLockOpen } from "@fortawesome/free-solid-svg-icons";
 import CorrectionDisplay from "@/components/atoms/CorrectionDisplay";
@@ -47,6 +47,24 @@ export default function SpeakingPractice({
   function handleRecordToggle() {
     speaking.toggle();
   }
+
+  useEffect(
+    function listenForDevPass() {
+      if (process.env.NODE_ENV !== "development") return;
+      function handleDevPass() {
+        if (!lessonLearned) {
+          setLessonLearned(true);
+          onLessonLearned?.();
+        }
+        onReady();
+      }
+      window.addEventListener("dev:pass-speaking", handleDevPass);
+      return () => {
+        window.removeEventListener("dev:pass-speaking", handleDevPass);
+      };
+    },
+    [lessonLearned, onLessonLearned, onReady]
+  );
 
   return (
     <div className={styles.body}>

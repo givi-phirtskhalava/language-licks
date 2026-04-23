@@ -6,6 +6,7 @@ import PastDueBanner from "@/components/atoms/PastDueBanner";
 import NavigationProgress from "@/components/atoms/NavigationProgress";
 import ProgressSync from "@/components/atoms/ProgressSync";
 import ToastProvider from "@/components/atoms/ToastProvider";
+import DevGui from "@/components/atoms/DevGui";
 import QueryProvider from "@lib/providers/QueryProvider";
 import "./globals.css";
 
@@ -35,6 +36,7 @@ export default function RootLayout({
           <ToastProvider />
           {children}
           <Footer />
+          {process.env.NODE_ENV === "development" && <DevGui />}
         </QueryProvider>
       </body>
     </html>

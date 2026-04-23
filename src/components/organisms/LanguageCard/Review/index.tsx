@@ -76,6 +76,30 @@ export default function Review({
     }
   }, [step, passed]);
 
+  useEffect(
+    function listenForDevPass() {
+      if (process.env.NODE_ENV !== "development") return;
+      function handlePassWriting() {
+        if (step !== "writing") return;
+        setLastCorrect(true);
+        setPassed(true);
+      }
+      function handlePassSpeaking() {
+        if (step !== "speaking") return;
+        setLastCorrect(true);
+        setPassed(true);
+        onPass();
+      }
+      window.addEventListener("dev:pass-writing", handlePassWriting);
+      window.addEventListener("dev:pass-speaking", handlePassSpeaking);
+      return () => {
+        window.removeEventListener("dev:pass-writing", handlePassWriting);
+        window.removeEventListener("dev:pass-speaking", handlePassSpeaking);
+      };
+    },
+    [step, onPass]
+  );
+
   function handleWriteSubmit(input: string): boolean {
     const { passed: correct, onlyAccentIssues } = writing.check(
       lesson.sentence,

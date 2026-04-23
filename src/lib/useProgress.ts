@@ -335,6 +335,27 @@ export async function clearAllProgress(language: TLanguageId) {
   emitChange();
 }
 
+export async function devResetAll(language: TLanguageId) {
+  const key = storageKey(language);
+  const logKey = dailyLogKey(language);
+  const pKey = pauseKey(language);
+
+  if (dbMode) {
+    const res = await fetch("/api/dev/reset", { method: "POST" });
+    if (!res.ok) throw new Error("Failed to reset");
+    dbData.set(key, {});
+    dbDailyLog.set(logKey, {});
+  } else {
+    localStorage.removeItem(key);
+    localStorage.removeItem(logKey);
+    localStorage.removeItem(pKey);
+    snapshotCache.delete(key);
+    dailyLogCache.delete(logKey);
+    pauseCache.delete(pKey);
+  }
+  emitChange();
+}
+
 // --- Streak calculation ---
 
 export function calculateStreak(log: TDailyLog): number {
