@@ -1,4 +1,4 @@
-# Language Licks
+# LanguageLicks
 
 A language learning app for practicing sentence comprehension, writing, and speaking. Built with Next.js 16, PostgreSQL, Drizzle ORM, and Payload CMS.
 
@@ -62,23 +62,23 @@ Each lesson presents a sentence in the target language with grammar breakdowns, 
 
 All vars live in `.env.local` (gitignored). A template is in `.env.sample`.
 
-| Var                                    | Required | Purpose                                                                 |
-| -------------------------------------- | -------- | ----------------------------------------------------------------------- |
-| `DATABASE_URL`                         | yes      | Postgres connection string                                              |
-| `JWT_ACCESS_SECRET`                    | yes      | HS256 secret for access tokens (15-min TTL)                             |
-| `JWT_REFRESH_SECRET`                   | yes      | HS256 secret for refresh tokens (90-day TTL). **Must differ** from access. |
-| `RESEND_API_KEY`                       | yes      | Resend API key used to send OTP emails                                  |
-| `EMAIL_FROM`                           | yes      | Verified sender address in Resend                                       |
-| `PAYLOAD_SECRET`                       | yes      | Secret used to sign Payload admin sessions                              |
-| `INITIAL_ADMIN_EMAIL`                  | yes      | Email of the first admin user created on boot                           |
-| `SPEECH_CHECK_JWT_SECRET`              | yes      | Shared secret with the speech-check gateway (byte-for-byte match)       |
-| `NEXT_PUBLIC_SPEECH_CHECK_GATEWAY_URL` | yes      | Public URL of the speech-check gateway (e.g. `http://localhost:8080`)   |
-| `PADDLE_API_KEY`                       | yes      | Paddle server-side key (sandbox for dev, prod for prod)                 |
-| `PADDLE_WEBHOOK_SECRET`                | yes      | Used to verify Paddle webhook signatures                                |
-| `NEXT_PUBLIC_PADDLE_CLIENT_TOKEN`      | yes      | Paddle client token (exposed to the browser)                            |
-| `NEXT_PUBLIC_PADDLE_PRICE_ID`          | yes      | Paddle price ID for the subscription product                            |
-| `NEXT_PUBLIC_PADDLE_ENV`               | yes      | `sandbox` or `production`                                               |
-| `GCS_PROJECT_ID` / `GCS_BUCKET` / `GCS_CREDENTIALS` | no       | Google Cloud Storage for Payload media uploads. Optional in dev.        |
+| Var                                                 | Required | Purpose                                                                    |
+| --------------------------------------------------- | -------- | -------------------------------------------------------------------------- |
+| `DATABASE_URL`                                      | yes      | Postgres connection string                                                 |
+| `JWT_ACCESS_SECRET`                                 | yes      | HS256 secret for access tokens (15-min TTL)                                |
+| `JWT_REFRESH_SECRET`                                | yes      | HS256 secret for refresh tokens (90-day TTL). **Must differ** from access. |
+| `RESEND_API_KEY`                                    | yes      | Resend API key used to send OTP emails                                     |
+| `EMAIL_FROM`                                        | yes      | Verified sender address in Resend                                          |
+| `PAYLOAD_SECRET`                                    | yes      | Secret used to sign Payload admin sessions                                 |
+| `INITIAL_ADMIN_EMAIL`                               | yes      | Email of the first admin user created on boot                              |
+| `SPEECH_CHECK_JWT_SECRET`                           | yes      | Shared secret with the speech-check gateway (byte-for-byte match)          |
+| `NEXT_PUBLIC_SPEECH_CHECK_GATEWAY_URL`              | yes      | Public URL of the speech-check gateway (e.g. `http://localhost:8080`)      |
+| `PADDLE_API_KEY`                                    | yes      | Paddle server-side key (sandbox for dev, prod for prod)                    |
+| `PADDLE_WEBHOOK_SECRET`                             | yes      | Used to verify Paddle webhook signatures                                   |
+| `NEXT_PUBLIC_PADDLE_CLIENT_TOKEN`                   | yes      | Paddle client token (exposed to the browser)                               |
+| `NEXT_PUBLIC_PADDLE_PRICE_ID`                       | yes      | Paddle price ID for the subscription product                               |
+| `NEXT_PUBLIC_PADDLE_ENV`                            | yes      | `sandbox` or `production`                                                  |
+| `GCS_PROJECT_ID` / `GCS_BUCKET` / `GCS_CREDENTIALS` | no       | Google Cloud Storage for Payload media uploads. Optional in dev.           |
 
 Generate JWT secrets with:
 
@@ -88,18 +88,18 @@ openssl rand -base64 64 | tr -d '\n'
 
 ## Scripts
 
-| Script                           | Description                                              |
-| -------------------------------- | -------------------------------------------------------- |
-| `npm run dev`                    | Start development server                                 |
-| `npm run build`                  | Build for production                                     |
-| `npm run start`                  | Start production server                                  |
-| `npm run lint`                   | Run ESLint                                               |
-| `npm run db:generate`            | Generate Drizzle migration files from schema changes     |
-| `npm run db:migrate`             | Apply pending Drizzle migrations                         |
-| `npm run db:studio`              | Open Drizzle Studio (DB browser)                         |
-| `npm run payload:migrate:create` | Generate a Payload migration from collection changes     |
-| `npm run payload:migrate`        | Apply pending Payload migrations                         |
-| `npm run payload:migrate:status` | List which Payload migrations have run                   |
+| Script                           | Description                                          |
+| -------------------------------- | ---------------------------------------------------- |
+| `npm run dev`                    | Start development server                             |
+| `npm run build`                  | Build for production                                 |
+| `npm run start`                  | Start production server                              |
+| `npm run lint`                   | Run ESLint                                           |
+| `npm run db:generate`            | Generate Drizzle migration files from schema changes |
+| `npm run db:migrate`             | Apply pending Drizzle migrations                     |
+| `npm run db:studio`              | Open Drizzle Studio (DB browser)                     |
+| `npm run payload:migrate:create` | Generate a Payload migration from collection changes |
+| `npm run payload:migrate`        | Apply pending Payload migrations                     |
+| `npm run payload:migrate:status` | List which Payload migrations have run               |
 
 ## Database
 
@@ -107,10 +107,10 @@ The app uses **one Postgres database** shared by two ORMs that own disjoint sets
 
 ### Ownership split
 
-| Tool        | Owns                                                                              | Why                                                                                                     |
-| ----------- | --------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------- |
-| **Payload** | `lessons`, `tag-groups`, `media`, `admins` (and Payload's internal bookkeeping)   | Content authored by humans. The admin UI, access control, and field validation are net wins here.       |
-| **Drizzle** | `users`, `verification_codes`, `progress`, `daily_activity`                       | Runtime/transactional data written on every interaction. Needs raw SQL control and low overhead.        |
+| Tool        | Owns                                                                            | Why                                                                                               |
+| ----------- | ------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------- |
+| **Payload** | `lessons`, `tag-groups`, `media`, `admins` (and Payload's internal bookkeeping) | Content authored by humans. The admin UI, access control, and field validation are net wins here. |
+| **Drizzle** | `users`, `verification_codes`, `progress`, `daily_activity`                     | Runtime/transactional data written on every interaction. Needs raw SQL control and low overhead.  |
 
 **Rule of thumb**: if a non-developer would ever edit it, it goes in Payload. If the app writes to it on every lesson interaction, it goes in Drizzle.
 
@@ -209,38 +209,38 @@ Without the prefix, a route like `/api/lessons/route.ts` would shadow Payload's 
 
 ### Pages (under `src/app/(frontend)/`)
 
-| Route              | Purpose                                                         |
-| ------------------ | --------------------------------------------------------------- |
-| `/`                | Home / lesson list                                              |
-| `/lessons/[id]`    | Single lesson detail + practice flow                            |
-| `/reviews`         | Due reviews for the user's selected language                    |
-| `/login`           | Email OTP login                                                 |
-| `/profile`         | Account / subscription / daily target                           |
-| `/settings`        | App settings (language, dev tools)                              |
-| `/faq`             | FAQ / help                                                      |
-| `/seed`            | Dev-only seed runner (hits `/api/seed`)                         |
+| Route           | Purpose                                      |
+| --------------- | -------------------------------------------- |
+| `/`             | Home / lesson list                           |
+| `/lessons/[id]` | Single lesson detail + practice flow         |
+| `/reviews`      | Due reviews for the user's selected language |
+| `/login`        | Email OTP login                              |
+| `/profile`      | Account / subscription / daily target        |
+| `/settings`     | App settings (language, dev tools)           |
+| `/faq`          | FAQ / help                                   |
+| `/seed`         | Dev-only seed runner (hits `/api/seed`)      |
 
 ### API routes (under `src/app/api/`)
 
-| Route                        | Purpose                                                         |
-| ---------------------------- | --------------------------------------------------------------- |
-| `/api/app-lessons`           | Lightweight lesson list (id, sentence, translation)             |
-| `/api/app-lessons/[id]`      | Full lesson detail                                              |
-| `/api/app-tag-groups`        | Flattened tag groups for filters                                |
-| `/api/auth/send-code`        | Email the user a 6-digit OTP                                    |
-| `/api/auth/verify`           | Verify OTP, issue access + refresh cookies                      |
-| `/api/auth/refresh`          | Silently renew access token via refresh cookie                  |
-| `/api/auth/logout`           | Clear auth cookies                                              |
-| `/api/auth/me`               | Return the current user (or 401)                                |
-| `/api/billing/*`             | Paddle checkout / portal / cancel endpoints                     |
-| `/api/paddle/webhook`        | Paddle subscription webhook                                     |
-| `/api/progress`              | Read/write per-lesson progress for the current user             |
-| `/api/progress/sync`         | Bulk upload local progress on first login                       |
-| `/api/progress/clear`        | Wipe progress for the current user                              |
-| `/api/daily-activity`        | Per-day lessons/reviews count (for streak)                      |
-| `/api/daily-activity/sync`   | Bulk upload local daily-activity log on first login             |
-| `/api/speech/token`          | Mint a 15-min HS256 JWT for the speech-check gateway (body: `{ lessonId }`; allowed if lesson is free or caller is premium) |
-| `/api/seed`                  | Dev-only: run `runSeed()` against the DB                        |
+| Route                      | Purpose                                                                                                                     |
+| -------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
+| `/api/app-lessons`         | Lightweight lesson list (id, sentence, translation)                                                                         |
+| `/api/app-lessons/[id]`    | Full lesson detail                                                                                                          |
+| `/api/app-tag-groups`      | Flattened tag groups for filters                                                                                            |
+| `/api/auth/send-code`      | Email the user a 6-digit OTP                                                                                                |
+| `/api/auth/verify`         | Verify OTP, issue access + refresh cookies                                                                                  |
+| `/api/auth/refresh`        | Silently renew access token via refresh cookie                                                                              |
+| `/api/auth/logout`         | Clear auth cookies                                                                                                          |
+| `/api/auth/me`             | Return the current user (or 401)                                                                                            |
+| `/api/billing/*`           | Paddle checkout / portal / cancel endpoints                                                                                 |
+| `/api/paddle/webhook`      | Paddle subscription webhook                                                                                                 |
+| `/api/progress`            | Read/write per-lesson progress for the current user                                                                         |
+| `/api/progress/sync`       | Bulk upload local progress on first login                                                                                   |
+| `/api/progress/clear`      | Wipe progress for the current user                                                                                          |
+| `/api/daily-activity`      | Per-day lessons/reviews count (for streak)                                                                                  |
+| `/api/daily-activity/sync` | Bulk upload local daily-activity log on first login                                                                         |
+| `/api/speech/token`        | Mint a 15-min HS256 JWT for the speech-check gateway (body: `{ lessonId }`; allowed if lesson is free or caller is premium) |
+| `/api/seed`                | Dev-only: run `runSeed()` against the DB                                                                                    |
 
 ## Free Tier
 

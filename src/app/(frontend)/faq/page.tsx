@@ -8,7 +8,7 @@ export default function FaqPage() {
         <div className={styles.list}>
           <div className={styles.item}>
             <h2 className={styles.question}>
-              What&apos;s different about Language Licks?
+              What&apos;s different about LanguageLicks?
             </h2>
             <p className={styles.answer}>
               It focuses on active recall &mdash; the hardest but most effective
@@ -114,7 +114,7 @@ export default function FaqPage() {
             </h2>
             <p className={styles.answer}>
               Absolutely, immerse yourself in the language with movies, music,
-              books, and conversations. Language Licks is designed to complement
+              books, and conversations. LanguageLicks is designed to complement
               your learning by providing a way to practice active recall.
             </p>
           </div>
