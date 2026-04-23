@@ -60,8 +60,6 @@ export default function Lessons() {
       <StatsPanel progress={progress} dailyLog={dailyLog} />
 
       <section>
-        <h2 className={styles.sectionTitle}>Lessons</h2>
-
         <div className={styles.stickyHeader}>
           <div className={styles.levelTabs} role="tablist">
             {CEFR_LEVELS.map((l) => (

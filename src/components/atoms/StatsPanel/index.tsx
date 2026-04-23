@@ -52,10 +52,6 @@ export default function StatsPanel({ progress, dailyLog }: Props) {
           <p className={styles.statValue}>{totalMastered}</p>
           <p className={styles.statLabel}>Mastered</p>
         </div>
-        <div className={styles.stat}>
-          <p className={styles.statValue}>{lifetimeReviews}</p>
-          <p className={styles.statLabel}>Reviews Done</p>
-        </div>
       </div>
     </div>
   );

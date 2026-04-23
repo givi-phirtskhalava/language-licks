@@ -6,13 +6,6 @@
   gap: 2em;
 }
 
-.sectionTitle {
-  font-size: 1em;
-  font-weight: 700;
-  color: var(--text-dark);
-  margin-bottom: 0.75em;
-}
-
 .stickyHeader {
   position: sticky;
   top: 0;
