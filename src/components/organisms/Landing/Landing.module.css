@@ -15,10 +15,22 @@
   max-width: 36em;
 }
 
+.logoRow {
+  display: flex;
+  align-items: center;
+  gap: 0.5em;
+}
+
+.logo {
+  max-width: 8em;
+  width: 100%;
+  margin-bottom: 2em;
+}
+
 .title {
-  font-family: var(--font-logo), cursive;
+  font-family: var(--font-logo);
   font-size: 3em;
-  font-weight: 400;
+  font-weight: 500;
   color: var(--text-dark);
   letter-spacing: -0.02em;
 }
@@ -137,6 +149,7 @@
   align-items: center;
   gap: 1em;
   padding: 0 1em 3em;
+  padding-bottom: 1.5em;
   text-align: center;
   max-width: 36em;
 }

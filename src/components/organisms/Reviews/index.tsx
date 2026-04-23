@@ -12,7 +12,7 @@ import toast from "react-hot-toast";
 import useLanguage from "@lib/useLanguage";
 import useLessons from "@lib/hooks/useLessons";
 import useAuth from "@lib/hooks/useAuth";
-import useProgress, { getMasteryLevel, getToday, devAdvanceDay, devGetOffset } from "@lib/useProgress";
+import useProgress, { getMasteryLevel, getToday } from "@lib/useProgress";
 import MasteryBar from "@/components/atoms/MasteryBar";
 import LessonSettings from "@/components/atoms/LessonSettings";
 import SignUpPrompt from "@atoms/SignUpPrompt";
@@ -159,24 +159,6 @@ export default function Reviews() {
 
   return (
     <div className={styles.container}>
-      {process.env.NODE_ENV === "development" && (
-        <button
-          onClick={devAdvanceDay}
-          style={{
-            padding: "0.5em 1em",
-            background: "#333",
-            color: "#fff",
-            border: "none",
-            borderRadius: "0.25em",
-            cursor: "pointer",
-            fontSize: "0.85em",
-            marginBottom: "1em",
-          }}
-        >
-          Skip Day (today: {today}{devGetOffset() > 0 ? ` +${devGetOffset()}` : ""})
-        </button>
-      )}
-
       <section>
         <h2 className={styles.sectionTitle}>Ready for review</h2>
         {ready.length > 0 && (

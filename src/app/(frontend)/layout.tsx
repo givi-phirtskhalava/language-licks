@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Sniglet } from "next/font/google";
+import { Google_Sans_Flex } from "next/font/google";
 import Header from "@/components/atoms/Header";
 import Footer from "@/components/organisms/Footer";
 import PastDueBanner from "@/components/atoms/PastDueBanner";
@@ -10,9 +10,10 @@ import DevGui from "@/components/atoms/DevGui";
 import QueryProvider from "@lib/providers/QueryProvider";
 import "./globals.css";
 
-const sniglet = Sniglet({
-  weight: "400",
+const googleSansFlex = Google_Sans_Flex({
+  weight: "variable",
   subsets: ["latin"],
+  variable: "--font-google-sans-flex",
 });
 
 export const metadata: Metadata = {
@@ -26,7 +27,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" style={{ "--font-logo": sniglet.style.fontFamily } as React.CSSProperties}>
+    <html lang="en" className={googleSansFlex.variable}>
       <body>
         <QueryProvider>
           <NavigationProgress />

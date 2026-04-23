@@ -43,7 +43,9 @@ export default function Landing() {
   return (
     <div className={style.container}>
       <section className={style.hero}>
-        <h1 className={style.title}>LanguageLicks</h1>
+        <div className={style.logoRow}>
+          <h1 className={style.title}>LanguageLicks</h1>
+        </div>
 
         {/* <p className={style.pitch}>
           A language learning tool inspired by guitar "licks", short phrases
@@ -112,6 +114,12 @@ export default function Landing() {
           </Button>
         </div>
       </section>
+
+      <img
+        src="/temp/rockstar-turtle.png"
+        alt="LanguageLicks mascot rockstar turtle reading a book"
+        className={style.logo}
+      />
     </div>
   );
 }
