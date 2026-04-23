@@ -24,6 +24,11 @@ function rateLimit(key: string): boolean {
   return true;
 }
 
+function getClientIp(request: Request): string {
+  const xff = request.headers.get("x-forwarded-for");
+  return xff ? xff.split(",")[0].trim() : "unknown";
+}
+
 let idTokenClient: Promise<IdTokenClient> | null = null;
 
 async function getAuthHeaders(audience: string): Promise<HeadersInit> {
@@ -88,29 +93,32 @@ export async function POST(request: Request) {
     return Response.json({ error: "missing_lesson_id" }, { status: 400 });
   }
 
-  let userId: number;
+  let userId: number | null = null;
   try {
     const auth = await requireAuth();
     userId = auth.userId;
   } catch (error) {
-    if (error instanceof AuthError) {
-      return Response.json({ error: error.message }, { status: error.status });
-    }
-    throw error;
+    if (!(error instanceof AuthError)) throw error;
+    // Anon users allowed through if the lesson is free (gated below).
   }
 
-  if (!rateLimit(String(userId))) {
+  if (userId !== null) {
+    const isPremium = await userIsPremium(userId);
+    if (!isPremium && !(await lessonIsFree(lessonId))) {
+      return Response.json({ error: "premium_required" }, { status: 403 });
+    }
+  } else if (!(await lessonIsFree(lessonId))) {
+    return Response.json({ error: "auth_required" }, { status: 401 });
+  }
+
+  const rateKey = userId !== null ? `u:${userId}` : `ip:${getClientIp(request)}`;
+  if (!rateLimit(rateKey)) {
     return Response.json({ error: "rate_limited" }, { status: 429 });
   }
 
   const declaredSize = Number(request.headers.get("content-length") ?? "0");
   if (declaredSize > MAX_AUDIO_BYTES) {
     return Response.json({ error: "audio_too_large" }, { status: 413 });
-  }
-
-  const isPremium = await userIsPremium(userId);
-  if (!isPremium && !(await lessonIsFree(lessonId))) {
-    return Response.json({ error: "premium_required" }, { status: 403 });
   }
 
   const form = await request.formData();

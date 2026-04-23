@@ -116,7 +116,7 @@ export default function Landing() {
       </section>
 
       <img
-        src="/temp/rockstar-turtle.png"
+        src="https://assets.glitch.ge/languagelicks/meta/rockstar-turtle.png"
         alt="LanguageLicks mascot rockstar turtle reading a book"
         className={style.logo}
       />
