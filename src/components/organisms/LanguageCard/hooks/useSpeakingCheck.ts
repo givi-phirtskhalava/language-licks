@@ -7,6 +7,7 @@ import {
   ISpeechScoreResult,
   GOP_PASS_THRESHOLD,
   didPass,
+  isPunctuationOnly,
 } from "@/lib/useSpeechCheck";
 import { IWriteWordResult } from "@/components/organisms/LanguageCard/hooks/useWritingCheck";
 
@@ -30,12 +31,14 @@ function wordsFromScore(score: ISpeechScoreResult): IWriteWordResult[] {
     results.push({ expected: "", actual: `[${heard}]`, status: "extra" });
   }
   score.perWord.forEach((w, i) => {
-    const passed = w.gopScore >= GOP_PASS_THRESHOLD;
-    results.push(
-      passed
-        ? { expected: w.word, actual: w.word, status: "correct" }
-        : { expected: w.word, actual: null, status: "missing" },
-    );
+    if (!isPunctuationOnly(w.word)) {
+      const passed = w.gopScore >= GOP_PASS_THRESHOLD;
+      results.push(
+        passed
+          ? { expected: w.word, actual: w.word, status: "correct" }
+          : { expected: w.word, actual: null, status: "missing" },
+      );
+    }
     for (const heard of extrasByIndex.get(i) ?? []) {
       results.push({ expected: "", actual: `[${heard}]`, status: "extra" });
     }

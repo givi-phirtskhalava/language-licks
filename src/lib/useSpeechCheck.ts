@@ -29,10 +29,16 @@ export interface ISpeechScoreResult {
 export const GOP_PASS_THRESHOLD = 0.25;
 export const MAX_EXTRA_SEGMENTS = 1;
 
+// French typography puts a space before `?`/`!`/`:`/`;`, so target.split() emits
+// the punctuation as its own "word" with empty phonemes and gopScore 0 — skip it.
+export function isPunctuationOnly(word: string): boolean {
+  return !/\p{L}/u.test(word);
+}
+
 export function didPass(score: ISpeechScoreResult): boolean {
   if (!score.perWord) return false;
   const allWordsOk = score.perWord.every(
-    (w) => w.gopScore >= GOP_PASS_THRESHOLD
+    (w) => isPunctuationOnly(w.word) || w.gopScore >= GOP_PASS_THRESHOLD
   );
   const extrasOk = (score.extraSegments ?? []).length <= MAX_EXTRA_SEGMENTS;
   return allWordsOk && extrasOk;
