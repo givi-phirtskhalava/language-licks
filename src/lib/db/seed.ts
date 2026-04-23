@@ -5,6 +5,7 @@ interface ISeedLesson {
   sentence: string;
   translation: string;
   audio: string;
+  cefr?: "A1" | "A2" | "B1" | "B2" | "C1" | "C2";
   grammar: { label: string; explanation: string }[];
   liaisonTips?: { phrase: string; explanation: string }[];
   tags: string[];
@@ -460,6 +461,54 @@ const FRENCH_LESSONS: ISeedLesson[] = [
     ],
     tags: ["Present", "Continuous", "Time", "Errands", "Reflexive"],
   },
+  {
+    sentence:
+      "J'ai trente ans, je suis né en quatre-vingt-seize, je suis plutôt millennial ou gen Z du coup ?",
+    translation:
+      "I'm thirty years old, I was born in '96, am I more of a millennial or gen Z then?",
+    audio: "/sentence.mp3",
+    cefr: "A2",
+    grammar: [
+      {
+        label: "J'ai trente ans",
+        explanation:
+          'Literally "I have thirty years." French uses "avoir" (to have), not "être" (to be), for expressing age.',
+      },
+      {
+        label: "je suis né",
+        explanation:
+          '"I was born." Passé composé of "naître" (to be born). "Naître" takes "être" as auxiliary, so the past participle agrees with the subject — "né" for masculine, "née" for feminine.',
+      },
+      {
+        label: "en quatre-vingt-seize",
+        explanation:
+          '"In \'96." "Quatre-vingt-seize" = 96 (literally "four twenties sixteen"). In casual speech, years are often shortened to just the last two digits.',
+      },
+      {
+        label: "je suis plutôt",
+        explanation:
+          '"I\'m more like" / "I\'m rather." "Plutôt" means "rather" or "more" when choosing between options.',
+      },
+      {
+        label: "millennial ou gen Z",
+        explanation:
+          'English loanwords used as-is in French. "Ou" = or.',
+      },
+      {
+        label: "du coup",
+        explanation:
+          '"So" / "then" / "as a result." A very common French filler expression, roughly meaning "consequently" or "so then."',
+      },
+    ],
+    liaisonTips: [
+      {
+        phrase: "trente‿ans",
+        explanation:
+          'The "t" in "trente" links to the vowel in "ans" — pronounced "trɑ̃‿tɑ̃."',
+      },
+    ],
+    tags: ["Present", "Passé Composé", "Time", "Idioms"],
+  },
 ];
 
 const ITALIAN_LESSONS: ISeedLesson[] = [
@@ -584,6 +633,7 @@ async function seedLessons(payload: Awaited<ReturnType<typeof getPayload>>) {
       sentence: lesson.sentence,
       translation: lesson.translation,
       audio: lesson.audio,
+      cefr: lesson.cefr ?? "A1",
       grammar: lesson.grammar,
       liaisonTips: lesson.liaisonTips ?? [],
       tags: lesson.tags,

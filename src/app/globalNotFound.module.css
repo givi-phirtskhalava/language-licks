@@ -1,0 +1,43 @@
+.container {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2em;
+  background: var(--primary-bg);
+  font-family: var(--font-system);
+}
+
+.content {
+  text-align: center;
+  max-width: 32em;
+}
+
+.title {
+  font-size: 6em;
+  font-weight: 700;
+  color: var(--primary);
+  margin: 0;
+  line-height: 1;
+}
+
+.message {
+  font-size: 1.25em;
+  color: #374151;
+  margin: 0.75em 0 1.5em;
+}
+
+.link {
+  display: inline-block;
+  padding: 0.75em 1.5em;
+  background: var(--primary);
+  color: #fff;
+  border-radius: 0.5em;
+  text-decoration: none;
+  font-weight: 500;
+  transition: background 0.15s ease;
+}
+
+.link:hover {
+  background: var(--primary-hover);
+}

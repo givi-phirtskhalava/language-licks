@@ -1,10 +1,6 @@
 import { runSeed } from "@lib/db/seed";
 
 export async function POST() {
-  // if (process.env.NODE_ENV !== "development") {
-  //   return Response.json({ error: "Not found" }, { status: 404 });
-  // }
-
   try {
     const result = await runSeed();
     return Response.json({ ok: true, ...result });
