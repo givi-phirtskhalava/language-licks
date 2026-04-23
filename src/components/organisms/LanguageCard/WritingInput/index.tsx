@@ -5,7 +5,14 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPen } from "@fortawesome/free-solid-svg-icons";
 import CorrectionDisplay from "@/components/atoms/CorrectionDisplay";
 import { IWriteWordResult } from "@/components/organisms/LanguageCard/hooks/useWritingCheck";
+import useLanguage from "@lib/useLanguage";
+import { TLanguageId } from "@lib/projectConfig";
 import styles from "./WritingInput.module.css";
+
+const ACCENT_CHARS: Record<TLanguageId, string[]> = {
+  french: ["é", "è", "ê", "à", "â", "ç", "ù", "î", "ô", "ë", "ï", "œ"],
+  italian: ["à", "è", "é", "ì", "ò", "ù"],
+};
 
 interface Props {
   onSubmit: (input: string) => boolean | void;
@@ -37,6 +44,8 @@ export default function WritingInput({
 }: Props) {
   const [input, setInput] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
+  const { language } = useLanguage();
+  const accents = ACCENT_CHARS[language] ?? [];
 
   useEffect(() => {
     if (disabled) {
@@ -53,6 +62,21 @@ export default function WritingInput({
     if (!keepInput) setInput("");
   }
 
+  function insertAccent(char: string) {
+    const el = inputRef.current;
+    if (!el) return;
+    const start = el.selectionStart ?? el.value.length;
+    const end = el.selectionEnd ?? el.value.length;
+    const next = el.value.slice(0, start) + char + el.value.slice(end);
+    setInput(next);
+    onInputChange?.();
+    requestAnimationFrame(() => {
+      el.focus();
+      const pos = start + char.length;
+      el.setSelectionRange(pos, pos);
+    });
+  }
+
   const inputStateClass =
     result === null || result === undefined
       ? ""
@@ -64,11 +88,7 @@ export default function WritingInput({
 
   return (
     <>
-      <form
-        onSubmit={handleSubmit}
-        className={styles.form}
-        style={{ marginTop: "0.5rem" }}
-      >
+      <form onSubmit={handleSubmit} className={styles.form}>
         <input
           ref={inputRef}
           type="text"
@@ -86,12 +106,31 @@ export default function WritingInput({
           spellCheck={false}
           disabled={disabled}
         />
+
+        {accents.length > 0 && !disabled && (
+          <div className={styles.accentRow} role="toolbar" aria-label="Insert accented character">
+            {accents.map((char) => (
+              <button
+                key={char}
+                type="button"
+                className={styles.accentBtn}
+                onMouseDown={(e) => e.preventDefault()}
+                onClick={() => insertAccent(char)}
+                tabIndex={-1}
+                aria-label={`Insert ${char}`}
+              >
+                {char}
+              </button>
+            ))}
+          </div>
+        )}
+
         <button
           type="submit"
           className={styles.submitBtn}
           disabled={!input.trim() || disabled}
         >
-          <FontAwesomeIcon icon={faPen} style={{ marginRight: "0.5rem" }} />
+          <FontAwesomeIcon icon={faPen} className={styles.submitBtnIcon} />
           Check
         </button>
       </form>

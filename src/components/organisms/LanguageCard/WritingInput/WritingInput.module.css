@@ -58,6 +58,42 @@
   cursor: not-allowed;
 }
 
+.submitBtnIcon {
+  margin-right: 0.5em;
+}
+
+.accentRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25em;
+}
+
+.accentBtn {
+  min-width: 2em;
+  padding: 0.375em 0.5em;
+  border-radius: 0.375em;
+  border: 0.0625em solid var(--border);
+  background: var(--bg-white);
+  color: var(--text-secondary);
+  font-family: var(--font-serif);
+  font-size: 0.9375em;
+  line-height: 1;
+  transition:
+    border-color 0.15s,
+    color 0.15s,
+    background 0.15s;
+}
+
+.accentBtn:hover {
+  border-color: var(--primary);
+  color: var(--primary);
+  background: var(--primary-lighter);
+}
+
+.accentBtn:active {
+  background: var(--primary-light);
+}
+
 
 .accentHint {
   color: var(--warning);
