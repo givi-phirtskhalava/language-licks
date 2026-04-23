@@ -225,7 +225,7 @@ export default function ProfilePage() {
 
   useEffect(() => {
     if (!isLoading && !isLoggedIn) {
-      router.push("/login?redirect=/profile");
+      router.push("/login");
     }
   }, [isLoading, isLoggedIn, router]);
 

@@ -28,12 +28,10 @@ export default function LoginPage() {
   const [emailError, setEmailError] = useState("");
   const [loading, setLoading] = useState(false);
   const [turnstileToken, setTurnstileToken] = useState("");
-  const [redirect, setRedirect] = useState("/");
   const [checkout, setCheckout] = useState(false);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
-    setRedirect(params.get("redirect") || "/");
     setCheckout(params.get("checkout") === "true");
   }, []);
 
@@ -106,16 +104,16 @@ export default function LoginPage() {
           data.user.id,
           () => {
             queryClient.invalidateQueries({ queryKey: ["auth", "me"] });
-            router.push(redirect);
+            router.push("/lessons");
           },
           () => {
-            router.push(redirect);
+            router.push("/lessons");
           }
         );
         return;
       }
 
-      router.push(redirect);
+      router.push("/lessons");
     } catch {
       setError("Something went wrong");
     } finally {

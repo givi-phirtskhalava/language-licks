@@ -35,7 +35,7 @@ export default function Header() {
 
   const authItem = isLoggedIn
     ? { href: "/profile", label: "Profile" }
-    : { href: `/login?redirect=${pathname}`, label: "Log in" };
+    : { href: "/login", label: "Log in" };
 
   const navItems = [...NAV_ITEMS, authItem];
 
