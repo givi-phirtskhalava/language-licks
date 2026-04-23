@@ -9,7 +9,7 @@
     "start": "next start",
     "lint": "eslint",
     "db:generate": "drizzle-kit generate --config=drizzle.config.ts",
-    "db:migrate": "drizzle-kit migrate --config=drizzle.config.ts",
+    "db:migrate": "tsx scripts/migrate.ts",
     "db:studio": "drizzle-kit studio --config=drizzle.config.ts",
     "payload:migrate:create": "NODE_OPTIONS=--no-deprecation payload migrate:create",
     "payload:migrate": "NODE_OPTIONS=--no-deprecation payload migrate",
@@ -29,7 +29,6 @@
     "@payloadcms/richtext-lexical": "^3.83.0",
     "@tanstack/react-query": "^5.99.0",
     "classnames": "^2.5.1",
-    "drizzle-kit": "^0.31.10",
     "drizzle-orm": "^0.45.2",
     "graphql": "^16.13.2",
     "jose": "^6.2.2",
@@ -42,6 +41,7 @@
     "react-dom": "19.2.4",
     "react-hot-toast": "^2.6.0",
     "resend": "^6.10.0",
+    "tsx": "^4.21.0",
     "zod": "^4.3.6"
   },
   "devDependencies": {
@@ -49,9 +49,9 @@
     "@types/pg": "^8.20.0",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "drizzle-kit": "^0.31.10",
     "eslint": "^9",
     "eslint-config-next": "16.2.3",
-    "tsx": "^4.21.0",
     "typescript": "^5"
   }
 }
