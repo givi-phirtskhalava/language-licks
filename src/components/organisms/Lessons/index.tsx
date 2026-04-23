@@ -38,11 +38,21 @@ export default function Lessons() {
   }
   const { progress, dailyLog, getLesson, unretire, resetLesson } =
     useProgress(language);
-  const { data: lessons, isLoading } = useLessons(language);
+  const { data: lessons, isLoading, error } = useLessons(language);
   const { isPremium } = useAuth();
 
-  if (isLoading || !lessons) {
+  if (isLoading) {
     return null;
+  }
+
+  if (error || !lessons) {
+    return (
+      <div className={styles.container}>
+        <p className={styles.emptyState}>
+          Something went wrong loading lessons. Please check back later.
+        </p>
+      </div>
+    );
   }
 
   const settingsLesson = settingsId !== null ? getLesson(settingsId) : null;

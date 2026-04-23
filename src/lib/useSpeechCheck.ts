@@ -48,69 +48,12 @@ interface IUseSpeechCheckReturn {
   stop: () => void;
 }
 
-interface ISpeechCheckToken {
-  token: string;
-  expiresAtMs: number;
-  lessonId: number;
-}
-
-let cachedToken: ISpeechCheckToken | null = null;
-let inFlight: Promise<ISpeechCheckToken> | null = null;
-
-const GATEWAY_URL = process.env.NEXT_PUBLIC_SPEECH_CHECK_GATEWAY_URL;
-const REFRESH_MARGIN_MS = 60_000;
 const SILENCE_THRESHOLD = 0.01;
 const SILENCE_DURATION = 1500;
 const MAX_RECORDING_MS = 15000;
 const SAMPLE_RATE = 16000;
 const RETRY_ATTEMPTS = 3;
 const RETRY_BASE_MS = 400;
-
-async function fetchSpeechCheckToken(
-  lessonId: number
-): Promise<ISpeechCheckToken> {
-  const res = await fetch("/api/speech/token", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ lessonId }),
-  });
-  if (!res.ok) {
-    throw new Error(`token request failed: ${res.status}`);
-  }
-  const data = (await res.json()) as {
-    token: string;
-    expiresInSec: number;
-  };
-  return {
-    token: data.token,
-    expiresAtMs: Date.now() + data.expiresInSec * 1000,
-    lessonId,
-  };
-}
-
-async function getSpeechCheckToken(
-  lessonId: number
-): Promise<ISpeechCheckToken> {
-  if (
-    cachedToken &&
-    cachedToken.lessonId === lessonId &&
-    cachedToken.expiresAtMs - Date.now() > REFRESH_MARGIN_MS
-  ) {
-    return cachedToken;
-  }
-  if (inFlight) return inFlight;
-
-  inFlight = fetchSpeechCheckToken(lessonId)
-    .then((t) => {
-      cachedToken = t;
-      return t;
-    })
-    .finally(() => {
-      inFlight = null;
-    });
-
-  return inFlight;
-}
 
 async function checkMicPermission(): Promise<"granted" | "denied" | "prompt"> {
   if (navigator.permissions) {
@@ -165,7 +108,7 @@ function encodeWav(pcm: Float32Array, sampleRate: number): Blob {
   return new Blob([buffer], { type: "audio/wav" });
 }
 
-async function postToGateway(
+async function postSpeechCheck(
   blob: Blob,
   lang: string,
   lessonId: number,
@@ -173,38 +116,21 @@ async function postToGateway(
 ): Promise<ISpeechScoreResult> {
   let lastError: unknown = null;
 
-  if (!GATEWAY_URL) {
-    throw new Error("NEXT_PUBLIC_SPEECH_CHECK_GATEWAY_URL not configured");
-  }
-
   const params = new URLSearchParams({ lang, lessonId: String(lessonId) });
   if (target) params.set("target", target);
 
   for (let attempt = 0; attempt < RETRY_ATTEMPTS; attempt++) {
     try {
-      const { token } = await getSpeechCheckToken(lessonId);
       const form = new FormData();
       form.append("audio", blob, "audio.wav");
 
-      const res = await fetch(
-        `${GATEWAY_URL}/transcribe?${params.toString()}`,
-        {
-          method: "POST",
-          headers: { Authorization: `Bearer ${token}` },
-          body: form,
-        }
-      );
+      const res = await fetch(`/api/speech/check?${params.toString()}`, {
+        method: "POST",
+        body: form,
+      });
 
-      if (res.status === 401) {
-        cachedToken = null;
-        throw new Error("unauthorized");
-      }
-      if (res.status === 429) {
-        throw new Error("rate_limited");
-      }
-      if (!res.ok) {
-        throw new Error(`gateway_${res.status}`);
-      }
+      if (res.status === 429) throw new Error("rate_limited");
+      if (!res.ok) throw new Error(`speech_check_${res.status}`);
 
       return (await res.json()) as ISpeechScoreResult;
     } catch (err) {
@@ -216,7 +142,7 @@ async function postToGateway(
     }
   }
 
-  throw lastError ?? new Error("gateway_failed");
+  throw lastError ?? new Error("speech_check_failed");
 }
 
 export function useSpeechCheck(
@@ -275,7 +201,7 @@ export function useSpeechCheck(
       console.log(
         `[speech-check] sending audio — ${(blob.size / 1024).toFixed(1)} KB`
       );
-      const result = await postToGateway(
+      const result = await postSpeechCheck(
         blob,
         lang,
         lessonId,

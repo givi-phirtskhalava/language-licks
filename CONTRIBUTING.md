@@ -70,7 +70,7 @@ See [CLAUDE.md](./CLAUDE.md) for full coding conventions. Below is a quick refer
 - Access inside `LanguageCard` is a single check: `lesson.isFree || isPremium`
 - Reviews in `Reviews` exclude non-free lessons for unauthenticated users; when premium lapses, `pauseNonFreeReviews` clears their scheduled reviews
 - **Never** gate the lesson list itself — all lessons should be browsable by anyone
-- Speech-check tokens are minted per-lesson at `/api/speech/token`; the endpoint allows anonymous callers for free lessons and requires premium otherwise
+- Speech-check access is enforced inside `/api/speech/check` (not a separate token endpoint) — the route allows the request when the caller is premium or when `lesson.isFree` is true; audio is proxied to the Cloud Run service with a Google-signed ID token minted on the dyno
 
 ## Authentication
 

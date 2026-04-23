@@ -119,7 +119,7 @@ export default function LanguageCard({
     }
   }
 
-  if (isLoading || !lesson) {
+  if (isLoading) {
     return (
       <div className={styles.wrapper}>
         <div className={styles.card}>
@@ -129,6 +129,22 @@ export default function LanguageCard({
         </div>
       </div>
     );
+  }
+
+  if (error && !isForbidden) {
+    return (
+      <div className={styles.wrapper}>
+        <div className={styles.card}>
+          <div className={styles.loading}>
+            <p>Something went wrong. Please check back later.</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!lesson) {
+    return null;
   }
 
   const isFirstTime = !saved?.completed;

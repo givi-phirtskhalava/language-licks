@@ -1,14 +1,7 @@
 import type { Metadata } from "next";
-import { Google_Sans_Flex } from "next/font/google";
 import Link from "next/link";
 import style from "./globalNotFound.module.css";
 import "./(frontend)/globals.css";
-
-const googleSansFlex = Google_Sans_Flex({
-  weight: "variable",
-  subsets: ["latin"],
-  variable: "--font-google-sans-flex",
-});
 
 export const metadata: Metadata = {
   title: "Page Not Found",
@@ -17,7 +10,19 @@ export const metadata: Metadata = {
 
 export default function GlobalNotFound() {
   return (
-    <html lang="en" className={googleSansFlex.variable}>
+    <html lang="en">
+      <head>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link
+          rel="preconnect"
+          href="https://fonts.gstatic.com"
+          crossOrigin=""
+        />
+        <link
+          href="https://fonts.googleapis.com/css2?family=Google+Sans+Flex:wght@100..1000&display=swap"
+          rel="stylesheet"
+        />
+      </head>
       <body>
         <div className={style.container}>
           <div className={style.content}>

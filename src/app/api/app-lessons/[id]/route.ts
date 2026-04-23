@@ -14,7 +14,16 @@ export async function GET(
     return Response.json({ error: "Invalid lesson ID" }, { status: 400 });
   }
 
-  const payload = await getPayload({ config });
+  let payload;
+  try {
+    payload = await getPayload({ config });
+  } catch (error) {
+    console.error("Failed to connect to service:", error);
+    return Response.json(
+      { error: "Service temporarily unavailable" },
+      { status: 503 }
+    );
+  }
 
   let doc;
   try {

@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { Google_Sans_Flex } from "next/font/google";
 import Header from "@/components/atoms/Header";
 import Footer from "@/components/organisms/Footer";
 import PastDueBanner from "@/components/atoms/PastDueBanner";
@@ -9,12 +8,6 @@ import ToastProvider from "@/components/atoms/ToastProvider";
 import DevGui from "@/components/atoms/DevGui";
 import QueryProvider from "@lib/providers/QueryProvider";
 import "./globals.css";
-
-const googleSansFlex = Google_Sans_Flex({
-  weight: "variable",
-  subsets: ["latin"],
-  variable: "--font-google-sans-flex",
-});
 
 const siteUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
 const siteName = "LanguageLicks";
@@ -70,7 +63,19 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={googleSansFlex.variable}>
+    <html lang="en">
+      <head>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link
+          rel="preconnect"
+          href="https://fonts.gstatic.com"
+          crossOrigin=""
+        />
+        <link
+          href="https://fonts.googleapis.com/css2?family=Google+Sans+Flex:wght@100..1000&display=swap"
+          rel="stylesheet"
+        />
+      </head>
       <body>
         <QueryProvider>
           <NavigationProgress />

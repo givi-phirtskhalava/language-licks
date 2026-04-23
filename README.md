@@ -64,8 +64,10 @@ All vars live in `.env.local` (gitignored). A template is in `.env.sample`.
 | `EMAIL_FROM`                                        | yes      | Verified sender address in Resend                                          |
 | `PAYLOAD_SECRET`                                    | yes      | Secret used to sign Payload admin sessions                                 |
 | `INITIAL_ADMIN_EMAIL`                               | yes      | Email of the first admin user created on boot                              |
-| `SPEECH_CHECK_JWT_SECRET`                           | yes      | Shared secret with the speech-check gateway (byte-for-byte match)          |
-| `NEXT_PUBLIC_SPEECH_CHECK_GATEWAY_URL`              | yes      | Public URL of the speech-check gateway (e.g. `http://localhost:8080`)      |
+| `SPEECH_CHECK_URL`                                  | yes      | Base URL of the speech-check Cloud Run service (or `http://localhost:8000` in dev) |
+| `GCP_SA_KEY`                                        | prod     | JSON of a service account with `roles/run.invoker` on the speech-check service. **Omit in dev** — the route skips IAM when `NODE_ENV=development`. |
+| `SPEECH_CHECK_MAX_AUDIO_BYTES`                      | no       | Upload cap in bytes (default `491520`)                                     |
+| `SPEECH_CHECK_PER_USER_RPM`                         | no       | Per-user rate limit, requests per minute (default `60`)                    |
 | `PADDLE_API_KEY`                                    | yes      | Paddle server-side key (sandbox for dev, prod for prod)                    |
 | `PADDLE_WEBHOOK_SECRET`                             | yes      | Used to verify Paddle webhook signatures                                   |
 | `NEXT_PUBLIC_PADDLE_CLIENT_TOKEN`                   | yes      | Paddle client token (exposed to the browser)                               |
@@ -224,7 +226,7 @@ Without the prefix, a route like `/api/lessons/route.ts` would shadow Payload's 
 | `/api/progress/clear`      | Wipe progress for the current user                                                                                          |
 | `/api/daily-activity`      | Per-day lessons/reviews count (for streak)                                                                                  |
 | `/api/daily-activity/sync` | Bulk upload local daily-activity log on first login                                                                         |
-| `/api/speech/token`        | Mint a 15-min HS256 JWT for the speech-check gateway (body: `{ lessonId }`; allowed if lesson is free or caller is premium) |
+| `/api/speech/check`        | Proxy audio to the speech-check service after verifying the session, premium status (or `lesson.isFree`), and per-user rate limit. Adds a Google-signed ID token so Cloud Run accepts the call. |
 | `/api/seed`                | Dev-only: run `runSeed()` against the DB                                                                                    |
 
 ## Free Tier
@@ -299,7 +301,7 @@ All auth cookies are set with:
 
 ## Speech Recognition
 
-Pronunciation scoring is powered by a self-hosted [`language-licks-speech-check`](../language-licks-speech-check) service running language-specific wav2vec2 phoneme models (`Cnam-LMSSC/wav2vec2-french-phonemizer` for French, `Cnam-LMSSC/wav2vec2-italian-phonemizer` for Italian) behind a TypeScript gateway. Only authenticated premium users can call it.
+Pronunciation scoring is powered by a self-hosted [`language-licks-speech-check`](../language-licks-speech-check) service running language-specific wav2vec2 phoneme models (`Cnam-LMSSC/wav2vec2-french-phonemizer` for French, `Cnam-LMSSC/wav2vec2-italian-phonemizer` for Italian). It runs on Google Cloud Run with IAM-only ingress. This Next.js app is the **only** caller.
 
 ### Audio Format
 
@@ -307,15 +309,21 @@ Audio is captured client-side as **WAV** (16kHz, 16-bit, mono PCM). Recording au
 
 ### Architecture
 
-1. The client requests a short-lived HS256 JWT from `POST /api/speech/token` with the target `lessonId`. The server allows anonymous callers for free lessons and requires premium for paid lessons. For non-premium callers the JWT carries a `lessonId` claim and the client must pass `lessonId` as a query param to the gateway, which rejects mismatches. Premium tokens carry no lesson claim (universal access). Tokens have a 15-minute TTL and are cached at module scope, keyed by lesson.
-2. The client captures PCM audio via `AudioContext`, encodes it as a WAV blob, and POSTs it directly to the speech-check gateway with the JWT as a bearer token.
-3. The gateway verifies the JWT, applies per-IP and per-user rate limits, and proxies the request to the Python inference server.
+1. The client captures PCM audio via `AudioContext`, encodes it as a WAV blob, and POSTs it to `/api/speech/check` (same-origin, session cookie auto-included).
+2. The route:
+   - runs `requireAuth()` to identify the user,
+   - applies a per-user in-memory rate limit,
+   - pre-checks `Content-Length` against `SPEECH_CHECK_MAX_AUDIO_BYTES`,
+   - verifies access — allowed if the user is premium, or the lesson has `isFree: true`,
+   - mints a short-lived Google ID token using `GCP_SA_KEY` (cached on the dyno, refreshed ~hourly by `google-auth-library`),
+   - proxies the audio to `SPEECH_CHECK_URL/transcribe` with that token as `Authorization: Bearer …`.
+3. Cloud Run validates the ID token at the edge before the scorer container ever sees the request. The scorer runs inference and returns the per-word match scores, which we pipe straight back to the browser.
 
-The Next.js app only issues tokens — it never sees the audio. This keeps GPU traffic off the web tier.
+Ingress on the scorer is restricted to one service account; there is no other path to reach it from the internet.
 
 ### Running the speech-check service locally
 
-The speech-check service lives in a sibling repo (`language-licks-speech-check`) and is **not** started by `npm run dev`. It runs a Python inference server on `:8000` and a TypeScript gateway on `:8080`; both must be up for speaking practice to work in dev.
+The speech-check service lives in a sibling repo (`language-licks-speech-check`) and is **not** started by `npm run dev`. It runs a Python inference server on `:8000`.
 
 1. Clone and install the service (from the parent directory of this repo):
 
@@ -324,39 +332,31 @@ The speech-check service lives in a sibling repo (`language-licks-speech-check`)
    python3 -m venv .venv
    source .venv/bin/activate
    pip install -r requirements.txt
-   (cd gateway && cp .env.example .env && npm install)
    ```
 
-2. Generate a shared JWT secret:
+2. In this app's `.env.local`:
+
+   ```
+   SPEECH_CHECK_URL=http://localhost:8000
+   ```
+
+   Do **not** set `GCP_SA_KEY` in dev — when `NODE_ENV=development`, the `/api/speech/check` route skips the ID-token mint and sends plain HTTP to `SPEECH_CHECK_URL`. The local Python server has no auth of its own.
+
+3. Start the Python server (from the speech-check repo root):
 
    ```bash
-   openssl rand -base64 64 | tr -d '\n'
-   ```
-
-   Paste the same value into **both** `language-licks-speech-check/gateway/.env` (as `SPEECH_CHECK_JWT_SECRET`) and this app's `.env.local`. It must match byte-for-byte.
-
-3. In this app's `.env.local`:
-
-   ```
-   SPEECH_CHECK_JWT_SECRET=<shared secret>
-   NEXT_PUBLIC_SPEECH_CHECK_GATEWAY_URL=http://localhost:8080
-   ```
-
-4. Start Python + gateway in parallel (from the speech-check service repo root):
-
-   ```bash
-   ./dev.sh
+   ./dev-python.sh
    ```
 
    First run downloads the CNAM-LMSSC phonemizer weights (~360 MB per language) from Hugging Face; subsequent runs use the cache.
 
-5. Sanity check:
+4. Sanity check:
 
    ```bash
-   curl http://localhost:8080/healthz
+   curl http://localhost:8000/healthz
    ```
 
-See the speech-check service README for Docker, GPU, and deployment details.
+See the speech-check service README for Cloud Run deployment, IAM setup, and Docker details.
 
 ## Project Structure
 
@@ -373,7 +373,7 @@ src/
       paddle/             # Paddle webhook receiver
       progress/           # Per-user lesson progress (GET/POST + sync + clear)
       daily-activity/     # Per-day lessons/reviews counts for streaks
-      speech/             # Mints short-lived JWTs for the speech-check gateway
+      speech/             # /api/speech/check — proxies audio to the speech-check Cloud Run service
       seed/               # Dev-only seed runner
   collections/            # Payload collections (Admins, Lessons, TagGroups, Media)
   components/
@@ -388,7 +388,7 @@ src/
     projectConfig.ts      # Language configuration + free-lesson count
     useProgress.ts        # SRS progress tracking (localStorage → DB on login)
     useLanguage.ts        # Language selection state
-    useSpeechCheck.ts     # Mic recording + gateway call
+    useSpeechCheck.ts     # Mic recording + POST to /api/speech/check
   payload.config.ts       # Payload config (collections, db adapter, admin, beforeSchemaInit)
   payload-types.ts        # Generated Payload TypeScript types
 drizzle/                  # Drizzle-generated SQL migrations
