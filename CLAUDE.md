@@ -76,16 +76,16 @@
 
 ## Database
 
-- Schema is defined in `src/lib/db/schema.ts` using Drizzle ORM
-- Use `npm run db:generate` after schema changes, then `npm run db:migrate`
+- Schema for Drizzle-owned tables is defined in `src/lib/db/schema.ts` using Drizzle ORM
 - Languages are configured in `src/lib/projectConfig.ts`, not stored in the database
 - Lesson grammar and liaison tips are stored as JSON columns
 - Use the `db` instance from `src/lib/db/index.ts` for all queries
 - Payload owns `lessons`, `tag-groups`, `media`; Drizzle owns `users`, `verification_codes`, `progress`, `daily_activity`
-- **When adding a Drizzle table**: add it to `src/lib/db/schema.ts` **and** register it in the `beforeSchemaInit` list in `src/payload.config.ts` — otherwise Payload will drop it on its next migration
+- **When adding a Drizzle table**: add it to `src/lib/db/schema.ts` **and** register it in the `beforeSchemaInit` list in `src/payload.config.ts` — otherwise Payload will drop it
 - **When adding a Payload collection**: make sure its slug/table name doesn't collide with a Drizzle table
-- After Drizzle changes: `npm run db:generate && npm run db:migrate`
-- **Do NOT run `payload migrate:create` / `payload migrate` in dev.** Payload runs with `push: true` (default when `NODE_ENV !== 'production'`), so schema changes auto-sync on dev server start. Migrations are only generated before deploying to prod.
+- Payload owns all migrations. `beforeSchemaInit` pulls the Drizzle tables into Payload's schema so Payload creates and tracks them alongside its own tables
+- In dev, Payload runs with `push: true` so schema changes auto-sync on dev server start — no migrations needed locally
+- For prod: run `npm run payload:migrate:create` to generate a migration before deploying; the release phase runs `payload migrate`
 
 ## Data Fetching
 

@@ -39,24 +39,17 @@ Each lesson presents a sentence in the target language with grammar breakdowns, 
 
 3. Copy `.env.sample` to `.env.local` and fill it in. See [Environment Variables](#environment-variables) for what each value is for.
 
-4. Run migrations (both ORMs):
-
-   ```bash
-   npm run db:migrate
-   npx payload migrate
-   ```
-
-5. Start the dev server:
+4. Start the dev server:
 
    ```bash
    npm run dev
    ```
 
-   Open [http://localhost:3000](http://localhost:3000).
+   Open [http://localhost:3000](http://localhost:3000). Payload runs with `push: true` in dev, so the schema auto-syncs on start — no migration step needed.
 
-6. Seed the database with lesson + tag data — visit [http://localhost:3000/seed](http://localhost:3000/seed) and run the seeder (dev-only; the `/api/seed` route is a 404 in production).
+5. Seed the database with lesson + tag data — visit [http://localhost:3000/seed](http://localhost:3000/seed) and run the seeder (dev-only; the `/api/seed` route is a 404 in production).
 
-7. (Optional) Start the speech-check service if you want to test speaking practice. See [Running the speech-check service locally](#running-the-speech-check-service-locally).
+6. (Optional) Start the speech-check service if you want to test speaking practice. See [Running the speech-check service locally](#running-the-speech-check-service-locally).
 
 ## Environment Variables
 
@@ -94,9 +87,6 @@ openssl rand -base64 64 | tr -d '\n'
 | `npm run build`                  | Build for production                                 |
 | `npm run start`                  | Start production server                              |
 | `npm run lint`                   | Run ESLint                                           |
-| `npm run db:generate`            | Generate Drizzle migration files from schema changes |
-| `npm run db:migrate`             | Apply pending Drizzle migrations                     |
-| `npm run db:studio`              | Open Drizzle Studio (DB browser)                     |
 | `npm run payload:migrate:create` | Generate a Payload migration from collection changes |
 | `npm run payload:migrate`        | Apply pending Payload migrations                     |
 | `npm run payload:migrate:status` | List which Payload migrations have run               |
@@ -140,14 +130,9 @@ db: postgresAdapter({
 
 ### Drizzle (runtime data)
 
-Schema lives in `src/lib/db/schema.ts`. Migrations are stored in `./drizzle/` and applied with `db:migrate`. Use `db:studio` to browse the data.
+Schema lives in `src/lib/db/schema.ts`. Drizzle tables are registered in `beforeSchemaInit` inside `src/payload.config.ts`, so Payload owns the migrations for them — no separate Drizzle migration step.
 
-After changing `schema.ts`:
-
-```bash
-npm run db:generate   # diffs schema.ts against the DB and writes a SQL migration
-npm run db:migrate    # applies pending migrations
-```
+After changing `schema.ts`, generate a Payload migration before deploying (see below).
 
 ### Payload (content)
 
@@ -422,11 +407,11 @@ The app runs on a single Heroku dyno with Heroku Postgres.
 The `Procfile` handles migrations automatically on each release:
 
 ```
-release: npm run db:migrate && npx payload migrate
+release: npx payload migrate
 web: npm run start
 ```
 
-Both migrate commands are idempotent and skip already-applied migrations. Order matters only if a single deploy adds tables in both systems that reference each other — currently they don't.
+`payload migrate` is idempotent and skips already-applied migrations. It creates both Payload-owned and Drizzle-owned tables (Drizzle tables are pulled into Payload's schema via `beforeSchemaInit`).
 
 ## Contributing
 

@@ -7,15 +7,14 @@ See [CLAUDE.md](./CLAUDE.md) for full coding conventions. Below is a quick refer
 1. `npm install`
 2. Create a local Postgres database: `createdb language_licks`
 3. Copy `.env.sample` to `.env.local` and fill in the required variables (see [README.md](./README.md#environment-variables))
-4. `npm run db:migrate && npx payload migrate`
-5. `npm run dev`
-6. Visit [http://localhost:3000/seed](http://localhost:3000/seed) to seed lessons + tags
+4. `npm run dev` — Payload runs with `push: true` in dev, so the schema auto-syncs on start
+5. Visit [http://localhost:3000/seed](http://localhost:3000/seed) to seed lessons + tags
 
 ## Database
 
-- Schema lives in `src/lib/db/schema.ts`
-- After changing the schema, run `npm run db:generate` to create a migration, then `npm run db:migrate` to apply it
-- Use `npm run db:studio` to browse the database visually
+- Schema for Drizzle-owned tables lives in `src/lib/db/schema.ts`
+- Drizzle tables are registered in `beforeSchemaInit` in `src/payload.config.ts`; Payload owns all migrations
+- Before deploying, run `npm run payload:migrate:create` to generate a migration
 - Lesson content uses JSON columns for `grammar` and `liaison_tips` arrays
 
 ## Naming Conventions
