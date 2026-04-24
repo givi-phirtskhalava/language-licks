@@ -53,10 +53,18 @@
 
 .dot {
   position: absolute;
-  top: 0.125em;
-  right: 0.125em;
-  width: 0.5em;
-  height: 0.5em;
-  border-radius: 50%;
+  top: -0.375em;
+  right: -0.375em;
+  min-width: 1.5em;
+  height: 1.5em;
+  padding: 0 0.375em;
+  border-radius: 999px;
   background: var(--accent);
+  color: var(--bg);
+  font-size: 0.6875em;
+  font-weight: 700;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }

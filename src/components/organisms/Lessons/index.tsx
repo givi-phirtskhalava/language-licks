@@ -6,15 +6,31 @@ import useLanguage from "@lib/useLanguage";
 import useLessons from "@lib/hooks/useLessons";
 import useAuth from "@lib/hooks/useAuth";
 import useProgress, { getMasteryLevel } from "@lib/useProgress";
-import { CEFR_LEVELS, TCefrLevel } from "@lib/types";
+import { CEFR_LEVELS, TCefrLevel, TPhase } from "@lib/types";
 import LessonSettings from "@/components/atoms/LessonSettings";
 import CardFooter from "@/components/atoms/CardFooter";
+import Tag from "@/components/atoms/Tag";
 import classNames from "classnames";
 import LessonFilters from "@/components/organisms/LessonFilters";
 import StatsPanel from "@/components/atoms/StatsPanel";
 import styles from "./Lessons.module.css";
 
 const LEVEL_STORAGE_KEY = "lessons:cefrLevel";
+
+function getPhaseLabel(phase: TPhase): string {
+  switch (phase) {
+    case "practice-writing":
+      return "Writing practice";
+    case "practice-speaking":
+      return "Speaking practice";
+    case "practice":
+      return "Practicing";
+    case "test":
+      return "Testing";
+    default:
+      return "In progress";
+  }
+}
 
 export default function Lessons() {
   const [settingsId, setSettingsId] = useState<number | null>(null);
@@ -166,9 +182,7 @@ export default function Lessons() {
                     {!isPremium && lesson.isFree && (
                       <span className={styles.freeBadge}>Free</span>
                     )}
-                    {p && !p.completed && (
-                      <span className={styles.progressBadge}>In progress</span>
-                    )}
+                    {p && !p.completed && <Tag>{getPhaseLabel(p.phase)}</Tag>}
                   </CardFooter>
                 </div>
               );

@@ -1,6 +1,6 @@
 .container {
   width: 100%;
-  max-width: 38em;
+  max-width: 40em;
   display: flex;
   flex-direction: column;
   gap: 2.5em;
@@ -10,7 +10,7 @@
   display: flex;
   align-items: center;
   gap: 0.5em;
-  margin-bottom: 0.75em;
+  margin-bottom: 2em;
 }
 
 .sectionHeader .sectionTitle {

@@ -23,14 +23,18 @@ export default function Header() {
   const { data: lessons } = useLessons(language);
 
   const today = getToday();
-  const hasDueReviews =
-    !pausedAt &&
-    lessons?.some((lesson) => {
-      const p = getLesson(lesson.id);
-      return (
-        p && p.completed && !p.retired && p.nextReview && p.nextReview <= today
-      );
-    });
+  const dueReviewCount = pausedAt
+    ? 0
+    : (lessons?.filter((lesson) => {
+        const p = getLesson(lesson.id);
+        return (
+          p &&
+          p.completed &&
+          !p.retired &&
+          p.nextReview &&
+          p.nextReview <= today
+        );
+      }).length ?? 0);
 
   const authItem = isLoggedIn
     ? { href: "/profile", label: "Profile" }
@@ -57,8 +61,8 @@ export default function Header() {
             }}
           >
             {label}
-            {href === "/reviews" && hasDueReviews && (
-              <span className={style.dot} />
+            {href === "/reviews" && dueReviewCount > 0 && (
+              <span className={style.dot}>{dueReviewCount}</span>
             )}
           </Link>
         ))}

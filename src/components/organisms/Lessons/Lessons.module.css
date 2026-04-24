@@ -1,6 +1,6 @@
 .container {
   width: 100%;
-  max-width: 38em;
+  max-width: 40em;
   display: flex;
   flex-direction: column;
   gap: 2em;
@@ -131,19 +131,6 @@
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-}
-
-.progressBadge {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0.125em 0.5em;
-  border-radius: 0.25em;
-  font-size: 0.75em;
-  font-weight: 700;
-  color: var(--text-light);
-  background: var(--bg);
-  border: 0.0625em solid var(--border);
 }
 
 .numberCompleted {

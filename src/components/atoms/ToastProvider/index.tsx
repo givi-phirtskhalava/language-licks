@@ -16,25 +16,9 @@ export default function ToastProvider() {
           cursor: "pointer",
           border: "1px solid var(--border)",
         },
-        success: {
-          style: {
-            background: "var(--success-bg)",
-            color: "var(--success-dark)",
-          },
-          iconTheme: {
-            primary: "var(--success)",
-            secondary: "var(--bg-white)",
-          },
-        },
-        error: {
-          style: {
-            background: "var(--error-bg)",
-            color: "var(--error-dark)",
-          },
-          iconTheme: {
-            primary: "var(--error)",
-            secondary: "var(--bg-white)",
-          },
+        iconTheme: {
+          primary: "var(--accent)",
+          secondary: "var(--bg)",
         },
       }}
     >

@@ -3,6 +3,7 @@
 import { Children, ReactNode } from "react";
 import MasteryBar from "@/components/atoms/MasteryBar";
 import InfoButton from "@/components/atoms/InfoButton";
+import Tag from "@/components/atoms/Tag";
 import style from "./CardFooter.module.css";
 
 interface Props {
@@ -33,7 +34,7 @@ export default function CardFooter({
     <div className={style.footer}>
       {children}
       {typeof level === "number" && <MasteryBar level={level} />}
-      {tag && <span className={style.tag}>{tag}</span>}
+      {tag && <Tag>{tag}</Tag>}
       {onInfoClick && (
         <InfoButton
           onClick={onInfoClick}

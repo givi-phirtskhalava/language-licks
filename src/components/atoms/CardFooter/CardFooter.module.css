@@ -9,8 +9,3 @@
 .footer:empty {
   display: none;
 }
-
-.tag {
-  font-size: 0.75em;
-  color: var(--text);
-}
