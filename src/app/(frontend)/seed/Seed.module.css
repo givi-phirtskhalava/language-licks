@@ -30,7 +30,7 @@
   border: none;
   border-radius: 0.5em;
   background: var(--accent);
-  color: var(--button-bg);
+  color: var(--on-accent);
   cursor: pointer;
 }
 

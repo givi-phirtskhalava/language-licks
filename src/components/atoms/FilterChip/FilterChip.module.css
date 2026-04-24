@@ -23,13 +23,13 @@
 .selected {
   background: var(--accent);
   border-color: var(--accent);
-  color: var(--button-bg);
+  color: var(--on-accent);
 }
 
 .selected:hover {
   background: var(--accent);
   border-color: var(--accent);
-  color: var(--button-bg);
+  color: var(--on-accent);
 }
 
 .icon {

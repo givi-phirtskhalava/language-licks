@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import classNames from "classnames";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faBars, faXmark } from "@fortawesome/free-solid-svg-icons";
+import { faSunBright, faMoon } from "@fortawesome/pro-regular-svg-icons";
 import useLessons from "@lib/hooks/useLessons";
 import useLanguage from "@lib/useLanguage";
 import useProgress, { getToday } from "@lib/useProgress";
@@ -73,6 +74,13 @@ export default function Header() {
     setMenuOpen(false);
   }
 
+  function toggleTheme() {
+    const next =
+      document.documentElement.dataset.theme === "dark" ? "light" : "dark";
+    document.documentElement.dataset.theme = next;
+    localStorage.setItem("theme", next);
+  }
+
   return (
     <header className={style.header}>
       <Link href="/" className={style.brand}>
@@ -93,6 +101,16 @@ export default function Header() {
             )}
           </Link>
         ))}
+
+        <button
+          type="button"
+          className={style.themeToggle}
+          aria-label="Toggle theme"
+          onClick={toggleTheme}
+        >
+          <FontAwesomeIcon icon={faSunBright} className={style.iconSun} />
+          <FontAwesomeIcon icon={faMoon} className={style.iconMoon} />
+        </button>
       </nav>
 
       <button
@@ -125,6 +143,16 @@ export default function Header() {
                 )}
               </Link>
             ))}
+
+            <button
+              type="button"
+              className={style.menuThemeToggle}
+              aria-label="Toggle theme"
+              onClick={toggleTheme}
+            >
+              <FontAwesomeIcon icon={faSunBright} className={style.iconSun} />
+              <FontAwesomeIcon icon={faMoon} className={style.iconMoon} />
+            </button>
           </nav>
 
           <nav className={style.menuFooter}>

@@ -19,7 +19,7 @@
   height: 2.5em;
   border-radius: 50%;
   background: var(--accent);
-  color: var(--button-bg);
+  color: var(--on-accent);
   font-size: 1.25em;
 }
 
@@ -28,11 +28,11 @@
 }
 
 .correct {
-  background: var(--bg);
-  color: var(--accent);
+  background: #000;
+  color: var(--on-accent);
 }
 
 .wrong {
-  background: var(--bg);
-  color: var(--accent);
+  background: #000;
+  color: var(--on-accent);
 }

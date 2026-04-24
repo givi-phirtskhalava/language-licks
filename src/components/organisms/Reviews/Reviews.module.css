@@ -34,7 +34,7 @@
   padding: 0 0.375em;
   border-radius: 100em;
   background: var(--accent);
-  color: var(--bg);
+  color: var(--on-accent);
   font-size: 0.75em;
   font-weight: 700;
   line-height: 1;
@@ -108,7 +108,7 @@
   width: 2em;
   height: 2em;
   border-radius: 50%;
-  color: var(--button-bg);
+  color: var(--on-accent);
   font-weight: 600;
   font-size: 0.875em;
   display: flex;

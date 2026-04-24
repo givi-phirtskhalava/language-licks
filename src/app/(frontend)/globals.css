@@ -16,9 +16,19 @@
   --button-bg: rgb(255, 255, 255);
   --button-bg-2: rgb(240, 240, 240);
   --border: #d8d4cb;
+  --on-accent: #ffffff;
 
   --header-height: 4em;
   --footer-height: 3em;
+}
+
+:root[data-theme="dark"] {
+  --bg: #121212;
+  --text: #f5f5f5;
+  --text-light: #9a9690;
+  --button-bg: #1e1e1e;
+  --button-bg-2: #2a2a2a;
+  --border: #454138;
 }
 
 *,

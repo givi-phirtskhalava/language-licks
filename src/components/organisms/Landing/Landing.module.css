@@ -71,13 +71,11 @@
   width: 1.5em;
   height: 1.5em;
   border-radius: 50%;
-  background: transparent;
   color: var(--text);
   font-size: 1em;
   padding: 1em;
   font-weight: 500;
-  background-color: white;
-  color: var(--text);
+  background-color: var(--button-bg);
   border: 1px solid var(--border);
 }
 

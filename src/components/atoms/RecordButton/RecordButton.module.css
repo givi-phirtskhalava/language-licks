@@ -17,7 +17,6 @@
     background 0.2s,
     opacity 0.2s;
   user-select: none;
-  color: var(--button-bg);
 }
 
 .btn:disabled {
@@ -27,6 +26,7 @@
 
 .btnIdle {
   background: var(--accent);
+  color: var(--on-accent);
 }
 
 .btnIdle:hover:not(:disabled) {
@@ -35,11 +35,13 @@
 
 .btnListening {
   background: var(--accent);
+  color: var(--on-accent);
   animation: pulse 1.5s infinite;
 }
 
 .btnProcessing {
   background: var(--text);
+  color: var(--bg);
   cursor: wait;
 }
 

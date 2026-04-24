@@ -44,7 +44,7 @@
   padding: 0 0.4em;
   border-radius: 999em;
   background: var(--accent);
-  color: var(--button-bg);
+  color: var(--on-accent);
   font-size: 0.75em;
   font-weight: 700;
 }
@@ -110,7 +110,7 @@
   padding: 0.75em 1em;
   border-radius: 0.625em;
   background: var(--accent);
-  color: var(--button-bg);
+  color: var(--on-accent);
   font-size: 0.875em;
   font-weight: 600;
   transition: background 0.15s;

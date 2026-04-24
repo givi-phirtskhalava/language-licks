@@ -44,6 +44,7 @@
 - Use `classNames` package for multiple classes: `classNames(style.base, condition && style.conditional)`
 - Apply `box-sizing: border-box` globally
 - Avoid inline styles — use `className` instead
+- For inputs and buttons, use `min-height` to control height instead of vertical padding. Horizontal padding for spacing is fine
 
 ## Functions
 

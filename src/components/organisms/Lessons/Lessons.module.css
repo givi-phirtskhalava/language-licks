@@ -101,7 +101,7 @@
   height: 2em;
   border-radius: 50%;
   background: var(--accent);
-  color: var(--button-bg);
+  color: var(--on-accent);
   font-weight: 600;
   font-size: 0.875em;
   display: flex;
@@ -125,7 +125,7 @@
   display: inline-block;
   padding: 0.2em 0.6em;
   background: var(--accent);
-  color: var(--button-bg);
+  color: var(--on-accent);
   border-radius: 0.25em;
   font-size: 0.6875em;
   font-weight: 600;

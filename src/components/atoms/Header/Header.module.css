@@ -66,13 +66,61 @@
   padding: 0 0.375em;
   border-radius: 999px;
   background: var(--accent);
-  color: var(--bg);
+  color: var(--on-accent);
   font-size: 0.6875em;
   font-weight: 700;
   line-height: 1;
   display: inline-flex;
   align-items: center;
   justify-content: center;
+}
+
+.themeToggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.5em;
+  height: 2.5em;
+  margin-left: 0.25em;
+  color: var(--text);
+  background: transparent;
+  border-radius: 999px;
+  transition:
+    color 0.2s,
+    background 0.2s;
+}
+
+.themeToggle:hover {
+  color: var(--accent);
+  background: var(--button-bg);
+}
+
+.menuThemeToggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 3em;
+  font-size: 1.125em;
+  color: var(--text);
+  background: var(--button-bg);
+  border: 0.0625em solid var(--border);
+  border-radius: 999px;
+}
+
+.iconSun {
+  display: none;
+}
+
+.iconMoon {
+  display: inline-block;
+}
+
+:root[data-theme="dark"] .iconSun {
+  display: inline-block;
+}
+
+:root[data-theme="dark"] .iconMoon {
+  display: none;
 }
 
 .hamburger {

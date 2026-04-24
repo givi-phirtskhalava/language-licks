@@ -25,7 +25,7 @@
 }
 
 .headerTitle {
-  color: var(--button-bg);
+  color: var(--on-accent);
   font-size: 0.75em;
   font-weight: 600;
   text-transform: uppercase;
@@ -33,7 +33,7 @@
 }
 
 .headerCount {
-  color: var(--button-bg);
+  color: var(--on-accent);
   font-size: 0.75em;
 }
 
@@ -42,7 +42,7 @@
   height: 3em;
   border-radius: 50%;
   background-color: transparent;
-  color: var(--button-bg);
+  color: var(--on-accent);
   display: flex;
   align-items: center;
   justify-content: center;
