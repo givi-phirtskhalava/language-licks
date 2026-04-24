@@ -85,11 +85,13 @@ export default function SpeakingPractice({
 
         {speaking.result && !speaking.isProcessing && (
           <FeedbackAlert theme={speaking.result.correct ? "correct" : "wrong"}>
-            <span>
-              {speaking.result.correct
-                ? "Correct! You\u2019re ready to complete the lesson. Still not feeling confident? Keep practicing before you move on."
-                : "Not quite \u2014 try again"}
-            </span>
+            <p>{"Correct! You\u2019re ready to complete the lesson."}</p>
+
+            <p>
+              {
+                "If you're not feeling confident just yet, try writing it a few more times."
+              }
+            </p>
           </FeedbackAlert>
         )}
 

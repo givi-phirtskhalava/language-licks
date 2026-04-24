@@ -89,11 +89,13 @@ export default function WritingPractice({
         >
           {writing.result !== null && writing.isPass && (
             <FeedbackAlert theme="correct">
-              <span>
+              <p>{"Correct! You\u2019re ready for the speaking practice."}</p>
+
+              <p>
                 {
-                  "Correct! You\u2019re ready for the speaking practice. Still not feeling confident? Keep practicing before you move on."
+                  "If you\u2019re not feeling confident just yet, try writing it a few more times."
                 }
-              </span>
+              </p>
             </FeedbackAlert>
           )}
         </WritingInput>
