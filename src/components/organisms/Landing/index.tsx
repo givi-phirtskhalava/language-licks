@@ -67,28 +67,16 @@ export default function Landing() {
         <h1 className={style.title}>
           Learn a new language,
           <br />
-          just one <span className={style.titleItalic}>sentence</span> at a time.
+          just one <span className={style.titleItalic}>sentence</span> at a
+          time.
         </h1>
 
         <p className={style.subtitle}>
-          LanguageLicks is inspired by guitar licks. With a four step process,
-          active recall and spaced repetition, we'll help you build a
-          repertoire of sentences. It takes muscle memory to improvise.
+          LanguageLicks is a language learning tool inspired by guitar playing.
+          We'll help you build a repertoire of sentences through spaced
+          repetition so that you can unlock your ability to jam freely in
+          conversations. It takes muscle memory to improvise.
         </p>
-
-        <div className={style.steps}>
-          {FEATURES.map((f) => {
-            const [num, ...rest] = f.title.split(". ");
-            const label = rest.join(". ");
-
-            return (
-              <div key={f.title} className={style.step}>
-                <span className={style.stepNumber}>{num}</span>
-                <span className={style.stepLabel}>{label}</span>
-              </div>
-            );
-          })}
-        </div>
       </section>
 
       <section className={style.cta}>
@@ -126,6 +114,20 @@ export default function Landing() {
       </section>
 
       <section className={style.more}>
+        <div className={style.steps}>
+          {FEATURES.map((f) => {
+            const [num, ...rest] = f.title.split(". ");
+            const label = rest.join(". ");
+
+            return (
+              <div key={f.title} className={style.step}>
+                <span className={style.stepNumber}>{num}</span>
+                <span className={style.stepLabel}>{label}</span>
+              </div>
+            );
+          })}
+        </div>
+
         <div className={style.moreButton}>
           <Button
             theme="secondary"

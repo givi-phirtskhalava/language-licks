@@ -24,8 +24,8 @@
   width: 3em;
   height: 3em;
   border-radius: 50%;
-  background: var(--primary);
-  color: var(--bg-white);
+  background: var(--accent);
+  color: var(--button-bg);
   font-size: 1.125em;
   font-weight: 600;
   display: flex;
@@ -35,33 +35,33 @@
 
 .email {
   font-size: 0.9375em;
-  color: var(--text-body);
+  color: var(--text);
 }
 
 .plan {
   font-size: 0.75em;
-  color: var(--text-muted);
+  color: var(--text);
 }
 
 .section {
   display: flex;
   flex-direction: column;
   gap: 0.75em;
-  background: var(--bg-white);
+  background: var(--button-bg);
   padding: 1.25em;
   border-radius: 0.75em;
-  box-shadow: 0 0.0625em 0.1875em var(--shadow);
+  box-shadow: 0 0.0625em 0.1875em rgba(0, 0, 0, 0.05);
 }
 
 .label {
   font-size: 0.875em;
   font-weight: 600;
-  color: var(--text-secondary);
+  color: var(--text);
 }
 
 .value {
   font-size: 0.9375em;
-  color: var(--text-body);
+  color: var(--text);
 }
 
 .statusRow {
@@ -73,43 +73,43 @@
 .badge {
   font-size: 0.8125em;
   font-weight: 600;
-  color: var(--bg-white);
-  background: var(--primary);
+  color: var(--button-bg);
+  background: var(--accent);
   padding: 0.25em 0.75em;
   border-radius: 1em;
 }
 
 .canceledNote {
   font-size: 0.8125em;
-  color: var(--text-muted);
+  color: var(--text);
 }
 
 .billingDetail {
   font-size: 0.875em;
-  color: var(--text-secondary);
+  color: var(--text);
 }
 
 .billingWarning {
   font-size: 0.875em;
-  color: var(--error);
+  color: var(--accent);
   line-height: 1.5;
 }
 
 .billingError {
   font-size: 0.8125em;
-  color: var(--error);
+  color: var(--accent);
 }
 
 .planTitle {
   font-size: 1.125em;
   font-weight: 700;
-  color: var(--text-dark);
+  color: var(--text);
 }
 
 .price {
   font-size: 1.5em;
   font-weight: 700;
-  color: var(--primary);
+  color: var(--accent);
 }
 
 .features {
@@ -118,7 +118,7 @@
   gap: 0.5em;
   padding-left: 1.25em;
   font-size: 0.875em;
-  color: var(--text-body);
+  color: var(--text);
   line-height: 1.5;
 }
 
@@ -131,20 +131,20 @@
 .sectionTitle {
   font-size: 0.875em;
   font-weight: 600;
-  color: var(--text-secondary);
+  color: var(--text);
 }
 
 .dangerTitle {
   font-size: 0.875em;
   font-weight: 600;
-  color: var(--error);
+  color: var(--accent);
 }
 
 .dangerSection {
   display: flex;
   flex-direction: column;
   gap: 0.75em;
-  background: var(--bg-white);
+  background: var(--button-bg);
   padding: 1.25em;
   border-radius: 0.75em;
   border: 0.0625em solid #fca5a5;
@@ -153,13 +153,13 @@
 .modalTitle {
   font-size: 1em;
   font-weight: 600;
-  color: var(--text-dark);
+  color: var(--text);
   margin-bottom: 0.75em;
 }
 
 .modalText {
   font-size: 0.875em;
-  color: var(--text-muted);
+  color: var(--text);
   line-height: 1.5;
   margin-bottom: 1em;
 }
@@ -173,7 +173,7 @@
 .modalLabel {
   font-size: 0.8125em;
   font-weight: 500;
-  color: var(--text-secondary);
+  color: var(--text);
 }
 
 .modalInput {
@@ -182,24 +182,24 @@
   font-size: 0.9375em;
   border: 0.0625em solid var(--border);
   border-radius: 0.5em;
-  background: var(--bg-white);
-  color: var(--text-body);
+  background: var(--button-bg);
+  color: var(--text);
   box-sizing: border-box;
 }
 
 .modalInput:focus {
-  outline: 0.125em solid var(--primary);
+  outline: 0.125em solid var(--accent);
   outline-offset: -0.0625em;
-  border-color: var(--primary);
+  border-color: var(--accent);
 }
 
 .modalInput::placeholder {
-  color: var(--text-placeholder);
+  color: var(--text);
 }
 
 .modalError {
   font-size: 0.8125em;
-  color: var(--error);
+  color: var(--accent);
 }
 
 .modalActions {

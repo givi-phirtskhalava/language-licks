@@ -14,7 +14,7 @@
 .title {
   font-size: 1.5em;
   font-weight: 600;
-  color: var(--text-dark);
+  color: var(--text);
   margin-bottom: 1.5em;
 }
 
@@ -27,7 +27,7 @@
 .label {
   font-size: 0.875em;
   font-weight: 500;
-  color: var(--text-secondary);
+  color: var(--text);
 }
 
 .input {
@@ -36,29 +36,29 @@
   font-size: 1em;
   border: 1px solid var(--border);
   border-radius: 0.5em;
-  background: var(--bg-white);
-  color: var(--text-body);
+  background: var(--button-bg);
+  color: var(--text);
   box-sizing: border-box;
 }
 
 .input:focus {
-  outline: 2px solid var(--primary);
+  outline: 2px solid var(--accent);
   outline-offset: -1px;
-  border-color: var(--primary);
+  border-color: var(--accent);
 }
 
 .input::placeholder {
-  color: var(--text-placeholder);
+  color: var(--text);
 }
 
 .hint {
   font-size: 0.875em;
-  color: var(--text-muted);
+  color: var(--text);
   line-height: 1.5;
 }
 
 .error {
   font-size: 0.875em;
-  color: var(--error);
+  color: var(--accent);
 }
 

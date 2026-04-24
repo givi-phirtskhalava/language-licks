@@ -2,7 +2,6 @@
   display: flex;
   justify-content: center;
   min-height: calc(100svh - var(--header-height) - var(--footer-height));
-  background: var(--bg-cream);
   padding: 3em 1.5em 5em;
 }
 
@@ -13,49 +12,50 @@
 
 .title {
   font-family: var(--font-serif);
-  font-size: 3.5em;
+  font-size: 3.75em;
   font-weight: 500;
   text-align: center;
-  color: var(--text-dark);
-  letter-spacing: -0.02em;
-  margin-bottom: 1.5em;
+  color: var(--text);
+  margin-bottom: 1em;
 }
 
 .list {
+  max-width: 40em;
+  margin: 0 auto;
   display: flex;
   flex-direction: column;
 }
 
 .item {
-  border-top: 0.0625em solid var(--bg-cream-border);
+  border-top: 0.0625em solid var(--border);
   padding: 1.5em 0;
 }
 
 .item:last-child {
-  border-bottom: 0.0625em solid var(--bg-cream-border);
+  border-bottom: 0.0625em solid var(--border);
 }
 
 .question {
   font-family: var(--font-serif);
   font-size: 1.375em;
   font-weight: 500;
-  color: var(--text-dark);
+  color: var(--text);
   letter-spacing: -0.01em;
 }
 
 .answer {
   font-size: 0.9375em;
   line-height: 1.7;
-  color: var(--text-tertiary);
+  color: var(--text);
   margin-top: 1em;
   max-width: 42em;
 }
 
 .link {
-  color: var(--primary);
+  color: var(--accent);
   text-decoration: underline;
 }
 
 .link:hover {
-  color: var(--primary-hover);
+  color: var(--accent);
 }

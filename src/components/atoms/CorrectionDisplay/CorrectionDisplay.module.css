@@ -13,20 +13,20 @@
 }
 
 .wordCorrect {
-  color: var(--text-dark);
+  color: var(--text);
 }
 
 .wordWarning {
-  color: var(--warning-mid);
+  color: var(--accent);
   font-weight: 500;
 }
 
 .wordStruck {
-  color: var(--text-light);
+  color: var(--text);
   text-decoration: line-through;
 }
 
 .wordCorrection {
-  color: var(--warning-orange);
+  color: var(--accent);
   font-weight: 500;
 }

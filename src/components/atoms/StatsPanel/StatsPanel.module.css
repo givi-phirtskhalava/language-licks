@@ -2,8 +2,8 @@
   width: 100%;
   padding: 1.25em;
   border-radius: 0.75em;
-  background: var(--bg-white);
-  box-shadow: 0 0.0625em 0.1875em var(--shadow);
+  background: var(--button-bg);
+  box-shadow: 0 0.0625em 0.1875em rgba(0, 0, 0, 0.05);
 }
 
 .grid {
@@ -19,11 +19,11 @@
 .statValue {
   font-size: 1.25em;
   font-weight: 700;
-  color: var(--text-dark);
+  color: var(--text);
 }
 
 .statLabel {
   font-size: 0.6875em;
-  color: var(--text-light);
+  color: var(--text);
   margin-top: 0.125em;
 }

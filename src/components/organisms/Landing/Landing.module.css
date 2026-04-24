@@ -2,10 +2,9 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  min-height: calc(100svh - var(--header-height));
-  background: var(--bg-cream);
-  padding: 3em 1.5em 4em;
-  gap: 2em;
+  min-height: calc(100svh - var(--header-height) - var(--footer-height));
+  padding: 2em 1.5em;
+  gap: 2.5em;
 }
 
 .hero {
@@ -13,29 +12,30 @@
   flex-direction: column;
   align-items: center;
   text-align: center;
-  gap: 1.25em;
-  max-width: 36em;
+  gap: 2.25em;
+  margin-top: 1em;
 }
 
 .title {
   font-family: var(--font-serif);
-  font-size: 3.25em;
+  font-size: 4em;
   font-weight: 500;
   line-height: 1.1;
-  color: var(--text-dark);
+  color: var(--text);
   letter-spacing: -0.02em;
+  max-width: 38em;
 }
 
 .titleItalic {
   font-style: italic;
-  color: var(--primary);
+  color: var(--accent);
 }
 
 .subtitle {
-  font-size: 0.9375em;
+  font-size: 1.1em;
   line-height: 1.6;
-  color: var(--text-muted);
-  max-width: 26em;
+  color: var(--text);
+  max-width: 37em;
 }
 
 .steps {
@@ -49,30 +49,35 @@
 .step {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 0.5em;
   padding: 0.25em 0.875em 0.25em 0.25em;
   background: transparent;
-  border-radius: 999px;
-  font-size: 0.8125em;
-  color: var(--text-secondary);
+  border-radius: 100em;
+  font-size: 1em;
+  color: var(--text);
 }
 
 .stepNumber {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 1.625em;
-  height: 1.625em;
+  width: 1.5em;
+  height: 1.5em;
   border-radius: 50%;
-  border: 0.0625em solid var(--bg-cream-border);
   background: transparent;
-  color: var(--text-muted);
-  font-size: 0.9375em;
+  color: var(--text);
+  font-size: 1em;
+  padding: 1em;
   font-weight: 500;
+  background-color: white;
+  color: var(--text);
+  border: 1px solid var(--border);
 }
 
 .stepLabel {
   font-weight: 500;
+  font-size: 1em;
 }
 
 .cta {
@@ -94,11 +99,11 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.375em;
+  gap: 0.5em;
   padding: 1em 1.75em;
   border: 0.125em solid transparent;
   border-radius: 1em;
-  background: var(--bg-white);
+  background: var(--button-bg);
   cursor: pointer;
   transition:
     border-color 0.2s,
@@ -107,12 +112,12 @@
 }
 
 .languageCard:hover {
-  border-color: var(--primary-muted);
+  border-color: var(--accent);
 }
 
 .languageCardSelected {
-  border-color: var(--primary);
-  box-shadow: 0 0 0 0.1875em var(--primary-lighter);
+  border-color: var(--accent);
+  box-shadow: 0 0 0 0.1875em var(--bg);
 }
 
 .languageEmoji {
@@ -123,17 +128,17 @@
 }
 
 .flag {
-  width: 2.25em;
-  height: 1.5em;
+  max-width: 3.5em;
+  width: 100%;
   border-radius: 0.1875em;
-  box-shadow: 0 0 0 0.0625em rgba(0, 0, 0, 0.08);
   display: block;
+  border: 1px solid #f7f7f7;
 }
 
 .languageLabel {
-  font-size: 0.875em;
+  font-size: 1em;
   font-weight: 500;
-  color: var(--text-secondary);
+  color: var(--text);
 }
 
 .ctaButton {
@@ -143,7 +148,7 @@
 
 .free {
   font-size: 0.8125em;
-  color: var(--text-muted);
+  color: var(--text);
 }
 
 .more {
@@ -151,6 +156,7 @@
   flex-direction: column;
   align-items: center;
   padding-top: 1em;
+  gap: 2em;
 }
 
 .moreButton {

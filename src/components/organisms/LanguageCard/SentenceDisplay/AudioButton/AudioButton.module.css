@@ -3,13 +3,13 @@
   align-items: center;
   gap: 0.5em;
   border-radius: 9999em;
-  background: var(--primary-lighter);
+  background: var(--bg);
   padding: 0.625em 1.25em;
-  color: var(--primary-hover);
+  color: var(--accent);
   font-weight: 500;
   transition: background 0.2s;
 }
 
 .audioBtn:hover {
-  background: var(--primary-light);
+  background: var(--bg);
 }

@@ -11,33 +11,33 @@
   width: 4em;
   height: 4em;
   border-radius: 50%;
-  background: var(--success-light);
+  background: var(--bg);
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--success);
+  color: var(--accent);
   font-size: 1.75em;
 }
 
 .completeTitle {
   font-size: 1.25em;
   font-weight: 600;
-  color: var(--text-dark);
+  color: var(--text);
 }
 
 .completeSubtitle {
-  color: var(--text-muted);
+  color: var(--text);
   font-size: 0.875em;
 }
 
 .countdown {
   font-size: 1.5em;
   font-weight: 600;
-  color: var(--primary);
+  color: var(--accent);
 }
 
 .doneText {
-  color: var(--text-light);
+  color: var(--text);
   font-size: 0.875em;
   font-style: italic;
 }

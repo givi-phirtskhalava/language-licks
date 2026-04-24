@@ -7,13 +7,13 @@
 }
 
 .wordCorrect {
-  background: var(--success-light);
-  color: var(--success-darker);
+  background: var(--bg);
+  color: var(--text);
 }
 
 .wordWrong {
-  background: var(--error-light);
-  color: var(--error-darker);
+  background: var(--bg);
+  color: var(--text);
 }
 
 .wordActual {

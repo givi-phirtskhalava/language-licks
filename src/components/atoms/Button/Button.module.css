@@ -1,10 +1,11 @@
 .button {
   position: relative;
   width: 100%;
-  padding: 0.75em 1.5em;
-  font-size: 0.9375em;
+  padding: 0em 1.5em;
+  min-height: 3em;
+  font-size: 1em;
   font-weight: 500;
-  border-radius: 0.75em;
+  border-radius: 2em;
   cursor: pointer;
   text-align: center;
   overflow: hidden;
@@ -32,39 +33,39 @@
 }
 
 .primary {
-  color: var(--bg-white);
-  background: var(--primary);
+  color: var(--button-bg);
+  background: var(--accent);
   border: none;
 }
 
 .primary:hover:not(:disabled) {
-  background: var(--primary-hover);
+  background: var(--accent);
 }
 
 .primary:disabled {
   background: var(--border);
-  color: var(--text-muted);
+  color: var(--text);
   opacity: 0.5;
 }
 
 .secondary {
-  color: var(--text-secondary);
-  background: var(--bg-white);
+  color: var(--text);
+  background: var(--button-bg);
   border: 0.0625em solid var(--border);
 }
 
 .secondary:hover:not(:disabled) {
-  background: var(--bg-subtle);
+  background: var(--bg);
 }
 
 .danger {
-  color: var(--bg-white);
-  background: var(--error);
+  color: var(--button-bg);
+  background: var(--accent);
   border: none;
 }
 
 .danger:hover:not(:disabled) {
-  background: var(--error-dark);
+  background: var(--accent);
 }
 
 .danger:disabled {
@@ -72,11 +73,11 @@
 }
 
 .ghost {
-  color: var(--text-muted);
+  color: var(--text);
   background: none;
   border: none;
 }
 
 .ghost:hover:not(:disabled) {
-  color: var(--text-secondary);
+  color: var(--text);
 }

@@ -13,6 +13,6 @@
 }
 
 .dotActive {
-  background: var(--success-mid);
-  box-shadow: 0 0 0.375em var(--success-glow);
+  background: var(--accent);
+  box-shadow: 0 0 0.375em rgba(60, 56, 128, 0.5);
 }

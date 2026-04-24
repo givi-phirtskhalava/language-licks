@@ -11,46 +11,46 @@
   padding: 0.75em 1em;
   font-size: 1em;
   font-family: var(--font-serif);
-  color: var(--text-dark);
+  color: var(--text);
   outline: none;
   transition: border-color 0.2s;
 }
 
 .input:focus {
-  border-color: var(--primary);
+  border-color: var(--accent);
 }
 
 .input::placeholder {
-  color: var(--text-placeholder);
+  color: var(--text);
 }
 
 .inputCorrect {
-  border-color: var(--success-mid);
-  background: var(--success-bg);
+  border-color: var(--accent);
+  background: var(--bg);
 }
 
 .inputWrong {
-  border-color: var(--error);
-  background: var(--error-bg);
+  border-color: var(--accent);
+  background: var(--bg);
 }
 
 .inputWarning {
-  border-color: var(--warning);
-  background: var(--warning-bg);
+  border-color: var(--accent);
+  background: var(--bg);
 }
 
 .submitBtn {
   width: 100%;
   border-radius: 0.5em;
-  background: var(--primary);
+  background: var(--accent);
   padding: 0.625em 1.5em;
-  color: var(--bg-white);
+  color: var(--button-bg);
   font-weight: 500;
   transition: background 0.2s;
 }
 
 .submitBtn:hover {
-  background: var(--primary-hover);
+  background: var(--accent);
 }
 
 .submitBtn:disabled {
@@ -73,8 +73,8 @@
   padding: 0.375em 0.5em;
   border-radius: 0.375em;
   border: 0.0625em solid var(--border);
-  background: var(--bg-white);
-  color: var(--text-secondary);
+  background: var(--button-bg);
+  color: var(--text);
   font-family: var(--font-serif);
   font-size: 0.9375em;
   line-height: 1;
@@ -85,18 +85,18 @@
 }
 
 .accentBtn:hover {
-  border-color: var(--primary);
-  color: var(--primary);
-  background: var(--primary-lighter);
+  border-color: var(--accent);
+  color: var(--accent);
+  background: var(--bg);
 }
 
 .accentBtn:active {
-  background: var(--primary-light);
+  background: var(--bg);
 }
 
 
 .accentHint {
-  color: var(--warning);
+  color: var(--accent);
   font-size: 0.875em;
   font-style: italic;
   margin: 0;
@@ -108,7 +108,7 @@
   border: 0.125em solid var(--border);
   background: none;
   padding: 0.5em 1.25em;
-  color: var(--text-muted);
+  color: var(--text);
   font-weight: 500;
   font-size: 0.875em;
   cursor: pointer;
@@ -116,6 +116,6 @@
 }
 
 .retryBtn:hover {
-  border-color: var(--primary);
-  color: var(--primary);
+  border-color: var(--accent);
+  color: var(--accent);
 }

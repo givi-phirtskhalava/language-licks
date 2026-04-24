@@ -7,8 +7,8 @@ const ITEMS = [
       <>
         It focuses on active recall &mdash; the hardest but most effective part
         of language learning. There&apos;s no multiple choice or passive
-        scrolling. You're asked to write and speak the sentences you're
-        learning with regular reviews at increasing intervals.
+        scrolling. You're asked to write and speak the sentences you're learning
+        with regular reviews at increasing intervals.
       </>
     ),
   },
@@ -63,8 +63,8 @@ const ITEMS = [
         We recommend 1 or 2 new lessons per day. At that pace, your daily
         reviews queue will never grow too large. If you have more time, you can
         do more, but make sure you can keep up with reviews every day. It's
-        recommended to do fewer new lessons and stay on top of your reviews
-        than to rush ahead and let them pile up.
+        recommended to do fewer new lessons and stay on top of your reviews than
+        to rush ahead and let them pile up.
       </>
     ),
   },
@@ -85,13 +85,13 @@ const ITEMS = [
       "How accurate is your audio recognition system for speaking practice?",
     answer: (
       <>
-        We're using a machine learning model, and it won't always be perfect.
-        On top of that, we've also intentionally set the pass threshold low
-        enough that people with different accents, speech impediments, and
-        levels of confidence can take part. If you've passed the writing test,
-        chances are you know the sentence well enough. The goal is to do a
-        cursory check on your speaking and provide another opportunity to
-        reinforce what you already know.
+        We're using a machine learning model, and it won't always be perfect. On
+        top of that, we've also intentionally set the pass threshold low enough
+        that people with different accents, speech impediments, and levels of
+        confidence can take part. If you've passed the writing test, chances are
+        you know the sentence well enough. The goal is to do a cursory check on
+        your speaking and provide another opportunity to reinforce what you
+        already know.
       </>
     ),
   },
@@ -100,8 +100,8 @@ const ITEMS = [
     answer: (
       <>
         Absolutely, immerse yourself in the language with movies, music, books,
-        and conversations. LanguageLicks is designed to complement your
-        learning by providing a way to practice active recall.
+        and conversations. LanguageLicks is designed to complement your learning
+        by providing a way to practice active recall.
       </>
     ),
   },
@@ -123,8 +123,9 @@ const ITEMS = [
     question: "Who built this website?",
     answer: (
       <>
-        This website was built by Givi, a guitar player and web developer from
-        Georgia with over ten years of experience in web development.
+        This website was built by Givi, a guitar player, language enthusiast,
+        and developer from Georgia with over ten years of experience in web
+        development.
       </>
     ),
   },
@@ -134,7 +135,7 @@ export default function FaqPage() {
   return (
     <main className={styles.container}>
       <div className={styles.content}>
-        <h1 className={styles.title}>Find out more:</h1>
+        <h1 className={styles.title}>About</h1>
 
         <div className={styles.list}>
           {ITEMS.map((item) => (

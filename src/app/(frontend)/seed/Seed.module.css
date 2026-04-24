@@ -4,21 +4,21 @@
   display: flex;
   flex-direction: column;
   gap: 1em;
-  background: var(--bg-white);
+  background: var(--button-bg);
   padding: 1.25em;
   border-radius: 0.75em;
-  box-shadow: 0 0.0625em 0.1875em var(--shadow);
+  box-shadow: 0 0.0625em 0.1875em rgba(0, 0, 0, 0.05);
 }
 
 .title {
   font-size: 1em;
   font-weight: 700;
-  color: var(--text-dark);
+  color: var(--text);
 }
 
 .description {
   font-size: 0.875em;
-  color: var(--text-secondary);
+  color: var(--text);
   line-height: 1.5;
 }
 
@@ -29,8 +29,8 @@
   padding: 0.75em 1em;
   border: none;
   border-radius: 0.5em;
-  background: var(--primary);
-  color: var(--bg-white);
+  background: var(--accent);
+  color: var(--button-bg);
   cursor: pointer;
 }
 
@@ -47,7 +47,7 @@
   border-radius: 0.5em;
   background: var(--bg-soft, #f3f4f6);
   font-size: 0.875em;
-  color: var(--text-body);
+  color: var(--text);
 }
 
 .error {

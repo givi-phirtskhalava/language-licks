@@ -3,8 +3,6 @@
   justify-content: center;
   align-items: center;
   padding: 0 1.5em;
-  border-top: 0.0625em solid var(--border);
-  background: var(--bg-white);
   height: var(--footer-height);
 }
 
@@ -18,11 +16,11 @@
 
 .link {
   font-size: 0.8125em;
-  color: var(--text-muted);
+  color: var(--text);
   text-decoration: none;
   transition: color 0.2s;
 }
 
 .link:hover {
-  color: var(--text-secondary);
+  color: var(--text);
 }

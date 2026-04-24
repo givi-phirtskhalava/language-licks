@@ -3,6 +3,5 @@
   min-height: calc(100svh - var(--header-height) - var(--footer-height));
   justify-content: center;
   align-items: flex-start;
-  background: linear-gradient(135deg, var(--primary-bg), var(--primary-light));
   padding: 1em;
 }

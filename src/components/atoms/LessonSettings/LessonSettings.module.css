@@ -1,7 +1,7 @@
 .modalTitle {
   font-size: 1.125em;
   font-weight: 700;
-  color: var(--text-dark);
+  color: var(--text);
   margin-bottom: 1em;
 }
 
@@ -20,41 +20,41 @@
 
 .statsLabel {
   font-size: 0.875em;
-  color: var(--text-muted);
+  color: var(--text);
 }
 
 .statsValue {
   font-size: 0.875em;
   font-weight: 600;
-  color: var(--text-secondary);
+  color: var(--text);
 }
 
 .unretireBtn {
   width: 100%;
   font-size: 0.875em;
   font-weight: 600;
-  color: var(--primary);
+  color: var(--accent);
   padding: 0.625em 1em;
   border-radius: 0.5em;
-  border: 0.0625em solid var(--primary);
+  border: 0.0625em solid var(--accent);
   margin-bottom: 0.75em;
 }
 
 .unretireBtn:hover {
-  background: var(--primary-lighter);
+  background: var(--bg);
 }
 
 .resetBtn {
   width: 100%;
   font-size: 0.875em;
   font-weight: 600;
-  color: var(--error);
+  color: var(--accent);
   padding: 0.625em 1em;
   border-radius: 0.5em;
 }
 
 .resetBtn:hover {
-  background: var(--error-bg);
+  background: var(--bg);
 }
 
 .confirmReset {
@@ -64,7 +64,7 @@
 
 .confirmText {
   font-size: 0.875em;
-  color: var(--text-muted);
+  color: var(--text);
   margin-bottom: 0.75em;
 }
 
@@ -77,24 +77,24 @@
 .confirmCancel {
   font-size: 0.875em;
   font-weight: 600;
-  color: var(--text-muted);
+  color: var(--text);
   padding: 0.5em 1em;
   border-radius: 0.5em;
 }
 
 .confirmCancel:hover {
-  background: var(--bg-subtle);
+  background: var(--bg);
 }
 
 .confirmBtn {
   font-size: 0.875em;
   font-weight: 600;
-  color: var(--bg-white);
-  background: var(--error);
+  color: var(--button-bg);
+  background: var(--accent);
   padding: 0.5em 1em;
   border-radius: 0.5em;
 }
 
 .confirmBtn:hover {
-  background: var(--error-mid);
+  background: var(--accent);
 }

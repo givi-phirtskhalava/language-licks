@@ -18,7 +18,7 @@
   display: flex;
   gap: 0.25em;
   margin-bottom: 0.5em;
-  background: var(--bg-subtle);
+  background: var(--bg);
   padding: 0.25em;
   border-radius: 0.5em;
 }
@@ -29,7 +29,7 @@
   border-radius: 0.375em;
   font-size: 0.8125em;
   font-weight: 600;
-  color: var(--text-muted);
+  color: var(--text);
   background: transparent;
   transition:
     background 0.15s,
@@ -37,13 +37,13 @@
 }
 
 .levelTab:hover {
-  color: var(--text-dark);
+  color: var(--text);
 }
 
 .levelTabActive {
-  background: var(--bg-white);
-  color: var(--text-dark);
-  box-shadow: 0 0.0625em 0.1875em var(--shadow);
+  background: var(--button-bg);
+  color: var(--text);
+  box-shadow: 0 0.0625em 0.1875em rgba(0, 0, 0, 0.05);
 }
 
 .filters {
@@ -53,7 +53,7 @@
 .emptyState {
   padding: 2em 1em;
   text-align: center;
-  color: var(--text-muted);
+  color: var(--text);
   font-size: 0.875em;
 }
 
@@ -65,15 +65,15 @@
 
 .item {
   border-radius: 0.75em;
-  background: var(--bg-white);
-  box-shadow: 0 0.0625em 0.1875em var(--shadow);
+  background: var(--button-bg);
+  box-shadow: 0 0.0625em 0.1875em rgba(0, 0, 0, 0.05);
   transition: box-shadow 0.2s;
   overflow: hidden;
   cursor: pointer;
 }
 
 .item:hover {
-  box-shadow: 0 0.25em 0.75em var(--shadow-hover);
+  box-shadow: 0 0.25em 0.75em rgba(0, 0, 0, 0.08);
 }
 
 .itemBtn {
@@ -100,8 +100,8 @@
   width: 2em;
   height: 2em;
   border-radius: 50%;
-  background: var(--primary);
-  color: var(--bg-white);
+  background: var(--accent);
+  color: var(--button-bg);
   font-weight: 600;
   font-size: 0.875em;
   display: flex;
@@ -111,21 +111,21 @@
 
 .sentence {
   font-size: 0.9375em;
-  color: var(--text-secondary);
+  color: var(--text);
   line-height: 1.4;
 }
 
 .tag {
   font-size: 0.75em;
-  color: var(--text-light);
+  color: var(--text);
   margin-top: 0.25em;
 }
 
 .freeBadge {
   display: inline-block;
   padding: 0.2em 0.6em;
-  background: var(--success-bright);
-  color: var(--bg-white);
+  background: var(--accent);
+  color: var(--button-bg);
   border-radius: 0.25em;
   font-size: 0.6875em;
   font-weight: 600;
@@ -146,7 +146,7 @@
 }
 
 .check {
-  color: var(--success-bright);
+  color: var(--accent);
   font-weight: 700;
   font-size: 0.875em;
 }
@@ -155,8 +155,8 @@
   width: 1.75em;
   height: 1.75em;
   border-radius: 50%;
-  color: var(--text-muted);
-  background: var(--bg-subtle);
+  color: var(--text);
+  background: var(--bg);
   font-size: 0.75em;
   display: flex;
   align-items: center;
@@ -168,9 +168,9 @@
 }
 
 .numberCompleted {
-  background: var(--primary-soft);
+  background: var(--accent);
 }
 
 .numberRetired {
-  background: var(--success-bright);
+  background: var(--accent);
 }

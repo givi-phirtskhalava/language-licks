@@ -3,6 +3,6 @@
   top: 0;
   left: 0;
   height: 0.1875em;
-  background: var(--primary);
+  background: var(--accent);
   z-index: 9999;
 }

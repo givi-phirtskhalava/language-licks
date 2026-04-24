@@ -8,11 +8,11 @@
 }
 
 .correct {
-  background: var(--success-bg);
-  color: var(--success-dark);
+  background: var(--bg);
+  color: var(--accent);
 }
 
 .wrong {
-  background: var(--error-bg);
-  color: var(--error-dark);
+  background: var(--bg);
+  color: var(--accent);
 }

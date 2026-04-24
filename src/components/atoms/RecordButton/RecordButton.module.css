@@ -17,7 +17,7 @@
     background 0.2s,
     opacity 0.2s;
   user-select: none;
-  color: var(--bg-white);
+  color: var(--button-bg);
 }
 
 .btn:disabled {
@@ -26,20 +26,20 @@
 }
 
 .btnIdle {
-  background: var(--success-mid);
+  background: var(--accent);
 }
 
 .btnIdle:hover:not(:disabled) {
-  background: var(--success);
+  background: var(--accent);
 }
 
 .btnListening {
-  background: var(--error);
+  background: var(--accent);
   animation: pulse 1.5s infinite;
 }
 
 .btnProcessing {
-  background: var(--text-light);
+  background: var(--text);
   cursor: wait;
 }
 
@@ -54,8 +54,8 @@
   padding: 0.75em 1em;
   font-size: 0.875em;
   text-align: center;
-  background: var(--warning-bg);
-  color: var(--warning-dark);
+  background: var(--bg);
+  color: var(--accent);
   margin-top: 0.5em;
 }
 
@@ -64,8 +64,8 @@
   padding: 0.75em 1em;
   font-size: 0.875em;
   text-align: center;
-  background: var(--error-bg);
-  color: var(--error-mid);
+  background: var(--bg);
+  color: var(--accent);
   margin-top: 0.75em;
 }
 

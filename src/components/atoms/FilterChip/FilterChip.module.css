@@ -5,8 +5,8 @@
   padding: 0.4em 0.85em;
   border-radius: 999em;
   border: 0.0625em solid var(--border);
-  background: var(--bg-white);
-  color: var(--text-secondary);
+  background: var(--button-bg);
+  color: var(--text);
   font-size: 0.8125em;
   font-weight: 500;
   transition:
@@ -16,20 +16,20 @@
 }
 
 .chip:hover {
-  border-color: var(--primary-muted);
-  color: var(--text-dark);
+  border-color: var(--accent);
+  color: var(--text);
 }
 
 .selected {
-  background: var(--primary);
-  border-color: var(--primary);
-  color: var(--bg-white);
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--button-bg);
 }
 
 .selected:hover {
-  background: var(--primary-hover);
-  border-color: var(--primary-hover);
-  color: var(--bg-white);
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--button-bg);
 }
 
 .icon {

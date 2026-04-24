@@ -17,8 +17,8 @@
   padding: 0.5em 0.9em;
   border-radius: 0.625em;
   border: 0.0625em solid var(--border);
-  background: var(--bg-white);
-  color: var(--text-secondary);
+  background: var(--button-bg);
+  color: var(--text);
   font-size: 0.8125em;
   font-weight: 600;
   transition:
@@ -27,12 +27,12 @@
 }
 
 .filterBtn:hover {
-  border-color: var(--primary-muted);
+  border-color: var(--accent);
 }
 
 .filterBtnActive {
-  border-color: var(--primary);
-  color: var(--primary);
+  border-color: var(--accent);
+  color: var(--accent);
 }
 
 .count {
@@ -43,20 +43,20 @@
   height: 1.4em;
   padding: 0 0.4em;
   border-radius: 999em;
-  background: var(--primary);
-  color: var(--bg-white);
+  background: var(--accent);
+  color: var(--button-bg);
   font-size: 0.75em;
   font-weight: 700;
 }
 
 .clearBtn {
   font-size: 0.8125em;
-  color: var(--text-muted);
+  color: var(--text);
   padding: 0.25em 0.5em;
 }
 
 .clearBtn:hover {
-  color: var(--text-secondary);
+  color: var(--text);
 }
 
 .activeChips {
@@ -82,7 +82,7 @@
 .modalTitle {
   font-size: 1em;
   font-weight: 700;
-  color: var(--text-dark);
+  color: var(--text);
 }
 
 .group {
@@ -96,7 +96,7 @@
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  color: var(--text-muted);
+  color: var(--text);
 }
 
 .groupChips {
@@ -109,13 +109,13 @@
   margin-top: 0.5em;
   padding: 0.75em 1em;
   border-radius: 0.625em;
-  background: var(--primary);
-  color: var(--bg-white);
+  background: var(--accent);
+  color: var(--button-bg);
   font-size: 0.875em;
   font-weight: 600;
   transition: background 0.15s;
 }
 
 .doneBtn:hover {
-  background: var(--primary-hover);
+  background: var(--accent);
 }

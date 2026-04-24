@@ -4,14 +4,13 @@
   justify-content: space-between;
   gap: 2em;
   padding: 0.75em 1.5em;
-  background: var(--bg-cream);
   height: var(--header-height);
 }
 
 .brand {
   font-size: 1em;
   font-weight: 600;
-  color: var(--text-dark);
+  color: var(--text);
   text-decoration: none;
   letter-spacing: -0.01em;
 }
@@ -26,12 +25,12 @@
   position: relative;
   font-size: 0.8125em;
   font-weight: 500;
-  color: var(--text-secondary);
+  color: var(--text);
   text-decoration: none;
   padding: 0.5em 1em;
-  border: 0.0625em solid var(--bg-cream-border);
+  border: 0.0625em solid var(--border);
   border-radius: 999px;
-  background: var(--bg-white);
+  background: var(--button-bg);
   transition:
     color 0.2s,
     background 0.2s,
@@ -39,13 +38,13 @@
 }
 
 .link:hover {
-  border-color: var(--primary-muted);
-  color: var(--primary);
+  border-color: var(--accent);
+  color: var(--accent);
 }
 
 .active {
-  color: var(--primary);
-  border-color: var(--primary);
+  color: var(--accent);
+  border-color: var(--accent);
 }
 
 .dot {
@@ -55,5 +54,5 @@
   width: 0.5em;
   height: 0.5em;
   border-radius: 50%;
-  background: var(--error);
+  background: var(--accent);
 }

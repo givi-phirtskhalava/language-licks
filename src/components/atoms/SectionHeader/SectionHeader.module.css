@@ -13,7 +13,7 @@
 
 .bestTime {
   font-size: 0.75em;
-  color: var(--text-light);
+  color: var(--text);
   font-weight: 500;
 }
 
@@ -22,5 +22,5 @@
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  color: var(--text-light);
+  color: var(--text);
 }

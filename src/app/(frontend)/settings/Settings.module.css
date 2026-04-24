@@ -9,23 +9,23 @@
 .title {
   font-size: 1em;
   font-weight: 700;
-  color: var(--text-dark);
+  color: var(--text);
 }
 
 .section {
   display: flex;
   flex-direction: column;
   gap: 0.5em;
-  background: var(--bg-white);
+  background: var(--button-bg);
   padding: 1.25em;
   border-radius: 0.75em;
-  box-shadow: 0 0.0625em 0.1875em var(--shadow);
+  box-shadow: 0 0.0625em 0.1875em rgba(0, 0, 0, 0.05);
 }
 
 .label {
   font-size: 0.875em;
   font-weight: 600;
-  color: var(--text-secondary);
+  color: var(--text);
 }
 
 .select {
@@ -34,13 +34,13 @@
   padding: 0.625em 0.75em;
   border: 0.0625em solid var(--border);
   border-radius: 0.5em;
-  background: var(--bg-white);
-  color: var(--text-body);
+  background: var(--button-bg);
+  color: var(--text);
   cursor: pointer;
 }
 
 .select:focus {
-  outline: 0.125em solid var(--primary);
+  outline: 0.125em solid var(--accent);
   outline-offset: 0.0625em;
 }
 
@@ -53,13 +53,13 @@
 .toggleAllBtn {
   font-size: 0.75em;
   font-weight: 600;
-  color: var(--primary);
+  color: var(--accent);
   padding: 0.375em 0.75em;
   border-radius: 0.375em;
 }
 
 .toggleAllBtn:hover {
-  background: var(--primary-lighter);
+  background: var(--bg);
 }
 
 .pauseList {
@@ -74,7 +74,7 @@
   justify-content: space-between;
   padding: 0.625em 0.75em;
   border-radius: 0.5em;
-  background: var(--bg-subtle);
+  background: var(--bg);
 }
 
 .pauseInfo {
@@ -86,43 +86,43 @@
 .pauseLabel {
   font-size: 0.875em;
   font-weight: 600;
-  color: var(--text-secondary);
+  color: var(--text);
 }
 
 .pauseCount {
   font-size: 0.75em;
-  color: var(--text-light);
+  color: var(--text);
 }
 
 .pauseBtn {
   font-size: 0.75em;
   font-weight: 600;
-  color: var(--warning-mid);
+  color: var(--accent);
   padding: 0.375em 0.75em;
   border-radius: 0.375em;
-  border: 0.0625em solid var(--warning-mid);
+  border: 0.0625em solid var(--accent);
 }
 
 .pauseBtn:hover {
-  background: var(--warning-bg);
+  background: var(--bg);
 }
 
 .unpauseBtn {
   font-size: 0.75em;
   font-weight: 600;
-  color: var(--primary);
+  color: var(--accent);
   padding: 0.375em 0.75em;
   border-radius: 0.375em;
-  border: 0.0625em solid var(--primary);
+  border: 0.0625em solid var(--accent);
 }
 
 .unpauseBtn:hover {
-  background: var(--primary-lighter);
+  background: var(--bg);
 }
 
 .emptyMessage {
   font-size: 0.875em;
-  color: var(--text-light);
+  color: var(--text);
 }
 
 .group {
@@ -134,14 +134,14 @@
 .dangerTitle {
   font-size: 0.875em;
   font-weight: 600;
-  color: var(--error);
+  color: var(--accent);
 }
 
 .dangerSection {
   display: flex;
   flex-direction: column;
   gap: 0.75em;
-  background: var(--bg-white);
+  background: var(--button-bg);
   padding: 1.25em;
   border-radius: 0.75em;
   border: 0.0625em solid #fca5a5;
@@ -149,20 +149,20 @@
 
 .dangerDescription {
   font-size: 0.875em;
-  color: var(--text-secondary);
+  color: var(--text);
   line-height: 1.5;
 }
 
 .modalTitle {
   font-size: 1em;
   font-weight: 600;
-  color: var(--text-dark);
+  color: var(--text);
   margin-bottom: 0.75em;
 }
 
 .modalText {
   font-size: 0.875em;
-  color: var(--text-muted);
+  color: var(--text);
   line-height: 1.5;
   margin-bottom: 1em;
 }
@@ -175,7 +175,7 @@
 
 .modalError {
   font-size: 0.8125em;
-  color: var(--error);
+  color: var(--accent);
 }
 
 .modalActions {
