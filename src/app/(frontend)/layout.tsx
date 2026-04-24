@@ -23,8 +23,8 @@ export const metadata: Metadata = {
   description: siteDescription,
   applicationName: siteName,
   icons: {
-    icon: "https://assets.glitch.ge/languagelicks/meta/fav.png",
-    apple: "https://assets.glitch.ge/languagelicks/meta/fav.png",
+    icon: "https://assets.glitch.ge/languagelicks/meta/fav-2.png",
+    apple: "https://assets.glitch.ge/languagelicks/meta/fav-2.png",
   },
   keywords: [
     "learn French",
