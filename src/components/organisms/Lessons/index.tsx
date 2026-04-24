@@ -2,15 +2,13 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faCircleInfo } from "@fortawesome/free-solid-svg-icons";
 import useLanguage from "@lib/useLanguage";
 import useLessons from "@lib/hooks/useLessons";
 import useAuth from "@lib/hooks/useAuth";
 import useProgress, { getMasteryLevel } from "@lib/useProgress";
 import { CEFR_LEVELS, TCefrLevel } from "@lib/types";
-import MasteryBar from "@/components/atoms/MasteryBar";
 import LessonSettings from "@/components/atoms/LessonSettings";
+import CardFooter from "@/components/atoms/CardFooter";
 import classNames from "classnames";
 import LessonFilters from "@/components/organisms/LessonFilters";
 import StatsPanel from "@/components/atoms/StatsPanel";
@@ -153,36 +151,25 @@ export default function Lessons() {
                     </div>
                   </div>
 
-                  <div className={styles.statusRow}>
+                  <CardFooter
+                    level={completed ? level : undefined}
+                    onInfoClick={
+                      hasProgress
+                        ? (e) => {
+                            e.stopPropagation();
+                            setSettingsId(lesson.id);
+                          }
+                        : undefined
+                    }
+                    infoAriaLabel="Lesson info and stats"
+                  >
                     {!isPremium && lesson.isFree && (
                       <span className={styles.freeBadge}>Free</span>
                     )}
-
                     {p && !p.completed && (
                       <span className={styles.progressBadge}>In progress</span>
                     )}
-
-                    {completed && <MasteryBar level={level} />}
-
-                    {(completed || retired) && (
-                      <span className={styles.check} aria-label="Completed">
-                        {"\u2713"}
-                      </span>
-                    )}
-
-                    {hasProgress && (
-                      <button
-                        className={styles.gearBtn}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setSettingsId(lesson.id);
-                        }}
-                        aria-label="Lesson info and stats"
-                      >
-                        <FontAwesomeIcon icon={faCircleInfo} />
-                      </button>
-                    )}
-                  </div>
+                  </CardFooter>
                 </div>
               );
             })}

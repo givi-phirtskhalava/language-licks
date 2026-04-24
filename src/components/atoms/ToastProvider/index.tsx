@@ -8,12 +8,13 @@ export default function ToastProvider() {
       position="top-center"
       toastOptions={{
         style: {
-          background: "var(--bg-white)",
+          background: "#fff",
           color: "var(--text-dark)",
           fontSize: "0.875em",
           borderRadius: "0.5em",
           boxShadow: "0 0.25em 0.75em var(--shadow)",
           cursor: "pointer",
+          border: "1px solid var(--border)",
         },
         success: {
           style: {

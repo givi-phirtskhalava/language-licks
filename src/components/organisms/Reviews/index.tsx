@@ -3,18 +3,17 @@
 import { useState, useEffect } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
-  faChartSimple,
   faCircleQuestion,
-  faPen,
   faTriangleExclamation,
 } from "@fortawesome/free-solid-svg-icons";
+import { faClock, faSparkles } from "@fortawesome/pro-regular-svg-icons";
 import toast from "react-hot-toast";
 import useLanguage from "@lib/useLanguage";
 import useLessons from "@lib/hooks/useLessons";
 import useAuth from "@lib/hooks/useAuth";
 import useProgress, { getMasteryLevel, getToday } from "@lib/useProgress";
-import MasteryBar from "@/components/atoms/MasteryBar";
 import LessonSettings from "@/components/atoms/LessonSettings";
+import CardFooter from "@/components/atoms/CardFooter";
 import SignUpPrompt from "@atoms/SignUpPrompt";
 import LanguageCard from "@/components/organisms/LanguageCard";
 import styles from "./Reviews.module.css";
@@ -167,25 +166,23 @@ export default function Reviews() {
         {ready.length > 0 && (
           <div className={styles.list}>
             {ready.map(({ id, translation, level }) => (
-              <div key={id} className={styles.item}>
+              <div key={id} className={`${styles.item} ${styles.ready}`}>
                 <button
-                  className={`${styles.itemBtn} ${styles.ready}`}
+                  className={styles.itemBtn}
                   onClick={() => setSelectedId(id)}
                 >
                   <span className={`${styles.number} ${styles.numberReady}`}>
-                    <FontAwesomeIcon icon={faPen} />
+                    <FontAwesomeIcon icon={faSparkles} />
                   </span>
                   <div className={styles.itemContent}>
                     <p className={styles.sentence}>{translation}</p>
-                    <MasteryBar level={level} />
                   </div>
                 </button>
-                <button
-                  className={styles.gearBtn}
-                  onClick={() => setSettingsId(id)}
-                >
-                  <FontAwesomeIcon icon={faChartSimple} />
-                </button>
+                <CardFooter
+                  level={level}
+                  onInfoClick={() => setSettingsId(id)}
+                  infoAriaLabel="Lesson info and stats"
+                />
               </div>
             ))}
           </div>
@@ -200,9 +197,9 @@ export default function Reviews() {
           <h2 className={styles.sectionTitle}>Needs Attention</h2>
           <div className={styles.list}>
             {problematic.map(({ id, translation, level }) => (
-              <div key={id} className={styles.item}>
+              <div key={id} className={`${styles.item} ${styles.problematic}`}>
                 <button
-                  className={`${styles.itemBtn} ${styles.problematic}`}
+                  className={styles.itemBtn}
                   onClick={() => setRelearningId(id)}
                 >
                   <span
@@ -212,18 +209,14 @@ export default function Reviews() {
                   </span>
                   <div className={styles.itemContent}>
                     <p className={styles.sentence}>{translation}</p>
-                    <div className={styles.tagRow}>
-                      <MasteryBar level={level} />
-                      <p className={styles.tag}>Go back to learn</p>
-                    </div>
                   </div>
                 </button>
-                <button
-                  className={styles.gearBtn}
-                  onClick={() => setSettingsId(id)}
-                >
-                  <FontAwesomeIcon icon={faChartSimple} />
-                </button>
+                <CardFooter
+                  level={level}
+                  tag="Go back to learn"
+                  onInfoClick={() => setSettingsId(id)}
+                  infoAriaLabel="Lesson info and stats"
+                />
               </div>
             ))}
           </div>
@@ -238,9 +231,9 @@ export default function Reviews() {
         {comingUp.length > 0 && (
           <div className={styles.list}>
             {comingUp.map(({ id, translation, daysLeft, level }) => (
-              <div key={id} className={styles.item}>
+              <div key={id} className={`${styles.item} ${styles.comingUp}`}>
                 <button
-                  className={`${styles.itemBtn} ${styles.comingUp}`}
+                  className={styles.itemBtn}
                   onClick={() => {
                     toast.dismiss();
                     toast.error(
@@ -251,26 +244,22 @@ export default function Reviews() {
                   }}
                 >
                   <span className={`${styles.number} ${styles.numberComingUp}`}>
-                    {"\u2713"}
+                    <FontAwesomeIcon icon={faClock} />
                   </span>
                   <div className={styles.itemContent}>
                     <p className={styles.sentence}>{translation}</p>
-                    <div className={styles.tagRow}>
-                      <MasteryBar level={level} />
-                      <p className={styles.tag}>
-                        {pausedAt
-                          ? "Paused"
-                          : `Review in ${daysLeft} day${daysLeft !== 1 ? "s" : ""}`}
-                      </p>
-                    </div>
                   </div>
                 </button>
-                <button
-                  className={styles.gearBtn}
-                  onClick={() => setSettingsId(id)}
-                >
-                  <FontAwesomeIcon icon={faChartSimple} />
-                </button>
+                <CardFooter
+                  level={level}
+                  tag={
+                    pausedAt
+                      ? "Paused"
+                      : `Review in ${daysLeft} day${daysLeft !== 1 ? "s" : ""}`
+                  }
+                  onInfoClick={() => setSettingsId(id)}
+                  infoAriaLabel="Lesson info and stats"
+                />
               </div>
             ))}
           </div>

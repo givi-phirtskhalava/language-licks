@@ -1,6 +1,6 @@
 .container {
   width: 100%;
-  max-width: 32em;
+  max-width: 38em;
   display: flex;
   flex-direction: column;
   gap: 2em;
@@ -86,7 +86,7 @@
   text-align: left;
 }
 
-.item:has(.statusRow:not(:empty)) .itemBtn {
+.itemBtn:not(:last-child) {
   padding-bottom: 0;
 }
 
@@ -131,44 +131,6 @@
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-}
-
-.statusRow {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 0.5em;
-  padding: 0.5em 0.75em;
-}
-
-.statusRow:empty {
-  display: none;
-}
-
-.check {
-  color: var(--accent);
-  font-weight: 700;
-  font-size: 0.875em;
-}
-
-.gearBtn {
-  width: 1.75em;
-  height: 1.75em;
-  border-radius: 50%;
-  color: var(--text-light);
-  background: transparent;
-  font-size: 1em;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition:
-    color 0.2s,
-    background 0.2s;
-}
-
-.gearBtn:hover {
-  color: var(--accent);
-  background: var(--bg);
 }
 
 .progressBadge {

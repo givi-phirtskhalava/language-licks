@@ -162,7 +162,7 @@
 }
 
 .free {
-  font-family: var(--font-mono);
+  font-family: var(--font-secondary);
   font-size: 0.8125em;
   color: var(--text-light);
 }
