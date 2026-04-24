@@ -1,5 +1,6 @@
 "use client";
 
+import { ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import classNames from "classnames";
 import Button from "@atoms/Button";
@@ -9,9 +10,29 @@ import { LANGUAGES } from "@lib/projectConfig";
 import type { TLanguageId } from "@lib/projectConfig";
 import style from "./Landing.module.css";
 
-const LANGUAGE_EMOJIS: Record<string, string> = {
-  french: "\uD83C\uDDEB\uD83C\uDDF7",
-  italian: "\uD83C\uDDEE\uD83C\uDDF9",
+const LANGUAGE_FLAGS: Record<string, ReactNode> = {
+  french: (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 900 600"
+      className={style.flag}
+    >
+      <rect width="900" height="600" fill="#CE1126" />
+      <rect width="600" height="600" fill="#FFFFFF" />
+      <rect width="300" height="600" fill="#002654" />
+    </svg>
+  ),
+  italian: (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 3 2"
+      className={style.flag}
+    >
+      <rect width="1" height="2" fill="#009246" />
+      <rect width="1" height="2" x="1" fill="#fff" />
+      <rect width="1" height="2" x="2" fill="#ce2b37" />
+    </svg>
+  ),
 };
 
 const FEATURES = [
@@ -43,20 +64,31 @@ export default function Landing() {
   return (
     <div className={style.container}>
       <section className={style.hero}>
-        <div className={style.logoRow}>
-          <h1 className={style.title}>LanguageLicks</h1>
-        </div>
+        <h1 className={style.title}>
+          Learn a new language,
+          <br />
+          just one <span className={style.titleItalic}>sentence</span> at a time.
+        </h1>
 
-        {/* <p className={style.pitch}>
-          A language learning tool inspired by guitar "licks", short phrases
-          that musicians practice and use in solos and improvisation.
+        <p className={style.subtitle}>
+          LanguageLicks is inspired by guitar licks. With a four step process,
+          active recall and spaced repetition, we'll help you build a
+          repertoire of sentences. It takes muscle memory to improvise.
         </p>
 
-        <p className={style.pitch}>
-          Build up a library of phrases through repetition and active recall
-          until they become instinctive parts of your language skills, ready to
-          be pulled out and used in conversation naturally and effortlessly.
-        </p> */}
+        <div className={style.steps}>
+          {FEATURES.map((f) => {
+            const [num, ...rest] = f.title.split(". ");
+            const label = rest.join(". ");
+
+            return (
+              <div key={f.title} className={style.step}>
+                <span className={style.stepNumber}>{num}</span>
+                <span className={style.stepLabel}>{label}</span>
+              </div>
+            );
+          })}
+        </div>
       </section>
 
       <section className={style.cta}>
@@ -71,17 +103,16 @@ export default function Landing() {
               onClick={() => setLanguage(lang.id as TLanguageId)}
             >
               <span className={style.languageEmoji}>
-                {LANGUAGE_EMOJIS[lang.id]}
+                {LANGUAGE_FLAGS[lang.id]}
               </span>
               <span className={style.languageLabel}>{lang.label}</span>
             </button>
           ))}
         </div>
 
-        <span className={style.free}>10 free lessons, no account required</span>
-
         <div className={style.ctaButton}>
           <Button
+            theme="secondary"
             onClick={() => {
               startNavigationProgressBar();
               router.push("/lessons");
@@ -90,15 +121,8 @@ export default function Landing() {
             Start learning {LANGUAGES.find((l) => l.id === language)?.label}
           </Button>
         </div>
-      </section>
 
-      <section className={style.features}>
-        {FEATURES.map((f) => (
-          <div key={f.title} className={style.feature}>
-            <span className={style.featureTitle}>{f.title}</span>
-            <span className={style.featureDescription}>{f.description}</span>
-          </div>
-        ))}
+        <span className={style.free}>10 free lessons, no account required</span>
       </section>
 
       <section className={style.more}>
@@ -114,12 +138,6 @@ export default function Landing() {
           </Button>
         </div>
       </section>
-
-      <img
-        src="https://assets.glitch.ge/languagelicks/meta/rockstar-turtle.png"
-        alt="LanguageLicks mascot rockstar turtle reading a book"
-        className={style.logo}
-      />
     </div>
   );
 }

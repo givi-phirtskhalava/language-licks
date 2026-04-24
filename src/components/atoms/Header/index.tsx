@@ -10,7 +10,6 @@ import useAuth from "@lib/hooks/useAuth";
 import style from "./Header.module.css";
 
 const NAV_ITEMS = [
-  { href: "/", label: "Home" },
   { href: "/lessons", label: "Lessons" },
   { href: "/reviews", label: "Reviews" },
   { href: "/settings", label: "Settings" },
@@ -41,23 +40,29 @@ export default function Header() {
 
   return (
     <header className={style.header}>
-      {navItems.map(({ href, label }) => (
-        <Link
-          key={href}
-          href={href}
-          className={classNames(style.link, pathname === href && style.active)}
-          onClick={() => {
-            if (pathname === href) {
-              window.dispatchEvent(new CustomEvent("nav-reset"));
-            }
-          }}
-        >
-          {label}
-          {href === "/reviews" && hasDueReviews && (
-            <span className={style.dot} />
-          )}
-        </Link>
-      ))}
+      <Link href="/" className={style.brand}>
+        LanguageLicks
+      </Link>
+
+      <nav className={style.nav}>
+        {navItems.map(({ href, label }) => (
+          <Link
+            key={href}
+            href={href}
+            className={classNames(style.link, pathname === href && style.active)}
+            onClick={() => {
+              if (pathname === href) {
+                window.dispatchEvent(new CustomEvent("nav-reset"));
+              }
+            }}
+          >
+            {label}
+            {href === "/reviews" && hasDueReviews && (
+              <span className={style.dot} />
+            )}
+          </Link>
+        ))}
+      </nav>
     </header>
   );
 }

@@ -1,41 +1,57 @@
 .header {
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: space-between;
   gap: 2em;
   padding: 0.75em 1.5em;
-  background: var(--bg-white);
-  border-bottom: 0.0625em solid var(--border);
+  background: var(--bg-cream);
   height: var(--header-height);
+}
+
+.brand {
+  font-size: 1em;
+  font-weight: 600;
+  color: var(--text-dark);
+  text-decoration: none;
+  letter-spacing: -0.01em;
+}
+
+.nav {
+  display: flex;
+  align-items: center;
+  gap: 0.5em;
 }
 
 .link {
   position: relative;
-  font-size: 0.875em;
+  font-size: 0.8125em;
   font-weight: 500;
-  color: var(--text-muted);
+  color: var(--text-secondary);
   text-decoration: none;
-  padding: 0.5em 0.75em;
-  border-radius: 0.5em;
+  padding: 0.5em 1em;
+  border: 0.0625em solid var(--bg-cream-border);
+  border-radius: 999px;
+  background: var(--bg-white);
   transition:
     color 0.2s,
-    background 0.2s;
+    background 0.2s,
+    border-color 0.2s;
 }
 
 .link:hover {
+  border-color: var(--primary-muted);
   color: var(--primary);
-  background: var(--primary-lighter);
 }
 
 .active {
   color: var(--primary);
-  background: var(--primary-lighter);
+  border-color: var(--primary);
 }
 
 .dot {
   position: absolute;
-  top: 0.25em;
-  right: 0.25em;
+  top: 0.125em;
+  right: 0.125em;
   width: 0.5em;
   height: 0.5em;
   border-radius: 50%;
