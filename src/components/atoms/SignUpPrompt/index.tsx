@@ -26,7 +26,7 @@ export default function SignUpPrompt({ message, onAction }: Props) {
     <div className={styles.container}>
       <p className={styles.message}>{message}</p>
       <Button onClick={handleClick}>
-        {isLoggedIn ? "Go Premium \u2014 $10/mo" : "Sign up for $10/mo"}
+        {isLoggedIn ? "Go Premium \u2014 €10/mo" : "Sign up for €10/mo"}
       </Button>
     </div>
   );

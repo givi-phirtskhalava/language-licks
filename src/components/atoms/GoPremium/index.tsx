@@ -2,10 +2,20 @@
 
 import { useRouter } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faCheck } from "@fortawesome/free-solid-svg-icons";
 import Button from "@atoms/Button";
 import useAuth from "@lib/hooks/useAuth";
 import usePaddle from "@lib/hooks/usePaddle";
 import styles from "./GoPremium.module.css";
+
+const FEATURES = [
+  "All lessons in every language",
+  "Spaced repetition reviews for all lessons",
+  "Speaking practice with voice recognition",
+  "Audio tests and review mode",
+  "Progress saved to your account",
+];
 
 export default function GoPremium() {
   const router = useRouter();
@@ -26,17 +36,27 @@ export default function GoPremium() {
 
   return (
     <div className={styles.container}>
-      <p className={styles.title}>Get full access</p>
-      <p className={styles.price}>$10 / month</p>
+      <div className={styles.header}>
+        <p className={styles.title}>Get full access</p>
+        <p className={styles.price}>
+          <span className={styles.priceAmount}>€10</span>
+          <span className={styles.priceUnit}>/ month</span>
+        </p>
+      </div>
+
       <ul className={styles.features}>
-        <li>All lessons in every language</li>
-        <li>Spaced repetition reviews for all lessons</li>
-        <li>Speaking practice with voice recognition</li>
-        <li>Audio tests and review mode</li>
-        <li>Progress saved to your account</li>
+        {FEATURES.map((feature) => (
+          <li key={feature} className={styles.feature}>
+            <span className={styles.checkIcon}>
+              <FontAwesomeIcon icon={faCheck} />
+            </span>
+            <span>{feature}</span>
+          </li>
+        ))}
       </ul>
+
       <Button onClick={handleSubscribe}>
-        {isLoggedIn ? "Subscribe" : "Sign up \u0026 subscribe"}
+        {isLoggedIn ? "Subscribe" : "Sign up & subscribe"}
       </Button>
     </div>
   );

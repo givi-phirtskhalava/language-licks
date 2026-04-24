@@ -160,7 +160,10 @@ export default function Reviews() {
   return (
     <div className={styles.container}>
       <section>
-        <h2 className={styles.sectionTitle}>Ready for review</h2>
+        <div className={styles.sectionHeader}>
+          <h2 className={styles.sectionTitle}>Ready for review</h2>
+          <span className={styles.countBadge}>{ready.length}</span>
+        </div>
         {ready.length > 0 && (
           <div className={styles.list}>
             {ready.map(({ id, translation, level }) => (
@@ -226,7 +229,10 @@ export default function Reviews() {
       )}
 
       <section>
-        <h2 className={styles.sectionTitle}>Coming Up</h2>
+        <div className={styles.sectionHeader}>
+          <h2 className={styles.sectionTitle}>Coming Up</h2>
+          <span className={styles.countBadge}>{comingUp.length}</span>
+        </div>
         {comingUp.length > 0 && (
           <div className={styles.list}>
             {comingUp.map(({ id, translation, daysLeft, level }) => (

@@ -13,11 +13,31 @@
   margin-bottom: 0.75em;
 }
 
+.sectionHeader .sectionTitle {
+  margin-bottom: 0;
+}
+
 .sectionTitle {
   font-size: 1em;
   font-weight: 700;
   color: var(--text);
   margin-bottom: 0.75em;
+}
+
+.countBadge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 2em;
+  height: 2em;
+  min-height: 2em;
+  padding: 0 0.375em;
+  border-radius: 100em;
+  background: var(--accent);
+  color: var(--bg);
+  font-size: 0.75em;
+  font-weight: 700;
+  line-height: 1;
 }
 
 .infoBtn {
@@ -152,9 +172,8 @@
   margin-top: 0.25em;
 }
 
-
 .infoBox {
-  border: 0.125em solid var(--text);
+  border: 1px solid var(--border);
   border-radius: 0.75em;
   padding: 1.25em;
 }

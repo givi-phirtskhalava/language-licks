@@ -251,7 +251,7 @@ export default function ProfilePage() {
           <div className={styles.profileInfo}>
             <p className={styles.email}>{user?.email}</p>
             {isPremium && <span className={styles.badge}>Paid Member</span>}
-            {!isPremium && <p className={styles.plan}>Free</p>}
+            {!isPremium && <p className={styles.plan}>Free Account</p>}
           </div>
         </div>
 
