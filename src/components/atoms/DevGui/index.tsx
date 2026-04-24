@@ -34,6 +34,9 @@ export default function DevGui() {
 
     const gui = new GUI({ title: "Dev", width: 240 });
     gui.domElement.style.setProperty("z-index", "9999");
+    gui.domElement.style.setProperty("top", "auto");
+    gui.domElement.style.setProperty("bottom", "0");
+    gui.domElement.style.setProperty("right", "0");
 
     const actions = {
       togglePremium: async function togglePremium() {

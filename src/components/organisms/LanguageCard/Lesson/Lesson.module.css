@@ -22,17 +22,18 @@
 .grammarItem {
   border-radius: 0.5em;
   background: var(--bg);
-  padding: 0.75em 1em;
+  padding: 1em 1.125em;
 }
 
 .grammarLabel {
   font-weight: 600;
   color: var(--accent);
-  font-size: 0.875em;
+  font-size: 1em;
 }
 
 .grammarExplanation {
   color: var(--text);
-  font-size: 0.875em;
-  margin-top: 0.125em;
+  font-size: 1em;
+  line-height: 1.5;
+  margin-top: 0.5em;
 }

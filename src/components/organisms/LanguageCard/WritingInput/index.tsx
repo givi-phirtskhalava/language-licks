@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPen } from "@fortawesome/free-solid-svg-icons";
 import CorrectionDisplay from "@/components/atoms/CorrectionDisplay";
@@ -38,12 +38,13 @@ export default function WritingInput({
   isPass,
   onlyAccentIssues,
   hideCorrectionsOnAccentHint,
-  placeholder = "Type the sentence here\u2026",
+  placeholder = "Type the sentence here…",
   disabled,
   children,
 }: Props) {
   const [input, setInput] = useState("");
-  const inputRef = useRef<HTMLInputElement>(null);
+  const [pendingCaret, setPendingCaret] = useState<number | null>(null);
+  const inputRef = useRef<HTMLTextAreaElement>(null);
   const { language } = useLanguage();
   const accents = ACCENT_CHARS[language] ?? [];
 
@@ -55,11 +56,38 @@ export default function WritingInput({
     inputRef.current?.focus();
   }, [disabled]);
 
-  function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
+  useLayoutEffect(() => {
+    const el = inputRef.current;
+    if (!el) return;
+    el.style.height = "auto";
+    el.style.height = `${el.scrollHeight}px`;
+  }, [input]);
+
+  useLayoutEffect(() => {
+    if (pendingCaret === null) return;
+    const el = inputRef.current;
+    if (!el) return;
+    el.focus();
+    el.setSelectionRange(pendingCaret, pendingCaret);
+    setPendingCaret(null);
+  }, [pendingCaret, input]);
+
+  function submitInput() {
     if (!input.trim()) return;
     const keepInput = onSubmit(input);
     if (!keepInput) setInput("");
+  }
+
+  function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    submitInput();
+  }
+
+  function handleKeyDown(e: React.KeyboardEvent<HTMLTextAreaElement>) {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      submitInput();
+    }
   }
 
   function insertAccent(char: string) {
@@ -70,11 +98,7 @@ export default function WritingInput({
     const next = el.value.slice(0, start) + char + el.value.slice(end);
     setInput(next);
     onInputChange?.();
-    requestAnimationFrame(() => {
-      el.focus();
-      const pos = start + char.length;
-      el.setSelectionRange(pos, pos);
-    });
+    setPendingCaret(start + char.length);
   }
 
   const inputStateClass =
@@ -89,15 +113,15 @@ export default function WritingInput({
   return (
     <>
       <form onSubmit={handleSubmit} className={styles.form}>
-        <input
+        <textarea
           ref={inputRef}
-          type="text"
+          rows={1}
           value={input}
           onChange={(e) => {
             setInput(e.target.value);
             onInputChange?.();
           }}
-          onPaste={(e) => e.preventDefault()}
+          onKeyDown={handleKeyDown}
           placeholder={placeholder}
           className={`${styles.input} ${inputStateClass}`}
           autoComplete="off"

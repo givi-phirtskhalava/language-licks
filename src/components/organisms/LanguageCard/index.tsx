@@ -124,7 +124,7 @@ export default function LanguageCard({
       <div className={styles.wrapper}>
         <div className={styles.card}>
           <div className={styles.loading}>
-            <Spinner color="var(--primary)" />
+            <Spinner color="var(--accent)" />
           </div>
         </div>
       </div>

@@ -18,14 +18,14 @@
 
 .header {
   background: var(--accent);
-  padding: 1em 0.5em;
+  padding: 0.5em;
   display: flex;
   align-items: center;
   justify-content: space-between;
 }
 
 .headerTitle {
-  color: var(--accent);
+  color: var(--button-bg);
   font-size: 0.75em;
   font-weight: 600;
   text-transform: uppercase;
@@ -33,33 +33,32 @@
 }
 
 .headerCount {
-  color: var(--accent);
+  color: var(--button-bg);
   font-size: 0.75em;
 }
 
 .circleBtn {
-  width: 2em;
-  height: 2em;
+  width: 3em;
+  height: 3em;
   border-radius: 50%;
   background-color: transparent;
   color: var(--button-bg);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 0.75em;
+  font-size: 1em;
   flex-shrink: 0;
-  transition: opacity 0.2s ease;
+  transition: background 0.2s ease;
 }
 
 .circleBtn:hover {
-  opacity: 0.5;
+  background-color: rgba(255, 255, 255, 0.15);
 }
 
 .circlePlaceholder {
-  width: 2em;
-  height: 2em;
+  width: 3em;
+  height: 3em;
   flex-shrink: 0;
-  font-size: 0.75em;
 }
 
 .loading {

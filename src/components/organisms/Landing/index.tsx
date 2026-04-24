@@ -72,10 +72,10 @@ export default function Landing() {
         </h1>
 
         <p className={style.subtitle}>
-          LanguageLicks is a language learning tool inspired by guitar playing.
-          We'll help you build a repertoire of sentences through spaced
-          repetition so that you can unlock your ability to jam freely in
-          conversations. It takes muscle memory to improvise.
+          LanguageLicks is a learning tool inspired by music. We'll help you
+          build a repertoire of sentences, just like guitar players learn licks,
+          so that you can unlock your ability to jam freely in conversations. It
+          takes muscle memory to improvise.
         </p>
       </section>
 
@@ -100,7 +100,7 @@ export default function Landing() {
 
         <div className={style.ctaButton}>
           <Button
-            theme="secondary"
+            theme="primary"
             onClick={() => {
               startNavigationProgressBar();
               router.push("/lessons");
@@ -114,6 +114,10 @@ export default function Landing() {
       </section>
 
       <section className={style.more}>
+        <p className={style.subtitle}>
+          Our four-step active recall and space repetition system:
+        </p>
+
         <div className={style.steps}>
           {FEATURES.map((f) => {
             const [num, ...rest] = f.title.split(". ");
