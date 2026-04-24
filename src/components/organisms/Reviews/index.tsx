@@ -205,7 +205,9 @@ export default function Reviews() {
                   className={`${styles.itemBtn} ${styles.problematic}`}
                   onClick={() => setRelearningId(id)}
                 >
-                  <span className={`${styles.number} ${styles.numberProblematic}`}>
+                  <span
+                    className={`${styles.number} ${styles.numberProblematic}`}
+                  >
                     <FontAwesomeIcon icon={faTriangleExclamation} />
                   </span>
                   <div className={styles.itemContent}>
@@ -291,8 +293,8 @@ export default function Reviews() {
           <span className={styles.infoBoxTitle}>How reviews work</span>
         </div>
         <p className={styles.infoBoxText}>
-          Reviews use spaced repetition to help you remember what you{"\u2019"}ve
-          learned. After completing a lesson, it moves here for review.
+          Reviews use spaced repetition to help you remember what you{"\u2019"}
+          ve learned. After completing a lesson, it moves here for review.
         </p>
         <p className={styles.infoBoxText}>
           Each time you pass a review, the interval before the next one doubles.

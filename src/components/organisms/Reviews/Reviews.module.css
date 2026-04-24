@@ -176,6 +176,7 @@
   border: 1px solid var(--border);
   border-radius: 0.75em;
   padding: 1.25em;
+  background-color: var(--button-bg);
 }
 
 .infoBoxHeader {

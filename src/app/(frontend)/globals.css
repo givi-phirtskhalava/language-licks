@@ -7,10 +7,14 @@
   --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
 
   --accent: #3c3880;
+  --accent: #5d59a3;
   --bg: #fafaf7;
+  --bg: rgb(245, 245, 245);
+  /* --bg: #ffffff; */
   --text: #000000;
   --text-light: #8a857d;
-  --button-bg: #ffffff;
+  --button-bg: rgb(255, 255, 255);
+  --button-bg-2: rgb(240, 240, 240);
   --border: #d8d4cb;
 
   --header-height: 4em;

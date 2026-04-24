@@ -18,7 +18,7 @@
   display: flex;
   gap: 0.25em;
   margin-bottom: 0.5em;
-  background: var(--border);
+  background: var(--button-bg);
   padding: 0.25em;
   border-radius: 0.5em;
 }
@@ -41,7 +41,7 @@
 }
 
 .levelTabActive {
-  background: var(--button-bg);
+  background: var(--button-bg-2);
   color: var(--text);
   box-shadow: 0 0.0625em 0.1875em rgba(0, 0, 0, 0.05);
 }
