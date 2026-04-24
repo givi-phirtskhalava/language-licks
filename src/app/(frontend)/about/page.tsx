@@ -131,7 +131,7 @@ const ITEMS = [
   },
 ];
 
-export default function FaqPage() {
+export default function AboutPage() {
   return (
     <main className={styles.container}>
       <div className={styles.content}>

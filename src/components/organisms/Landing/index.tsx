@@ -67,7 +67,7 @@ export default function Landing() {
         <h1 className={style.title}>
           Learn a new language,
           <br />
-          just one <span className={style.titleItalic}>sentence</span> at a
+          just <span className={style.titleItalic}>one sentence</span> at a
           time.
         </h1>
 
@@ -115,7 +115,7 @@ export default function Landing() {
 
       <section className={style.more}>
         <p className={style.subtitle}>
-          Our four-step active recall and space repetition system:
+          A four-step active recall and space repetition system.
         </p>
 
         <div className={style.steps}>
@@ -137,7 +137,7 @@ export default function Landing() {
             theme="secondary"
             onClick={() => {
               startNavigationProgressBar();
-              router.push("/faq");
+              router.push("/about");
             }}
           >
             Find out more

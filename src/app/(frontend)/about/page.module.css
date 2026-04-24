@@ -7,7 +7,6 @@
 
 .content {
   width: 100%;
-  max-width: 56em;
 }
 
 .title {
@@ -20,7 +19,7 @@
 }
 
 .list {
-  max-width: 40em;
+  max-width: 44em;
   margin: 0 auto;
   display: flex;
   flex-direction: column;
@@ -37,7 +36,7 @@
 
 .question {
   font-family: var(--font-serif);
-  font-size: 1.375em;
+  font-size: 1.75em;
   font-weight: 500;
   color: var(--text);
   letter-spacing: -0.01em;
@@ -48,7 +47,6 @@
   line-height: 1.7;
   color: var(--text);
   margin-top: 1em;
-  max-width: 42em;
 }
 
 .link {

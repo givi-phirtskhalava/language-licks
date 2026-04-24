@@ -29,7 +29,7 @@
   border-radius: 0.375em;
   font-size: 0.8125em;
   font-weight: 600;
-  color: var(--text);
+  color: var(--text-light);
   background: transparent;
   transition:
     background 0.15s,
@@ -155,16 +155,33 @@
   width: 1.75em;
   height: 1.75em;
   border-radius: 50%;
-  color: var(--text);
-  background: var(--bg);
-  font-size: 0.75em;
+  color: var(--text-light);
+  background: transparent;
+  font-size: 1em;
   display: flex;
   align-items: center;
   justify-content: center;
+  transition:
+    color 0.2s,
+    background 0.2s;
 }
 
 .gearBtn:hover {
-  opacity: 0.5;
+  color: var(--accent);
+  background: var(--bg);
+}
+
+.progressBadge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.125em 0.5em;
+  border-radius: 0.25em;
+  font-size: 0.75em;
+  font-weight: 700;
+  color: var(--text-light);
+  background: var(--bg);
+  border: 0.0625em solid var(--border);
 }
 
 .numberCompleted {

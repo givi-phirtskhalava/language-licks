@@ -145,10 +145,6 @@ export default function Lessons() {
                     <div className={styles.itemContent}>
                       <p className={styles.sentence}>{lesson.sentence}</p>
 
-                      {p && !p.completed && (
-                        <p className={styles.tag}>In progress</p>
-                      )}
-
                       {retired && (
                         <p className={styles.tag}>
                           {"Mastered \u2014 tap to review"}
@@ -160,6 +156,10 @@ export default function Lessons() {
                   <div className={styles.statusRow}>
                     {!isPremium && lesson.isFree && (
                       <span className={styles.freeBadge}>Free</span>
+                    )}
+
+                    {p && !p.completed && (
+                      <span className={styles.progressBadge}>In progress</span>
                     )}
 
                     {completed && <MasteryBar level={level} />}

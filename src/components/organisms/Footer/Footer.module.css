@@ -15,8 +15,9 @@
 }
 
 .link {
+  font-family: var(--font-mono);
   font-size: 0.8125em;
-  color: var(--text);
+  color: var(--text-light);
   text-decoration: none;
   transition: color 0.2s;
 }

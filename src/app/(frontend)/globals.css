@@ -4,10 +4,12 @@
     Helvetica, Arial, sans-serif;
   --font-logo: "Google Sans Flex", sans-serif;
   --font-serif: Georgia, "Times New Roman", serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
 
   --accent: #3c3880;
   --bg: #fafaf7;
   --text: #000000;
+  --text-light: #8a857d;
   --button-bg: #ffffff;
   --border: #d8d4cb;
 

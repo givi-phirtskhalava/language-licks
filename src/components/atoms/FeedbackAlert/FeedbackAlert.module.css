@@ -1,10 +1,30 @@
 .alert {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75em;
   border-radius: 0.5em;
-  padding: 0.75em 1em;
+  padding: 1em;
   font-size: 0.875em;
   text-align: center;
   font-weight: 500;
   margin-top: 0.75em;
+}
+
+.checkCircle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.5em;
+  height: 2.5em;
+  border-radius: 50%;
+  background: var(--accent);
+  color: var(--button-bg);
+  font-size: 1.25em;
+}
+
+.text {
+  line-height: 1.5;
 }
 
 .correct {

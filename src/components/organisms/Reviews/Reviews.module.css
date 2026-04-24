@@ -168,17 +168,17 @@
 
 .infoBoxIcon {
   color: var(--text);
-  font-size: 0.875em;
+  font-size: 1em;
 }
 
 .infoBoxTitle {
-  font-size: 0.875em;
+  font-size: 1em;
   font-weight: 600;
   color: var(--text);
 }
 
 .infoBoxText {
-  font-size: 0.8125em;
+  font-size: 1em;
   color: var(--text);
   line-height: 1.5;
   margin-bottom: 0.5em;
