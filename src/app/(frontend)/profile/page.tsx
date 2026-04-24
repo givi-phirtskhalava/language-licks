@@ -336,7 +336,10 @@ export default function ProfilePage() {
         <section className={styles.group}>
           <p className={styles.dangerTitle}>Danger zone</p>
           <div className={styles.dangerSection}>
-            <Button theme="secondary" onClick={() => setModal("delete-account")}>
+            <Button
+              theme="secondary"
+              onClick={() => setModal("delete-account")}
+            >
               Delete account
             </Button>
           </div>
