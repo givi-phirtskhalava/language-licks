@@ -5,7 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import LanguageCard from "@/components/organisms/LanguageCard";
 import useLanguage from "@lib/useLanguage";
 import { LANGUAGES, TLanguageId } from "@lib/projectConfig";
-import styles from "../../page.module.css";
+import styles from "../../Lessons.module.css";
 
 export default function LessonPage() {
   const params = useParams<{ language: string; id: string }>();
@@ -31,7 +31,7 @@ export default function LessonPage() {
   }
 
   return (
-    <main className={styles.main}>
+    <main className={styles.container}>
       <LanguageCard lessonId={lessonId} onBack={handleBack} />
     </main>
   );

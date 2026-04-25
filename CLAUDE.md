@@ -71,9 +71,10 @@
 
 ## Code Formatting
 
-- If consecutive elements/blocks each fit on one line, don't add line breaks between them
-- If any element/block spans multiple lines, add line breaks before and after it
-- Add line breaks around multi-line JSX elements to separate them from single-line elements
+- Applies to ALL code (variable declarations, statements, expressions, JSX), not just JSX
+- If consecutive elements/blocks/statements each fit on one line, don't add line breaks between them
+- If any element/block/statement spans multiple lines, add a blank line before and after it to separate it from neighbors
+- Example: three single-line `const` declarations stack with no breaks; but a multi-line chained `.filter().map().sort()` declaration needs a blank line before and after it, even when the next line is another `const`
 
 ## Database
 

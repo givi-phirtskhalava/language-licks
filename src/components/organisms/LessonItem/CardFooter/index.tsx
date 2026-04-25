@@ -1,9 +1,9 @@
 "use client";
 
 import { Children, ReactNode } from "react";
-import MasteryBar from "@/components/atoms/MasteryBar";
-import InfoButton from "@/components/atoms/InfoButton";
-import Tag from "@/components/atoms/Tag";
+import MasteryBar from "../MasteryBar";
+import InfoButton from "../InfoButton";
+import Tag from "../Tag";
 import style from "./CardFooter.module.css";
 
 interface Props {

@@ -1,9 +1,13 @@
 .container {
   width: 100%;
   max-width: 40em;
-  display: flex;
   flex-direction: column;
   gap: 2em;
+  margin: 0 auto;
+  display: flex;
+  min-height: calc(100svh - var(--header-height) - var(--footer-height));
+  align-items: flex-start;
+  padding: 1em;
 }
 
 .stickyHeader {

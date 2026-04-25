@@ -67,6 +67,34 @@ export function getMasteryLevel(p: ILessonProgress | null): number {
   );
 }
 
+export type TReviewBucket = "ready" | "comingUp" | "problematic" | null;
+
+export function getReviewBucket(
+  p: ILessonProgress | null | undefined,
+  pausedAt: string | null,
+  today: string
+): TReviewBucket {
+  if (!p || !p.completed || p.retired) return null;
+  const passCount = p.reviewPassCount ?? 0;
+  const failCount = p.reviewFailCount ?? 0;
+  const consec = p.consecutiveFails ?? 0;
+  const isProblematic =
+    consec >= 2 || (failCount > passCount && passCount + failCount >= 3);
+  if (isProblematic) return "problematic";
+  if (p.nextReview && !pausedAt && p.nextReview <= today) return "ready";
+  if (p.nextReview) return "comingUp";
+  return null;
+}
+
+export function getDaysUntilReview(nextReview: string, today: string): number {
+  const nextReviewKey = String(nextReview).slice(0, 10);
+  const todayDate = new Date(today + "T00:00:00");
+  const reviewDate = new Date(nextReviewKey + "T00:00:00");
+  const diff = reviewDate.getTime() - todayDate.getTime();
+  if (!Number.isFinite(diff)) return 1;
+  return Math.max(1, Math.round(diff / (24 * 60 * 60 * 1000)));
+}
+
 export function getTodayKey(): string {
   const d = new Date();
   const yy = String(d.getFullYear()).slice(2);

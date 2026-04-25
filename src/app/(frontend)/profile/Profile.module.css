@@ -4,6 +4,8 @@
   display: flex;
   flex-direction: column;
   gap: 2em;
+  min-height: calc(100svh - var(--header-height) - var(--footer-height));
+  margin: 0 auto;
 }
 
 .profileHeader {
