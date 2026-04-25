@@ -59,6 +59,10 @@ export const Lessons: CollectionConfig = {
       required: true,
     },
     {
+      name: "context",
+      type: "textarea",
+    },
+    {
       name: "audio",
       type: "text",
       required: true,

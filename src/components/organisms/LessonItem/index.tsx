@@ -121,10 +121,29 @@ export default function LessonItem({
 
   if (!bucket) return null;
 
+  const wrappedSettingsClick = onSettingsClick
+    ? (e: React.MouseEvent) => {
+        e.stopPropagation();
+        onSettingsClick();
+      }
+    : undefined;
+
   if (bucket === "ready") {
     return (
-      <div className={classNames(style.item, style.ready)}>
-        <button className={style.itemBtn} onClick={onClick}>
+      <div
+        className={classNames(style.item, style.ready)}
+        role="button"
+        tabIndex={0}
+        onClick={onClick}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            onClick();
+          }
+        }}
+        aria-label={`Open review: ${lesson.translation}`}
+      >
+        <div className={style.itemBtn}>
           <span className={classNames(style.number, style.numberReady)}>
             <FontAwesomeIcon icon={faSparkles} />
           </span>
@@ -132,11 +151,11 @@ export default function LessonItem({
           <div className={style.itemContent}>
             <p className={style.sentence}>{lesson.translation}</p>
           </div>
-        </button>
+        </div>
 
         <CardFooter
           level={level}
-          onInfoClick={onSettingsClick}
+          onInfoClick={wrappedSettingsClick}
           infoAriaLabel="Lesson info and stats"
         />
       </div>
@@ -145,8 +164,20 @@ export default function LessonItem({
 
   if (bucket === "problematic") {
     return (
-      <div className={classNames(style.item, style.problematic)}>
-        <button className={style.itemBtn} onClick={onClick}>
+      <div
+        className={classNames(style.item, style.problematic)}
+        role="button"
+        tabIndex={0}
+        onClick={onClick}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            onClick();
+          }
+        }}
+        aria-label={`Open review: ${lesson.translation}`}
+      >
+        <div className={style.itemBtn}>
           <span className={classNames(style.number, style.numberProblematic)}>
             <FontAwesomeIcon icon={faTriangleExclamation} />
           </span>
@@ -154,12 +185,12 @@ export default function LessonItem({
           <div className={style.itemContent}>
             <p className={style.sentence}>{lesson.translation}</p>
           </div>
-        </button>
+        </div>
 
         <CardFooter
           level={level}
           tag="Go back to learn"
-          onInfoClick={onSettingsClick}
+          onInfoClick={wrappedSettingsClick}
           infoAriaLabel="Lesson info and stats"
         />
       </div>
@@ -181,8 +212,20 @@ export default function LessonItem({
   }
 
   return (
-    <div className={classNames(style.item, style.comingUp)}>
-      <button className={style.itemBtn} onClick={handleComingUpClick}>
+    <div
+      className={classNames(style.item, style.comingUp)}
+      role="button"
+      tabIndex={0}
+      onClick={handleComingUpClick}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          handleComingUpClick();
+        }
+      }}
+      aria-label={`Review: ${lesson.translation}`}
+    >
+      <div className={style.itemBtn}>
         <span className={classNames(style.number, style.numberComingUp)}>
           <FontAwesomeIcon icon={faClock} />
         </span>
@@ -190,12 +233,12 @@ export default function LessonItem({
         <div className={style.itemContent}>
           <p className={style.sentence}>{lesson.translation}</p>
         </div>
-      </button>
+      </div>
 
       <CardFooter
         level={level}
         tag={tag}
-        onInfoClick={onSettingsClick}
+        onInfoClick={wrappedSettingsClick}
         infoAriaLabel="Lesson info and stats"
       />
     </div>

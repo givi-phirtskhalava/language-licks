@@ -54,6 +54,7 @@ export async function GET(
     id: doc.id,
     sentence: doc.sentence,
     translation: doc.translation,
+    context: doc.context ?? null,
     audio: doc.audio,
     grammar: doc.grammar ?? [],
     liaisonTips: doc.liaisonTips ?? null,

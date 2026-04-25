@@ -4,6 +4,7 @@ import config from "@payload-config";
 interface ISeedLesson {
   sentence: string;
   translation: string;
+  context?: string;
   audio: string;
   cefr?: "A1" | "A2" | "B1" | "B2" | "C1" | "C2";
   grammar: { label: string; explanation: string }[];
@@ -109,6 +110,8 @@ const FRENCH_LESSONS: ISeedLesson[] = [
   {
     sentence: "Nos amis les animaux ne sont pas admis dans ce magasin.",
     translation: "Our animal friends are not allowed in this store.",
+    context:
+      "Found outside a supermarket in Paris, a friendly sign telling customers that pets are not allowed in the store.",
     audio: "/sentence.mp3",
     grammar: [
       {
@@ -632,6 +635,7 @@ async function seedLessons(payload: Awaited<ReturnType<typeof getPayload>>) {
       language: lesson.language,
       sentence: lesson.sentence,
       translation: lesson.translation,
+      context: lesson.context,
       audio: lesson.audio,
       cefr: lesson.cefr ?? "A1",
       grammar: lesson.grammar,

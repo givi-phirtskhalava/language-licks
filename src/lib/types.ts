@@ -15,6 +15,7 @@ export interface ILesson {
   id: number;
   sentence: string;
   translation: string;
+  context?: string;
   audio: string;
   grammar: { label: string; explanation: string }[];
   liaisonTips?: { phrase: string; explanation: string }[];

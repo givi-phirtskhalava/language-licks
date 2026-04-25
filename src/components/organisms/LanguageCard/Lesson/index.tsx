@@ -2,6 +2,10 @@
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faChevronRight } from "@fortawesome/free-solid-svg-icons";
+import {
+  faCircleInfo,
+  faThoughtBubble,
+} from "@fortawesome/pro-regular-svg-icons";
 import SentenceDisplay from "@/components/organisms/LanguageCard/SentenceDisplay";
 import Button from "@atoms/Button";
 import { ILesson } from "@lib/types";
@@ -16,6 +20,13 @@ export default function LessonPhase({ lesson, onReady }: Props) {
   return (
     <div className={styles.body}>
       <SentenceDisplay lesson={lesson} />
+
+      {lesson.context && (
+        <p className={styles.context}>
+          <FontAwesomeIcon icon={faCircleInfo} className={styles.contextIcon} />
+          {lesson.context}
+        </p>
+      )}
 
       <div>
         <p className={styles.sectionLabel}>Grammar Breakdown</p>
@@ -45,7 +56,10 @@ export default function LessonPhase({ lesson, onReady }: Props) {
 
       <Button onClick={onReady}>
         Writing Practice
-        <FontAwesomeIcon icon={faChevronRight} style={{ marginLeft: "0.5em" }} />
+        <FontAwesomeIcon
+          icon={faChevronRight}
+          style={{ marginLeft: "0.5em" }}
+        />
       </Button>
     </div>
   );

@@ -37,3 +37,16 @@
   line-height: 1.5;
   margin-top: 0.5em;
 }
+
+.context {
+  text-align: center;
+  color: var(--text);
+  font-size: 0.875em;
+  line-height: 1.5;
+  opacity: 0.75;
+}
+
+.contextIcon {
+  margin-right: 0.5em;
+  color: var(--accent);
+}

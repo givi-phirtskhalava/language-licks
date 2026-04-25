@@ -174,6 +174,7 @@ export interface Lesson {
   language: 'french' | 'italian';
   sentence: string;
   translation: string;
+  context?: string | null;
   audio: string;
   order: number;
   isFree?: boolean | null;
@@ -346,6 +347,7 @@ export interface LessonsSelect<T extends boolean = true> {
   language?: T;
   sentence?: T;
   translation?: T;
+  context?: T;
   audio?: T;
   order?: T;
   isFree?: T;
