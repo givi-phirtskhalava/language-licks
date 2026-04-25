@@ -1,0 +1,46 @@
+.container {
+  max-width: 36em;
+  width: 100%;
+  margin: 0 auto;
+  min-height: calc(100svh - var(--header-height) - var(--footer-height));
+  padding: 2em 1em;
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5em;
+}
+
+.summary {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.5em;
+  flex-wrap: wrap;
+}
+
+.plan {
+  font-size: 1.125em;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.price {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.25em;
+}
+
+.priceAmount {
+  font-size: 1.75em;
+  font-weight: 700;
+  color: var(--accent);
+  letter-spacing: -0.02em;
+}
+
+.priceUnit {
+  font-size: 0.875em;
+  color: var(--text-light);
+  font-weight: 500;
+}

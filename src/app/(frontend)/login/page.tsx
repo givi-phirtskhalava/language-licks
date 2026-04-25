@@ -7,7 +7,6 @@ import { z } from "zod";
 import Button from "@atoms/Button";
 import Turnstile from "@atoms/Turnstile";
 import useLanguage from "@lib/useLanguage";
-import usePaddle from "@lib/hooks/usePaddle";
 import { syncAndClear } from "@lib/useProgress";
 import style from "./Login.module.css";
 
@@ -19,7 +18,6 @@ export default function LoginPage() {
   const router = useRouter();
   const queryClient = useQueryClient();
   const { language } = useLanguage();
-  const { openCheckout } = usePaddle();
 
   const [step, setStep] = useState<TStep>("email");
   const [email, setEmail] = useState("");
@@ -99,17 +97,7 @@ export default function LoginPage() {
       queryClient.invalidateQueries({ queryKey: ["auth", "me"] });
 
       if (checkout && data.user?.id) {
-        openCheckout(
-          email,
-          data.user.id,
-          () => {
-            queryClient.invalidateQueries({ queryKey: ["auth", "me"] });
-            router.push("/lessons");
-          },
-          () => {
-            router.push("/lessons");
-          }
-        );
+        router.push("/checkout");
         return;
       }
 

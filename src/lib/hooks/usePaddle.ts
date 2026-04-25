@@ -1,23 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import {
-  initializePaddle,
-  type Paddle,
-  CheckoutEventNames,
-} from "@paddle/paddle-js";
-
-async function waitForPremium(maxAttempts = 10, intervalMs = 2000): Promise<boolean> {
-  for (let i = 0; i < maxAttempts; i++) {
-    const res = await fetch("/api/auth/me");
-    if (res.ok) {
-      const data = await res.json();
-      if (data.user?.isPremium) return true;
-    }
-    await new Promise((r) => setTimeout(r, intervalMs));
-  }
-  return false;
-}
+import { initializePaddle, type Paddle } from "@paddle/paddle-js";
 
 export default function usePaddle() {
   const [paddle, setPaddle] = useState<Paddle | undefined>();
@@ -37,34 +21,5 @@ export default function usePaddle() {
     });
   }, []);
 
-  function openCheckout(
-    email: string,
-    userId: number,
-    onComplete?: () => void,
-    onClose?: () => void
-  ) {
-    if (!paddle) return;
-
-    paddle.Checkout.open({
-      items: [{ priceId: process.env.NEXT_PUBLIC_PADDLE_PRICE_ID! }],
-      customer: { email },
-      customData: { userId: String(userId) },
-      settings: { displayMode: "overlay" },
-    });
-
-    paddle.Update({
-      eventCallback: (event) => {
-        if (event.name === CheckoutEventNames.CHECKOUT_COMPLETED) {
-          waitForPremium().then(() => {
-            onComplete?.();
-          });
-        }
-        if (event.name === CheckoutEventNames.CHECKOUT_CLOSED) {
-          onClose?.();
-        }
-      },
-    });
-  }
-
-  return { paddle, openCheckout };
+  return { paddle };
 }

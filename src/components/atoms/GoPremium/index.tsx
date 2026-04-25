@@ -1,12 +1,10 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useQueryClient } from "@tanstack/react-query";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCheck } from "@fortawesome/free-solid-svg-icons";
 import Button from "@atoms/Button";
 import useAuth from "@lib/hooks/useAuth";
-import usePaddle from "@lib/hooks/usePaddle";
 import styles from "./GoPremium.module.css";
 
 const FEATURES = [
@@ -19,19 +17,14 @@ const FEATURES = [
 
 export default function GoPremium() {
   const router = useRouter();
-  const { user, isLoggedIn } = useAuth();
-  const { openCheckout } = usePaddle();
-  const queryClient = useQueryClient();
+  const { isLoggedIn } = useAuth();
 
   function handleSubscribe() {
     if (!isLoggedIn) {
       router.push("/login?checkout=true");
       return;
     }
-    if (!user) return;
-    openCheckout(user.email, user.id, () => {
-      queryClient.invalidateQueries({ queryKey: ["auth", "me"] });
-    });
+    router.push("/checkout");
   }
 
   return (
