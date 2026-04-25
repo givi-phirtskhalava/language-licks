@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { AnimatePresence } from "motion/react";
 import { useRouter } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
 import useAuth from "@lib/hooks/useAuth";
@@ -346,157 +347,159 @@ export default function ProfilePage() {
         </section>
       </div>
 
-      {modal === "change-email" && (
-        <Modal onClose={closeModal}>
-          <p className={styles.modalTitle}>Change email</p>
+      <AnimatePresence>
+        {modal === "change-email" && (
+          <Modal onClose={closeModal}>
+            <p className={styles.modalTitle}>Change email</p>
 
-          {emailStep === "email" && (
-            <form onSubmit={handleSendEmailCode} className={styles.modalForm}>
-              <p className={styles.modalText}>
-                Enter your new email address. We'll send a verification code to
-                confirm you own it.
-              </p>
-              <label htmlFor="new-email" className={styles.modalLabel}>
-                New email
-              </label>
-              <input
-                id="new-email"
-                type="email"
-                value={newEmail}
-                onChange={(e) => setNewEmail(e.target.value)}
-                placeholder="new@example.com"
-                className={styles.modalInput}
-                required
-                autoFocus
-              />
-              {emailError && <p className={styles.modalError}>{emailError}</p>}
-              <div className={styles.modalActions}>
-                <Button theme="secondary" onClick={closeModal}>
-                  Cancel
-                </Button>
-                <Button type="submit" loading={emailLoading}>
-                  Send code
-                </Button>
+            {emailStep === "email" && (
+              <form onSubmit={handleSendEmailCode} className={styles.modalForm}>
+                <p className={styles.modalText}>
+                  Enter your new email address. We'll send a verification code
+                  to confirm you own it.
+                </p>
+                <label htmlFor="new-email" className={styles.modalLabel}>
+                  New email
+                </label>
+                <input
+                  id="new-email"
+                  type="email"
+                  value={newEmail}
+                  onChange={(e) => setNewEmail(e.target.value)}
+                  placeholder="new@example.com"
+                  className={styles.modalInput}
+                  required
+                  autoFocus
+                />
+                {emailError && <p className={styles.modalError}>{emailError}</p>}
+                <div className={styles.modalActions}>
+                  <Button theme="secondary" onClick={closeModal}>
+                    Cancel
+                  </Button>
+                  <Button type="submit" loading={emailLoading}>
+                    Send code
+                  </Button>
+                </div>
+              </form>
+            )}
+
+            {emailStep === "code" && (
+              <form onSubmit={handleChangeEmail} className={styles.modalForm}>
+                <p className={styles.modalText}>
+                  Enter the 6-digit code sent to <strong>{newEmail}</strong>
+                </p>
+                <label htmlFor="email-code" className={styles.modalLabel}>
+                  Verification code
+                </label>
+                <input
+                  id="email-code"
+                  type="text"
+                  inputMode="numeric"
+                  value={emailCode}
+                  onChange={(e) => setEmailCode(e.target.value)}
+                  placeholder="000000"
+                  className={styles.modalInput}
+                  maxLength={6}
+                  required
+                  autoFocus
+                />
+                {emailError && <p className={styles.modalError}>{emailError}</p>}
+                <div className={styles.modalActions}>
+                  <Button theme="secondary" onClick={closeModal}>
+                    Cancel
+                  </Button>
+                  <Button type="submit" loading={emailLoading}>
+                    Confirm
+                  </Button>
+                </div>
+              </form>
+            )}
+          </Modal>
+        )}
+
+        {modal === "delete-account" && (
+          <Modal onClose={closeModal}>
+            <p className={styles.modalTitle}>Delete account</p>
+
+            {deleteStep === "send" && (
+              <div className={styles.modalForm}>
+                <p className={styles.modalText}>
+                  This will permanently delete your account and all progress. A
+                  verification code will be sent to{" "}
+                  <strong>{user?.email}</strong> to confirm.
+                </p>
+                {deleteError && (
+                  <p className={styles.modalError}>{deleteError}</p>
+                )}
+                <div className={styles.modalActions}>
+                  <Button theme="secondary" onClick={closeModal}>
+                    Cancel
+                  </Button>
+                  <Button
+                    theme="danger"
+                    loading={deleteLoading}
+                    onClick={handleSendDeleteCode}
+                  >
+                    Send code
+                  </Button>
+                </div>
               </div>
-            </form>
-          )}
+            )}
 
-          {emailStep === "code" && (
-            <form onSubmit={handleChangeEmail} className={styles.modalForm}>
-              <p className={styles.modalText}>
-                Enter the 6-digit code sent to <strong>{newEmail}</strong>
-              </p>
-              <label htmlFor="email-code" className={styles.modalLabel}>
-                Verification code
-              </label>
-              <input
-                id="email-code"
-                type="text"
-                inputMode="numeric"
-                value={emailCode}
-                onChange={(e) => setEmailCode(e.target.value)}
-                placeholder="000000"
-                className={styles.modalInput}
-                maxLength={6}
-                required
-                autoFocus
-              />
-              {emailError && <p className={styles.modalError}>{emailError}</p>}
-              <div className={styles.modalActions}>
-                <Button theme="secondary" onClick={closeModal}>
-                  Cancel
-                </Button>
-                <Button type="submit" loading={emailLoading}>
-                  Confirm
-                </Button>
-              </div>
-            </form>
-          )}
-        </Modal>
-      )}
-
-      {modal === "delete-account" && (
-        <Modal onClose={closeModal}>
-          <p className={styles.modalTitle}>Delete account</p>
-
-          {deleteStep === "send" && (
-            <div className={styles.modalForm}>
-              <p className={styles.modalText}>
-                This will permanently delete your account and all progress. A
-                verification code will be sent to <strong>{user?.email}</strong>{" "}
-                to confirm.
-              </p>
-              {deleteError && (
-                <p className={styles.modalError}>{deleteError}</p>
-              )}
-              <div className={styles.modalActions}>
-                <Button theme="secondary" onClick={closeModal}>
-                  Cancel
-                </Button>
-                <Button
-                  theme="danger"
-                  loading={deleteLoading}
-                  onClick={handleSendDeleteCode}
-                >
-                  Send code
-                </Button>
-              </div>
-            </div>
-          )}
-
-          {deleteStep === "confirm" && (
-            <form onSubmit={handleDeleteAccount} className={styles.modalForm}>
-              <p className={styles.modalText}>
-                Enter the code sent to <strong>{user?.email}</strong> and type{" "}
-                <strong>delete</strong> to confirm.
-              </p>
-              <label htmlFor="delete-code" className={styles.modalLabel}>
-                Verification code
-              </label>
-              <input
-                id="delete-code"
-                type="text"
-                inputMode="numeric"
-                value={deleteCode}
-                onChange={(e) => setDeleteCode(e.target.value)}
-                placeholder="000000"
-                className={styles.modalInput}
-                maxLength={6}
-                required
-                autoFocus
-              />
-              <label htmlFor="delete-confirm" className={styles.modalLabel}>
-                Type "delete" to confirm
-              </label>
-              <input
-                id="delete-confirm"
-                type="text"
-                value={deleteConfirmation}
-                onChange={(e) => setDeleteConfirmation(e.target.value)}
-                placeholder="delete"
-                className={styles.modalInput}
-                required
-              />
-              {deleteError && (
-                <p className={styles.modalError}>{deleteError}</p>
-              )}
-              <div className={styles.modalActions}>
-                <Button theme="secondary" onClick={closeModal}>
-                  Cancel
-                </Button>
-                <Button
-                  type="submit"
-                  theme="danger"
-                  loading={deleteLoading}
-                  disabled={deleteConfirmation.toLowerCase() !== "delete"}
-                >
-                  Delete account
-                </Button>
-              </div>
-            </form>
-          )}
-        </Modal>
-      )}
+            {deleteStep === "confirm" && (
+              <form onSubmit={handleDeleteAccount} className={styles.modalForm}>
+                <p className={styles.modalText}>
+                  Enter the code sent to <strong>{user?.email}</strong> and
+                  type <strong>delete</strong> to confirm.
+                </p>
+                <label htmlFor="delete-code" className={styles.modalLabel}>
+                  Verification code
+                </label>
+                <input
+                  id="delete-code"
+                  type="text"
+                  inputMode="numeric"
+                  value={deleteCode}
+                  onChange={(e) => setDeleteCode(e.target.value)}
+                  placeholder="000000"
+                  className={styles.modalInput}
+                  maxLength={6}
+                  required
+                  autoFocus
+                />
+                <label htmlFor="delete-confirm" className={styles.modalLabel}>
+                  Type "delete" to confirm
+                </label>
+                <input
+                  id="delete-confirm"
+                  type="text"
+                  value={deleteConfirmation}
+                  onChange={(e) => setDeleteConfirmation(e.target.value)}
+                  placeholder="delete"
+                  className={styles.modalInput}
+                  required
+                />
+                {deleteError && (
+                  <p className={styles.modalError}>{deleteError}</p>
+                )}
+                <div className={styles.modalActions}>
+                  <Button theme="secondary" onClick={closeModal}>
+                    Cancel
+                  </Button>
+                  <Button
+                    type="submit"
+                    theme="danger"
+                    loading={deleteLoading}
+                    disabled={deleteConfirmation.toLowerCase() !== "delete"}
+                  >
+                    Delete account
+                  </Button>
+                </div>
+              </form>
+            )}
+          </Modal>
+        )}
+      </AnimatePresence>
     </main>
   );
 }

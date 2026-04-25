@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { AnimatePresence, motion } from "motion/react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faChevronRight,
@@ -12,6 +13,7 @@ import Button from "@atoms/Button";
 import WritingInput from "@/components/organisms/LanguageCard/WritingInput";
 import useWritingCheck from "@/components/organisms/LanguageCard/hooks/useWritingCheck";
 import { ILesson } from "@lib/types";
+import { fadeTransition, fadeVariants } from "@lib/motionVariants";
 import styles from "./WritingPractice.module.css";
 
 interface Props {
@@ -87,17 +89,28 @@ export default function WritingPractice({
           onlyAccentIssues={writing.onlyAccentIssues}
           hideCorrectionsOnAccentHint
         >
-          {writing.result !== null && writing.isPass && (
-            <FeedbackAlert theme="correct">
-              <p>{"Correct! You\u2019re ready for the speaking practice."}</p>
+          <AnimatePresence>
+            {writing.result !== null && writing.isPass && (
+              <motion.div
+                key="correct"
+                variants={fadeVariants}
+                initial="initial"
+                animate="animate"
+                exit="exit"
+                transition={fadeTransition}
+              >
+                <FeedbackAlert theme="correct">
+                  <p>{"Correct! You\u2019re ready for the speaking practice."}</p>
 
-              <p>
-                {
-                  "If you\u2019re not feeling confident just yet, try writing it a few more times."
-                }
-              </p>
-            </FeedbackAlert>
-          )}
+                  <p>
+                    {
+                      "If you\u2019re not feeling confident just yet, try writing it a few more times."
+                    }
+                  </p>
+                </FeedbackAlert>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </WritingInput>
       </div>
 

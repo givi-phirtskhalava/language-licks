@@ -3,27 +3,20 @@
 import { ReactNode } from "react";
 import { motion } from "motion/react";
 import { fadeTransition, fadeVariants } from "@lib/motionVariants";
-import style from "./Modal.module.css";
 
 interface Props {
   children: ReactNode;
-  onClose: () => void;
 }
 
-export default function Modal({ children, onClose }: Props) {
+export default function Template({ children }: Props) {
   return (
     <motion.div
-      className={style.overlay}
-      onClick={onClose}
       variants={fadeVariants}
       initial="initial"
       animate="animate"
-      exit="exit"
       transition={fadeTransition}
     >
-      <div className={style.content} onClick={(e) => e.stopPropagation()}>
-        {children}
-      </div>
+      {children}
     </motion.div>
   );
 }

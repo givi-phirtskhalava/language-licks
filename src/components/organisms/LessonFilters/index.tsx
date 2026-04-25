@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { AnimatePresence } from "motion/react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSliders } from "@fortawesome/free-solid-svg-icons";
 import classNames from "classnames";
@@ -75,43 +76,45 @@ export default function LessonFilters({
         </div>
       )}
 
-      {isOpen && (
-        <Modal onClose={() => setIsOpen(false)}>
-          <div className={style.modalBody}>
-            <div className={style.modalHeader}>
-              <p className={style.modalTitle}>Filter lessons</p>
-              {hasSelection && (
-                <button className={style.clearBtn} onClick={clearAll}>
-                  Clear all
-                </button>
-              )}
+      <AnimatePresence>
+        {isOpen && (
+          <Modal onClose={() => setIsOpen(false)}>
+            <div className={style.modalBody}>
+              <div className={style.modalHeader}>
+                <p className={style.modalTitle}>Filter lessons</p>
+                {hasSelection && (
+                  <button className={style.clearBtn} onClick={clearAll}>
+                    Clear all
+                  </button>
+                )}
+              </div>
+
+              {(tagGroups ?? []).map((group) => (
+                <section key={group.id} className={style.group}>
+                  <p className={style.groupLabel}>{group.label}</p>
+                  <div className={style.groupChips}>
+                    {group.tags.map((tag) => (
+                      <FilterChip
+                        key={tag}
+                        label={tag}
+                        selected={selectedTags.includes(tag)}
+                        onClick={() => toggleTag(tag)}
+                      />
+                    ))}
+                  </div>
+                </section>
+              ))}
+
+              <button
+                className={style.doneBtn}
+                onClick={() => setIsOpen(false)}
+              >
+                Done
+              </button>
             </div>
-
-            {(tagGroups ?? []).map((group) => (
-              <section key={group.id} className={style.group}>
-                <p className={style.groupLabel}>{group.label}</p>
-                <div className={style.groupChips}>
-                  {group.tags.map((tag) => (
-                    <FilterChip
-                      key={tag}
-                      label={tag}
-                      selected={selectedTags.includes(tag)}
-                      onClick={() => toggleTag(tag)}
-                    />
-                  ))}
-                </div>
-              </section>
-            ))}
-
-            <button
-              className={style.doneBtn}
-              onClick={() => setIsOpen(false)}
-            >
-              Done
-            </button>
-          </div>
-        </Modal>
-      )}
+          </Modal>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

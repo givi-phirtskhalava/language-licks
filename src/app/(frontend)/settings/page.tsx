@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { AnimatePresence } from "motion/react";
 import { LANGUAGES, TLanguageId } from "@lib/projectConfig";
 import useLessons from "@lib/hooks/useLessons";
 import useLanguage from "@lib/useLanguage";
@@ -157,31 +158,33 @@ export default function SettingsPage() {
         </section>
       </div>
 
-      {showClearModal && (
-        <Modal onClose={closeClearModal}>
-          <p className={styles.modalTitle}>Clear {currentLabel} progress</p>
-          <div className={styles.modalForm}>
-            <p className={styles.modalText}>
-              This will permanently erase all your <strong>{currentLabel}</strong>{" "}
-              lesson progress and review schedules. Progress for other
-              languages will not be affected. This cannot be undone.
-            </p>
-            {clearError && <p className={styles.modalError}>{clearError}</p>}
-            <div className={styles.modalActions}>
-              <Button theme="secondary" onClick={closeClearModal}>
-                Cancel
-              </Button>
-              <Button
-                theme="danger"
-                loading={clearLoading}
-                onClick={handleClearProgress}
-              >
-                Clear {currentLabel} progress
-              </Button>
+      <AnimatePresence>
+        {showClearModal && (
+          <Modal onClose={closeClearModal}>
+            <p className={styles.modalTitle}>Clear {currentLabel} progress</p>
+            <div className={styles.modalForm}>
+              <p className={styles.modalText}>
+                This will permanently erase all your <strong>{currentLabel}</strong>{" "}
+                lesson progress and review schedules. Progress for other
+                languages will not be affected. This cannot be undone.
+              </p>
+              {clearError && <p className={styles.modalError}>{clearError}</p>}
+              <div className={styles.modalActions}>
+                <Button theme="secondary" onClick={closeClearModal}>
+                  Cancel
+                </Button>
+                <Button
+                  theme="danger"
+                  loading={clearLoading}
+                  onClick={handleClearProgress}
+                >
+                  Clear {currentLabel} progress
+                </Button>
+              </div>
             </div>
-          </div>
-        </Modal>
-      )}
+          </Modal>
+        )}
+      </AnimatePresence>
     </main>
   );
 }

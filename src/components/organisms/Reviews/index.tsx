@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { AnimatePresence } from "motion/react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faCircleQuestion,
@@ -295,20 +296,22 @@ export default function Reviews() {
         </p>
       </div>
 
-      {settingsId !== null && settingsLesson && (
-        <LessonSettings
-          lessonProgress={settingsLesson}
-          onUnretire={() => {
-            unretire(settingsId);
-            setSettingsId(null);
-          }}
-          onReset={() => {
-            resetLesson(settingsId);
-            setSettingsId(null);
-          }}
-          onClose={() => setSettingsId(null)}
-        />
-      )}
+      <AnimatePresence>
+        {settingsId !== null && settingsLesson && (
+          <LessonSettings
+            lessonProgress={settingsLesson}
+            onUnretire={() => {
+              unretire(settingsId);
+              setSettingsId(null);
+            }}
+            onReset={() => {
+              resetLesson(settingsId);
+              setSettingsId(null);
+            }}
+            onClose={() => setSettingsId(null)}
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
 }

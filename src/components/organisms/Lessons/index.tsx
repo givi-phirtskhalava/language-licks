@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { AnimatePresence } from "motion/react";
 import { useRouter } from "next/navigation";
 import useLanguage from "@lib/useLanguage";
 import useLessons from "@lib/hooks/useLessons";
@@ -191,20 +192,22 @@ export default function Lessons() {
         )}
       </section>
 
-      {settingsId !== null && settingsLesson && (
-        <LessonSettings
-          lessonProgress={settingsLesson}
-          onUnretire={() => {
-            unretire(settingsId);
-            setSettingsId(null);
-          }}
-          onReset={() => {
-            resetLesson(settingsId);
-            setSettingsId(null);
-          }}
-          onClose={() => setSettingsId(null)}
-        />
-      )}
+      <AnimatePresence>
+        {settingsId !== null && settingsLesson && (
+          <LessonSettings
+            lessonProgress={settingsLesson}
+            onUnretire={() => {
+              unretire(settingsId);
+              setSettingsId(null);
+            }}
+            onReset={() => {
+              resetLesson(settingsId);
+              setSettingsId(null);
+            }}
+            onClose={() => setSettingsId(null)}
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
 }
