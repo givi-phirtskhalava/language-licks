@@ -1,3 +1,4 @@
+import { CSSProperties } from "react";
 import { MAX_MASTERY_LEVEL } from "@lib/useProgress";
 import styles from "./MasteryBar.module.css";
 
@@ -16,7 +17,10 @@ function getLevelColor(level: number): string {
 
 export default function MasteryBar({ level }: Props) {
   return (
-    <span className={styles.badge} style={{ background: getLevelColor(level) }}>
+    <span
+      className={styles.badge}
+      style={{ "--badge-bg": getLevelColor(level) } as CSSProperties}
+    >
       {9 - level} review{level === 8 ? "" : "s"} to go
     </span>
   );
