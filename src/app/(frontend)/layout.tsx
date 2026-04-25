@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { config } from "@fortawesome/fontawesome-svg-core";
 import Header from "@/components/atoms/Header";
 import Footer from "@/components/organisms/Footer";
 import PastDueBanner from "@/components/atoms/PastDueBanner";
@@ -8,6 +9,9 @@ import ToastProvider from "@/components/atoms/ToastProvider";
 import DevGui from "@/components/atoms/DevGui";
 import QueryProvider from "@lib/providers/QueryProvider";
 import "./globals.css";
+import "@fortawesome/fontawesome-svg-core/styles.css";
+
+config.autoAddCss = false;
 
 const siteUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
 const siteName = "LanguageLicks";
@@ -71,9 +75,30 @@ export default function RootLayout({
       <head>
         <script
           dangerouslySetInnerHTML={{
-            __html: `try{var t=localStorage.getItem('theme');if(t==='dark'||t==='light'){document.documentElement.dataset.theme=t;}}catch(e){}`,
+            __html: `(function () {
+  var storageKey = "theme";
+  function applyTheme(theme) {
+    document.documentElement.dataset.theme = theme;
+  }
+  try {
+    var stored = localStorage.getItem(storageKey);
+    if (stored === "dark" || stored === "light") {
+      applyTheme(stored);
+    } else {
+      var prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+      applyTheme(prefersDark ? "dark" : "light");
+    }
+    var darkQuery = window.matchMedia("(prefers-color-scheme: dark)");
+    darkQuery.addEventListener("change", function (e) {
+      var current = localStorage.getItem(storageKey);
+      if (current === "dark" || current === "light") return;
+      applyTheme(e.matches ? "dark" : "light");
+    });
+  } catch (e) {}
+})();`,
           }}
         />
+        <link rel="stylesheet" href="/fa.css" />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link
           rel="preconnect"

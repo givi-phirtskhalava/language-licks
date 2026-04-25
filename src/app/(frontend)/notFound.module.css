@@ -1,11 +1,10 @@
 .container {
-  min-height: 100vh;
+  flex: 1;
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 2em;
-  background: var(--bg);
-  font-family: var(--font-system);
+  min-height: calc(100svh - var(--header-height) - var(--footer-height));
 }
 
 .content {
@@ -23,21 +22,18 @@
 
 .message {
   font-size: 1.25em;
-  color: #374151;
+  color: var(--text-color);
   margin: 0.75em 0 1.5em;
 }
 
 .link {
   display: inline-block;
-  padding: 0.75em 1.5em;
+  min-height: 2.75em;
+  padding: 0 1.5em;
   background: var(--accent);
   color: var(--on-accent);
   border-radius: 0.5em;
   text-decoration: none;
   font-weight: 500;
-  transition: background 0.15s ease;
-}
-
-.link:hover {
-  background: var(--accent);
+  line-height: 2.75em;
 }
