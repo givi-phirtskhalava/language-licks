@@ -38,9 +38,14 @@ export async function POST(request: NextRequest) {
   if (!user) {
     const inserted = await db
       .insert(users)
-      .values({ email })
+      .values({ email, lastLoginAt: new Date() })
       .returning();
     user = inserted[0];
+  } else {
+    await db
+      .update(users)
+      .set({ lastLoginAt: new Date() })
+      .where(eq(users.id, user.id));
   }
 
   await setAuthCookies(user.id, user.tokenVersion);

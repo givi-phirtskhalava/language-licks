@@ -1,0 +1,7 @@
+.link {
+  color: var(--theme-elevation-800);
+}
+
+.link:hover {
+  color: var(--theme-text);
+}

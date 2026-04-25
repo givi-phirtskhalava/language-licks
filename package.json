@@ -12,8 +12,8 @@
     "start": "next start",
     "lint": "eslint",
     "payload:migrate:create": "NODE_OPTIONS=--no-deprecation payload migrate:create",
-    "payload:migrate": "NODE_OPTIONS=--no-deprecation payload migrate",
-    "payload:migrate:status": "NODE_OPTIONS=--no-deprecation payload migrate:status"
+    "payload:migrate:status": "NODE_OPTIONS=--no-deprecation payload migrate:status",
+    "payload:import-maps": "NODE_OPTIONS=--no-deprecation payload generate:importmap"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",

@@ -1,7 +1,7 @@
 import { db } from "@lib/db";
 import { users } from "@lib/db/schema";
 import { eq } from "drizzle-orm";
-import { requireAuth, AuthError } from "@lib/auth";
+import { requireAuth, AuthError, isPremium } from "@lib/auth";
 
 export async function GET() {
   try {
@@ -12,6 +12,8 @@ export async function GET() {
         subscriptionStatus: users.subscriptionStatus,
         subscriptionPlanEnd: users.subscriptionPlanEnd,
         paddleSubscriptionId: users.paddleSubscriptionId,
+        giftedExpiresAt: users.giftedExpiresAt,
+        giftedLifetime: users.giftedLifetime,
       })
       .from(users)
       .where(eq(users.id, userId))
@@ -22,19 +24,17 @@ export async function GET() {
       return Response.json({ error: "User not found" }, { status: 404 });
     }
 
-    const isPremium =
-      user.subscriptionStatus === "active" ||
-      (user.subscriptionStatus === "canceled" &&
-        !!user.subscriptionPlanEnd &&
-        user.subscriptionPlanEnd.getTime() > Date.now());
-
     return Response.json({
       subscriptionStatus: user.subscriptionStatus,
       subscriptionPlanEnd: user.subscriptionPlanEnd
         ? user.subscriptionPlanEnd.getTime()
         : null,
       hasSubscription: !!user.paddleSubscriptionId,
-      isPremium,
+      giftedExpiresAt: user.giftedExpiresAt
+        ? user.giftedExpiresAt.getTime()
+        : null,
+      giftedLifetime: user.giftedLifetime,
+      isPremium: isPremium(user),
     });
   } catch (error) {
     if (error instanceof AuthError) {

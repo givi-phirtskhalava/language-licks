@@ -27,11 +27,18 @@ export default buildConfig({
       baseDir: path.resolve(dirname),
     },
     components: {
-      afterNavLinks: ["@/views/LessonBoardNavLink#default"],
+      afterNavLinks: [
+        "@/views/LessonBoardNavLink#default",
+        "@/views/CustomerLookupNavLink#default",
+      ],
       views: {
         lessonBoard: {
           Component: "@/views/LessonBoard#default",
           path: "/lesson-board",
+        },
+        customerLookup: {
+          Component: "@/views/CustomerLookup#default",
+          path: "/customer-lookup",
         },
       },
     },

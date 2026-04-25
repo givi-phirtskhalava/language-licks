@@ -2,6 +2,7 @@ import { db } from "@lib/db";
 import { users } from "@lib/db/schema";
 import { eq } from "drizzle-orm";
 import { requireAuth, AuthError } from "./requireAuth";
+import { isPremium } from "./isPremium";
 
 interface IAuthUser {
   userId: number;
@@ -15,19 +16,15 @@ export async function requirePremium(): Promise<IAuthUser> {
     .select({
       subscriptionStatus: users.subscriptionStatus,
       subscriptionPlanEnd: users.subscriptionPlanEnd,
+      giftedLifetime: users.giftedLifetime,
+      giftedExpiresAt: users.giftedExpiresAt,
     })
     .from(users)
     .where(eq(users.id, auth.userId))
     .limit(1)
     .then((rows) => rows[0]);
 
-  const isPremium =
-    user?.subscriptionStatus === "active" ||
-    (user?.subscriptionStatus === "canceled" &&
-      !!user.subscriptionPlanEnd &&
-      user.subscriptionPlanEnd.getTime() > Date.now());
-
-  if (!isPremium) {
+  if (!user || !isPremium(user)) {
     throw new AuthError("Premium subscription required", 403);
   }
 

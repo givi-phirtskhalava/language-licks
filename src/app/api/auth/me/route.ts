@@ -1,7 +1,7 @@
 import { db } from "@lib/db";
 import { users } from "@lib/db/schema";
 import { eq } from "drizzle-orm";
-import { requireAuth, AuthError } from "@lib/auth";
+import { requireAuth, AuthError, isPremium } from "@lib/auth";
 
 export async function GET() {
   try {
@@ -15,6 +15,8 @@ export async function GET() {
         language: users.language,
         subscriptionStatus: users.subscriptionStatus,
         subscriptionPlanEnd: users.subscriptionPlanEnd,
+        giftedExpiresAt: users.giftedExpiresAt,
+        giftedLifetime: users.giftedLifetime,
       })
       .from(users)
       .where(eq(users.id, userId))
@@ -25,19 +27,16 @@ export async function GET() {
       return Response.json({ user: null }, { status: 401 });
     }
 
-    const isPremium =
-      user.subscriptionStatus === "active" ||
-      (user.subscriptionStatus === "canceled" &&
-        !!user.subscriptionPlanEnd &&
-        user.subscriptionPlanEnd.getTime() > Date.now());
-
     return Response.json({
       user: {
         ...user,
         subscriptionPlanEnd: user.subscriptionPlanEnd
           ? user.subscriptionPlanEnd.getTime()
           : null,
-        isPremium,
+        giftedExpiresAt: user.giftedExpiresAt
+          ? user.giftedExpiresAt.getTime()
+          : null,
+        isPremium: isPremium(user),
       },
     });
   } catch (error) {

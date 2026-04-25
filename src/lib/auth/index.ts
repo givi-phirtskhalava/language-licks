@@ -11,3 +11,5 @@ export { sendOtpEmail } from "./email";
 export { isValidOrigin } from "./origin";
 export { requireAuth, AuthError } from "./requireAuth";
 export { requirePremium } from "./requirePremium";
+export { isPremium } from "./isPremium";
+export { requireAdmin } from "./requireAdmin";

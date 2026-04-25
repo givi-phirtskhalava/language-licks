@@ -18,8 +18,13 @@ export const users = pgTable("users", {
   paddleSubscriptionId: varchar("paddle_subscription_id", { length: 255 }),
   subscriptionStatus: varchar("subscription_status", { length: 50 }),
   subscriptionPlanEnd: timestamp("subscription_plan_end"),
+  giftedExpiresAt: timestamp("gifted_expires_at"),
+  giftedLifetime: boolean("gifted_lifetime").notNull().default(false),
+  giftedAt: timestamp("gifted_at"),
+  giftedNote: varchar("gifted_note", { length: 500 }),
   dailyTarget: integer("daily_target").notNull().default(1),
   createdAt: timestamp("created_at").notNull().defaultNow(),
+  lastLoginAt: timestamp("last_login_at"),
 });
 
 export const verificationCodes = pgTable("verification_codes", {

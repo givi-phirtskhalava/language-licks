@@ -10,6 +10,8 @@ interface IUser {
   isPremium: boolean;
   subscriptionStatus: string | null;
   subscriptionPlanEnd: number | null;
+  giftedExpiresAt: number | null;
+  giftedLifetime: boolean;
 }
 
 async function fetchMe(): Promise<IUser | null> {

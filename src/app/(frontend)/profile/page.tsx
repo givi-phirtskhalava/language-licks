@@ -242,6 +242,18 @@ export default function ProfilePage() {
     !!user?.subscriptionPlanEnd &&
     user.subscriptionPlanEnd > Date.now();
 
+  const isGifted =
+    !!user?.giftedLifetime ||
+    (!!user?.giftedExpiresAt && user.giftedExpiresAt > Date.now());
+  const onlyGifted = isGifted && !isActive && !inGracePeriod && !isPastDue;
+  const giftExtendsBeyondPaddle =
+    isActive &&
+    isGifted &&
+    (!!user?.giftedLifetime ||
+      (!!user?.giftedExpiresAt &&
+        !!user?.subscriptionPlanEnd &&
+        user.giftedExpiresAt > user.subscriptionPlanEnd));
+
   return (
     <main className={pageStyles.main}>
       <div className={styles.container}>
@@ -259,14 +271,59 @@ export default function ProfilePage() {
         <section className={styles.group}>
           <p className={styles.sectionTitle}>Billing</p>
 
-          {isActive && (
+          {isGifted && (
             <div className={styles.section}>
-              {user?.subscriptionPlanEnd && (
+              <div className={styles.statusRow}>
+                <span className={styles.badge}>Gifted</span>
+              </div>
+              {user?.giftedLifetime && (
                 <p className={styles.billingDetail}>
-                  Current period ends {formatDate(user.subscriptionPlanEnd)}.
-                  You will be billed a few days before renewal.
+                  You have lifetime access. Enjoy!
                 </p>
               )}
+              {!user?.giftedLifetime && user?.giftedExpiresAt && (
+                <p className={styles.billingDetail}>
+                  Your gifted access is active until{" "}
+                  {formatDate(user.giftedExpiresAt)}.
+                </p>
+              )}
+            </div>
+          )}
+
+          {isActive && !onlyGifted && (
+            <div className={styles.section}>
+              {user?.subscriptionPlanEnd && !giftExtendsBeyondPaddle && (
+                <p className={styles.billingDetail}>
+                  Your subscription will auto-renew on{" "}
+                  {formatDate(user.subscriptionPlanEnd)}. If you cancel now,
+                  you'll keep access until then but it won't auto-renew.
+                </p>
+              )}
+
+              {user?.subscriptionPlanEnd &&
+                giftExtendsBeyondPaddle &&
+                user.giftedLifetime && (
+                  <p className={styles.billingDetail}>
+                    Your subscription renews on{" "}
+                    {formatDate(user.subscriptionPlanEnd)}. If you cancel now,
+                    you'll keep access until then but it won't auto-renew, then
+                    your lifetime gift takes over.
+                  </p>
+                )}
+
+              {user?.subscriptionPlanEnd &&
+                giftExtendsBeyondPaddle &&
+                !user.giftedLifetime &&
+                user.giftedExpiresAt && (
+                  <p className={styles.billingDetail}>
+                    Your subscription renews on{" "}
+                    {formatDate(user.subscriptionPlanEnd)}. If you cancel now,
+                    you'll keep access until then but it won't auto-renew, then
+                    your gift covers you until{" "}
+                    {formatDate(user.giftedExpiresAt)}.
+                  </p>
+                )}
+
               {billingError && (
                 <p className={styles.billingError}>{billingError}</p>
               )}
@@ -371,7 +428,9 @@ export default function ProfilePage() {
                   required
                   autoFocus
                 />
-                {emailError && <p className={styles.modalError}>{emailError}</p>}
+                {emailError && (
+                  <p className={styles.modalError}>{emailError}</p>
+                )}
                 <div className={styles.modalActions}>
                   <Button theme="secondary" onClick={closeModal}>
                     Cancel
@@ -403,7 +462,9 @@ export default function ProfilePage() {
                   required
                   autoFocus
                 />
-                {emailError && <p className={styles.modalError}>{emailError}</p>}
+                {emailError && (
+                  <p className={styles.modalError}>{emailError}</p>
+                )}
                 <div className={styles.modalActions}>
                   <Button theme="secondary" onClick={closeModal}>
                     Cancel
@@ -449,8 +510,8 @@ export default function ProfilePage() {
             {deleteStep === "confirm" && (
               <form onSubmit={handleDeleteAccount} className={styles.modalForm}>
                 <p className={styles.modalText}>
-                  Enter the code sent to <strong>{user?.email}</strong> and
-                  type <strong>delete</strong> to confirm.
+                  Enter the code sent to <strong>{user?.email}</strong> and type{" "}
+                  <strong>delete</strong> to confirm.
                 </p>
                 <label htmlFor="delete-code" className={styles.modalLabel}>
                   Verification code
