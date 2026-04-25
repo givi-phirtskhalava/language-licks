@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { AnimatePresence, motion } from "motion/react";
 import RecordButton from "@atoms/RecordButton";
 import SentenceDisplay from "@/components/organisms/LanguageCard/SentenceDisplay";
 import CorrectionDisplay from "@/components/atoms/CorrectionDisplay";
@@ -11,6 +12,7 @@ import useWritingCheck from "@/components/organisms/LanguageCard/hooks/useWritin
 import useSpeakingCheck from "@/components/organisms/LanguageCard/hooks/useSpeakingCheck";
 import Hearts from "@/components/atoms/Hearts";
 import { ILesson } from "@lib/types";
+import { fadeTransition, fadeVariants } from "@lib/motionVariants";
 import styles from "./Review.module.css";
 
 const MAX_ATTEMPTS = 3;
@@ -177,30 +179,46 @@ export default function Review({
         <Hearts total={MAX_ATTEMPTS} remaining={attemptsLeft} />
       </div>
 
-      {step === "writing" && !writingDone && !failed && (
-        <div>
-          <WritingInput
-            onSubmit={handleWriteSubmit}
-            onInputChange={() => {
-              if (lastCorrect !== null) setLastCorrect(null);
-              if (writing.result !== null) writing.clear();
-            }}
-            onlyAccentIssues={writing.onlyAccentIssues}
-            hideCorrectionsOnAccentHint
-          />
-        </div>
-      )}
+      <AnimatePresence mode="wait">
+        {step === "writing" && !writingDone && !failed && (
+          <motion.div
+            key="writing"
+            variants={fadeVariants}
+            initial="initial"
+            animate="animate"
+            exit="exit"
+            transition={fadeTransition}
+          >
+            <WritingInput
+              onSubmit={handleWriteSubmit}
+              onInputChange={() => {
+                if (lastCorrect !== null) setLastCorrect(null);
+                if (writing.result !== null) writing.clear();
+              }}
+              onlyAccentIssues={writing.onlyAccentIssues}
+              hideCorrectionsOnAccentHint
+            />
+          </motion.div>
+        )}
 
-      {step === "speaking" && !speakingDone && !failed && (
-        <div>
-          <RecordButton
-            isListening={speaking.isListening}
-            isProcessing={speaking.isProcessing}
-            error={speaking.error}
-            onToggle={handleRecordToggle}
-          />
-        </div>
-      )}
+        {step === "speaking" && !speakingDone && !failed && (
+          <motion.div
+            key="speaking"
+            variants={fadeVariants}
+            initial="initial"
+            animate="animate"
+            exit="exit"
+            transition={fadeTransition}
+          >
+            <RecordButton
+              isListening={speaking.isListening}
+              isProcessing={speaking.isProcessing}
+              error={speaking.error}
+              onToggle={handleRecordToggle}
+            />
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {lastCorrect !== null &&
         !speaking.isProcessing &&

@@ -28,11 +28,9 @@
 }
 
 .correct {
-  background: #000;
-  color: var(--on-accent);
+  color: var(--text);
 }
 
 .wrong {
-  background: #000;
-  color: var(--on-accent);
+  color: var(--text);
 }

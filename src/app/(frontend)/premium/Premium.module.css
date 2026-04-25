@@ -1,0 +1,6 @@
+.main {
+  max-width: 36em;
+  width: 100%;
+  margin: 0 auto;
+  min-height: calc(100svh - var(--header-height) - var(--footer-height));
+}

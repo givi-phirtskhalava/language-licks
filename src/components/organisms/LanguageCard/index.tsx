@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { AnimatePresence, motion } from "motion/react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faChevronLeft,
@@ -20,6 +21,7 @@ import { TPhase } from "@lib/types";
 import useLanguage from "@lib/useLanguage";
 import { LANGUAGES } from "@lib/projectConfig";
 import useProgress from "@lib/useProgress";
+import { fadeTransition, fadeVariants } from "@lib/motionVariants";
 import styles from "./LanguageCard.module.css";
 
 interface Props {
@@ -200,60 +202,110 @@ export default function LanguageCard({
           )}
         </div>
 
-        {isAccessible && phase === "lesson" && (
-          <LessonPhase
-            lesson={lesson}
-            onReady={() => changePhase("practice-writing")}
-          />
-        )}
+        <AnimatePresence mode="wait">
+          {isAccessible && phase === "lesson" && (
+            <motion.div
+              key="lesson"
+              variants={fadeVariants}
+              initial="initial"
+              animate="animate"
+              exit="exit"
+              transition={fadeTransition}
+            >
+              <LessonPhase
+                lesson={lesson}
+                onReady={() => changePhase("practice-writing")}
+              />
+            </motion.div>
+          )}
 
-        {isAccessible && phase === "practice-writing" && (
-          <WritingPractice
-            lesson={lesson}
-            languageLabel={langConfig?.label ?? "French"}
-            isFirstTime={isFirstTime}
-            onReady={() => changePhase("practice-speaking")}
-            initialSpeakingUnlocked={saved?.speakingUnlocked ?? false}
-            onSpeakingUnlocked={() => unlockSpeaking(lessonId)}
-          />
-        )}
-        {isAccessible && phase === "practice-speaking" && (
-          <SpeakingPractice
-            lesson={lesson}
-            locale={locale}
-            languageLabel={langConfig?.label ?? "French"}
-            isFirstTime={isFirstTime}
-            onReady={() => {
-              if (mode === "lesson" && saved?.completed) {
-                onBack();
-              } else {
-                changePhase("complete");
-              }
-            }}
-            initialLessonLearned={saved?.lessonLearned ?? false}
-            onLessonLearned={() => markLessonLearned(lessonId)}
-          />
-        )}
-        {isAccessible && phase === "review" && (
-          <Review
-            lesson={lesson}
-            locale={locale}
-            languageLabel={langConfig?.label ?? "French"}
-            onPass={handleReviewPass}
-            onFail={handleReviewFail}
-            onViewLesson={handleViewLesson}
-          />
-        )}
-        {phase === "complete" && (
-          <Complete
-            lesson={lesson}
-            mode={mode}
-            onNext={onBack}
-            onPractice={mode === "lesson" ? () => changePhase("lesson") : undefined}
-            onNextReview={onNextReview}
-            nextReview={saved?.nextReview}
-          />
-        )}
+          {isAccessible && phase === "practice-writing" && (
+            <motion.div
+              key="practice-writing"
+              variants={fadeVariants}
+              initial="initial"
+              animate="animate"
+              exit="exit"
+              transition={fadeTransition}
+            >
+              <WritingPractice
+                lesson={lesson}
+                languageLabel={langConfig?.label ?? "French"}
+                isFirstTime={isFirstTime}
+                onReady={() => changePhase("practice-speaking")}
+                initialSpeakingUnlocked={saved?.speakingUnlocked ?? false}
+                onSpeakingUnlocked={() => unlockSpeaking(lessonId)}
+              />
+            </motion.div>
+          )}
+
+          {isAccessible && phase === "practice-speaking" && (
+            <motion.div
+              key="practice-speaking"
+              variants={fadeVariants}
+              initial="initial"
+              animate="animate"
+              exit="exit"
+              transition={fadeTransition}
+            >
+              <SpeakingPractice
+                lesson={lesson}
+                locale={locale}
+                languageLabel={langConfig?.label ?? "French"}
+                isFirstTime={isFirstTime}
+                onReady={() => {
+                  if (mode === "lesson" && saved?.completed) {
+                    onBack();
+                  } else {
+                    changePhase("complete");
+                  }
+                }}
+                initialLessonLearned={saved?.lessonLearned ?? false}
+                onLessonLearned={() => markLessonLearned(lessonId)}
+              />
+            </motion.div>
+          )}
+
+          {isAccessible && phase === "review" && (
+            <motion.div
+              key="review"
+              variants={fadeVariants}
+              initial="initial"
+              animate="animate"
+              exit="exit"
+              transition={fadeTransition}
+            >
+              <Review
+                lesson={lesson}
+                locale={locale}
+                languageLabel={langConfig?.label ?? "French"}
+                onPass={handleReviewPass}
+                onFail={handleReviewFail}
+                onViewLesson={handleViewLesson}
+              />
+            </motion.div>
+          )}
+
+          {phase === "complete" && (
+            <motion.div
+              key="complete"
+              variants={fadeVariants}
+              initial="initial"
+              animate="animate"
+              exit="exit"
+              transition={fadeTransition}
+            >
+              <Complete
+                lesson={lesson}
+                mode={mode}
+                onNext={onBack}
+                onPractice={mode === "lesson" ? () => changePhase("lesson") : undefined}
+                onNextReview={onNextReview}
+                nextReview={saved?.nextReview}
+              />
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </div>
   );

@@ -1,5 +1,5 @@
 import GoPremium from "@atoms/GoPremium";
-import styles from "../page.module.css";
+import styles from "./Premium.module.css";
 
 export default function PremiumPage() {
   return (
