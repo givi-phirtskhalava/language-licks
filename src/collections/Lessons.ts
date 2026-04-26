@@ -7,6 +7,7 @@ import {
   lessonsRead,
   lessonsUpdate,
   superAdminOnly,
+  superAdminOnlyField,
 } from "@/lib/adminAuth/access";
 
 export const Lessons: CollectionConfig = {
@@ -74,6 +75,9 @@ export const Lessons: CollectionConfig = {
         const fromQuery = req.query?.language;
         if (fromQuery === "french" || fromQuery === "italian") return fromQuery;
         return undefined;
+      },
+      access: {
+        update: superAdminOnlyField,
       },
     },
     {
