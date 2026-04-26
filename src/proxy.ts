@@ -1,6 +1,11 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
+import {
+  SESSION_COOKIE_NAME,
+  verifyAdminSession,
+} from "@lib/adminAuth/session";
+
 export const config = {
   matcher: ["/((?!_next/static|_next/image|favicon.ico).*)"],
 };
@@ -19,7 +24,19 @@ function challenge() {
   });
 }
 
-export function proxy(req: NextRequest) {
+export async function proxy(req: NextRequest) {
+  const { pathname } = req.nextUrl;
+
+  if (pathname.startsWith("/admin")) {
+    const token = req.cookies.get(SESSION_COOKIE_NAME)?.value;
+    const session = token ? await verifyAdminSession(token) : null;
+    if (session) return NextResponse.next();
+
+    const start = new URL("/api/admin/google/start", req.url);
+    start.searchParams.set("next", pathname + req.nextUrl.search);
+    return NextResponse.redirect(start);
+  }
+
   if (process.env.NODE_ENV === "development") {
     return NextResponse.next();
   }

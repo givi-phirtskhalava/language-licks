@@ -1,5 +1,14 @@
 import type { CollectionConfig } from "payload";
 
+import {
+  getAllowedLanguages,
+  isSuperAdmin,
+  lessonsCreate,
+  lessonsRead,
+  lessonsUpdate,
+  superAdminOnly,
+} from "@/lib/adminAuth/access";
+
 export const Lessons: CollectionConfig = {
   slug: "lessons",
   admin: {
@@ -7,9 +16,28 @@ export const Lessons: CollectionConfig = {
     defaultColumns: ["sentence", "language", "order"],
   },
   access: {
-    read: () => true,
+    read: lessonsRead,
+    create: lessonsCreate,
+    update: lessonsUpdate,
+    delete: superAdminOnly,
   },
   hooks: {
+    beforeValidate: [
+      ({ data, req, operation }) => {
+        if (operation !== "create" && operation !== "update") return data;
+        if (isSuperAdmin(req)) return data;
+        if (!data?.language) return data;
+
+        const allowed = getAllowedLanguages(req);
+        if (!allowed.includes(data.language)) {
+          throw new Error(
+            `You are not allowed to ${operation} lessons in language "${data.language}".`,
+          );
+        }
+
+        return data;
+      },
+    ],
     beforeChange: [
       async ({ data, operation, req }) => {
         if (operation !== "create") return data;

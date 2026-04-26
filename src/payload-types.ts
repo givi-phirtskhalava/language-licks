@@ -127,6 +127,11 @@ export interface AdminAuthOperations {
  */
 export interface Admin {
   id: number;
+  name?: string | null;
+  /**
+   * Languages this editor can read/edit/create lessons for. Ignored for the super admin (set via INITIAL_ADMIN_EMAIL).
+   */
+  allowedLanguages?: ('french' | 'italian')[] | null;
   updatedAt: string;
   createdAt: string;
   email: string;
@@ -304,6 +309,8 @@ export interface PayloadMigration {
  * via the `definition` "admins_select".
  */
 export interface AdminsSelect<T extends boolean = true> {
+  name?: T;
+  allowedLanguages?: T;
   updatedAt?: T;
   createdAt?: T;
   email?: T;

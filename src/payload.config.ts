@@ -31,6 +31,9 @@ export default buildConfig({
         "@/views/LessonBoardNavLink#default",
         "@/views/CustomerLookupNavLink#default",
       ],
+      logout: {
+        Button: "@/views/AdminLogoutButton#default",
+      },
       views: {
         lessonBoard: {
           Component: "@/views/LessonBoard#default",

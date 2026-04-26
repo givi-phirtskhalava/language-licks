@@ -74,6 +74,10 @@ All vars live in `.env.local` (gitignored). A template is in `.env.sample`.
 | `NEXT_PUBLIC_PADDLE_PRICE_ID`                       | yes      | Paddle price ID for the subscription product                               |
 | `NEXT_PUBLIC_PADDLE_ENV`                            | yes      | `sandbox` or `production`                                                  |
 | `GCS_PROJECT_ID` / `GCS_BUCKET` / `GCS_CREDENTIALS` | no       | Google Cloud Storage for Payload media uploads. Optional in dev.           |
+| `GOOGLE_OAUTH_CLIENT_ID`                            | yes      | OAuth client ID for the admin panel sign-in flow                           |
+| `GOOGLE_OAUTH_CLIENT_SECRET`                        | yes      | OAuth client secret matching `GOOGLE_OAUTH_CLIENT_ID`                      |
+| `GOOGLE_OAUTH_REDIRECT_URI`                         | yes      | Callback URL — must match the value registered in Google Cloud Console exactly |
+| `GOOGLE_WORKSPACE_DOMAIN`                           | no       | Restrict admin sign-in to a Workspace domain via the `hd` claim (set to `languagelicks.com`) |
 
 Generate JWT secrets with:
 
@@ -273,6 +277,75 @@ Each user has a `tokenVersion` column in the database. Every issued JWT includes
 ### Re-verification for Sensitive Operations
 
 Certain actions (changing email, deleting account) require a fresh OTP challenge before proceeding, even if the user is already logged in.
+
+## Admin Authentication
+
+The Payload admin panel (`/admin`) is protected by **Google OAuth**, locked to the `languagelicks.com` Workspace. Email/password login is disabled — admins sign in only with their Workspace Google account.
+
+### Flow
+
+1. Browser hits `/admin/*`
+2. `proxy.ts` checks for the `admin-session` cookie. Missing or invalid → redirect to `/api/admin/google/start`
+3. Start route generates state + PKCE, redirects to Google with `hd=languagelicks.com` and `prompt=select_account`
+4. User picks a Google account → Google redirects to `/api/admin/google/callback`
+5. Callback verifies state, exchanges code via [`arctic`](https://arcticjs.dev/), and validates the ID token against Google's JWKS (issuer, audience, `email_verified`, `hd`)
+6. Looks up the admin record by email — must already exist; the callback never auto-creates admins
+7. Issues a 12h `admin-session` JWT (HS256, signed with `PAYLOAD_SECRET`) as an HttpOnly cookie
+8. A custom Payload auth strategy on the `admins` collection reads this cookie on every request and resolves the admin user
+
+### Adding an admin
+
+There's no self-signup. Create the admin record manually in Payload first, with the user's Workspace email. They can then sign in via Google.
+
+### Roles
+
+Two roles, derived not from a DB column but from the env:
+
+- **Super admin** — whoever's email matches `INITIAL_ADMIN_EMAIL` (case-insensitive). Full CRUD on every collection.
+- **Editor** — every other admin record, scoped to the languages in their `allowedLanguages` field (set by the super admin in the Payload UI).
+
+| Collection   | Super admin     | Editor                                                   |
+| ------------ | --------------- | -------------------------------------------------------- |
+| `admins`     | full CRUD       | read self only                                           |
+| `lessons`    | full CRUD       | read / create / update only where `language ∈ allowedLanguages`; no delete |
+| `media`      | full CRUD       | create + read; no update/delete                          |
+| `tag-groups` | full CRUD       | read + update only their language; can add tags but cannot reassign the `language` field, create new groups, or delete |
+
+The super-admin check lives in `src/lib/adminAuth/access.ts`. To make a different admin the super admin, change `INITIAL_ADMIN_EMAIL` and restart — no migration needed.
+
+To add an editor: super admin creates a new admin record, sets `allowedLanguages` to (e.g.) `["french"]`, and the editor signs in with their Workspace Google account.
+
+### Logout
+
+`GET /api/admin/logout` clears `admin-session` and redirects to `/`. **It does not sign the user out of Google itself** — that's a property of OAuth. The logout button in the admin nav fires a `confirm()` warning the admin to also sign out of `accounts.google.com` if they're on a shared computer.
+
+### OAuth clients per environment
+
+Each environment has its own OAuth client in its own Google Cloud project:
+
+| Env   | Cloud project         | Authorized redirect URI                                  |
+| ----- | --------------------- | -------------------------------------------------------- |
+| Dev   | `languagelicks-stage` | `http://localhost:3000/api/admin/google/callback`        |
+| Stage | `languagelicks-stage` | `https://<stage-domain>/api/admin/google/callback`       |
+| Prod  | `languagelicks-prod`  | `https://languagelicks.com/api/admin/google/callback`    |
+
+Each client gives its own `GOOGLE_OAUTH_CLIENT_ID` + `GOOGLE_OAUTH_CLIENT_SECRET`. Store them per-environment (`.env.local` for dev, `heroku config:set` for stage/prod). The `GOOGLE_OAUTH_REDIRECT_URI` env var must match the registered URI character-for-character (scheme, host, path, no trailing slash).
+
+### Setting up a new OAuth client
+
+1. Cloud Console → APIs & Services → **OAuth consent screen** → User Type: **Internal** (Workspace-only). App name `LanguageLicks Admin`. Support + developer email = your address.
+2. **Credentials → Create Credentials → OAuth Client ID** → Web application
+3. Add the authorized redirect URI for the environment
+4. Copy the Client ID + Secret into the matching env vars
+
+### Recovery (locked out)
+
+If OAuth is misconfigured and you can't sign in:
+
+1. In `src/collections/Admins.ts`, change `disableLocalStrategy` to `false`
+2. Restart dev — Payload re-enables password login (with `push: true` in dev, the schema syncs)
+3. Use the forgot-password flow (Resend is wired up) to set a new password and sign in
+4. Fix the OAuth setup, restore `disableLocalStrategy: { enableFields: true, optionalPassword: true }`, restart
 
 ## Security
 

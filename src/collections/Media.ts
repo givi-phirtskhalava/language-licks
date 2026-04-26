@@ -1,9 +1,14 @@
 import type { CollectionConfig } from 'payload'
 
+import { adminOrEditor, superAdminOnly } from '@/lib/adminAuth/access'
+
 export const Media: CollectionConfig = {
   slug: 'media',
   access: {
     read: () => true,
+    create: adminOrEditor,
+    update: superAdminOnly,
+    delete: superAdminOnly,
   },
   fields: [
     {

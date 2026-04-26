@@ -1,5 +1,11 @@
 import type { CollectionConfig, TextFieldValidation } from "payload";
 
+import {
+  getAllowedLanguages,
+  isSuperAdmin,
+  superAdminOnly,
+} from "@/lib/adminAuth/access";
+
 export const TagGroups: CollectionConfig = {
   slug: "tag-groups",
   labels: {
@@ -11,7 +17,20 @@ export const TagGroups: CollectionConfig = {
     defaultColumns: ["language"],
   },
   access: {
-    read: () => true,
+    read: ({ req }) => {
+      if (isSuperAdmin(req)) return true;
+      const langs = getAllowedLanguages(req);
+      if (langs.length === 0) return false;
+      return { language: { in: langs } };
+    },
+    update: ({ req }) => {
+      if (isSuperAdmin(req)) return true;
+      const langs = getAllowedLanguages(req);
+      if (langs.length === 0) return false;
+      return { language: { in: langs } };
+    },
+    create: superAdminOnly,
+    delete: superAdminOnly,
   },
   fields: [
     {
@@ -23,6 +42,9 @@ export const TagGroups: CollectionConfig = {
         { label: "French", value: "french" },
         { label: "Italian", value: "italian" },
       ],
+      access: {
+        update: ({ req }) => isSuperAdmin(req),
+      },
     },
     {
       name: "groups",
