@@ -7,9 +7,16 @@
   padding: 0.625em 1.25em;
   color: var(--accent);
   font-weight: 500;
-  transition: background 0.2s;
+  transition:
+    background 0.2s,
+    opacity 0.2s;
 }
 
 .audioBtn:hover {
   background: var(--bg);
+}
+
+.audioBtn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
 }

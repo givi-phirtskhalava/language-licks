@@ -71,6 +71,7 @@ export interface Config {
     media: Media;
     lessons: Lesson;
     'tag-groups': TagGroup;
+    'audio-files': AudioFile;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -82,6 +83,7 @@ export interface Config {
     media: MediaSelect<false> | MediaSelect<true>;
     lessons: LessonsSelect<false> | LessonsSelect<true>;
     'tag-groups': TagGroupsSelect<false> | TagGroupsSelect<true>;
+    'audio-files': AudioFilesSelect<false> | AudioFilesSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -180,7 +182,14 @@ export interface Lesson {
   sentence: string;
   translation: string;
   context?: string | null;
-  audio: string;
+  /**
+   * Normal-speed mp3 recording.
+   */
+  audioNormal?: (number | null) | AudioFile;
+  /**
+   * Slow-speed mp3 recording, used for pronunciation practice.
+   */
+  audioSlow?: (number | null) | AudioFile;
   order: number;
   isFree?: boolean | null;
   cefr?: ('A1' | 'A2' | 'B1' | 'B2' | 'C1' | 'C2') | null;
@@ -199,6 +208,27 @@ export interface Lesson {
     | null;
   updatedAt: string;
   createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "audio-files".
+ */
+export interface AudioFile {
+  id: number;
+  lesson: number | Lesson;
+  speed: 'normal' | 'slow';
+  language: 'french' | 'italian';
+  updatedAt: string;
+  createdAt: string;
+  url?: string | null;
+  thumbnailURL?: string | null;
+  filename?: string | null;
+  mimeType?: string | null;
+  filesize?: number | null;
+  width?: number | null;
+  height?: number | null;
+  focalX?: number | null;
+  focalY?: number | null;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -261,6 +291,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'tag-groups';
         value: number | TagGroup;
+      } | null)
+    | ({
+        relationTo: 'audio-files';
+        value: number | AudioFile;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -355,7 +389,8 @@ export interface LessonsSelect<T extends boolean = true> {
   sentence?: T;
   translation?: T;
   context?: T;
-  audio?: T;
+  audioNormal?: T;
+  audioSlow?: T;
   order?: T;
   isFree?: T;
   cefr?: T;
@@ -397,6 +432,26 @@ export interface TagGroupsSelect<T extends boolean = true> {
       };
   updatedAt?: T;
   createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "audio-files_select".
+ */
+export interface AudioFilesSelect<T extends boolean = true> {
+  lesson?: T;
+  speed?: T;
+  language?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  url?: T;
+  thumbnailURL?: T;
+  filename?: T;
+  mimeType?: T;
+  filesize?: T;
+  width?: T;
+  height?: T;
+  focalX?: T;
+  focalY?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

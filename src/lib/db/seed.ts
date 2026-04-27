@@ -636,7 +636,6 @@ async function seedLessons(payload: Awaited<ReturnType<typeof getPayload>>) {
       sentence: lesson.sentence,
       translation: lesson.translation,
       context: lesson.context,
-      audio: lesson.audio,
       cefr: lesson.cefr ?? "A1",
       grammar: lesson.grammar,
       liaisonTips: lesson.liaisonTips ?? [],

@@ -43,6 +43,12 @@
   justify-content: center;
 }
 
+.audioButtons {
+  display: flex;
+  justify-content: center;
+  gap: 0.75em;
+}
+
 .revealBtn {
   background: none;
   border: 0.125em solid var(--border);

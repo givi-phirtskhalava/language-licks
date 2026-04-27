@@ -1,12 +1,14 @@
 import { postgresAdapter } from "@payloadcms/db-postgres";
 import { resendAdapter } from "@payloadcms/email-resend";
 import { lexicalEditor } from "@payloadcms/richtext-lexical";
+import { gcsStorage } from "@payloadcms/storage-gcs";
 import path from "path";
 import { buildConfig } from "payload";
 import { fileURLToPath } from "url";
 import sharp from "sharp";
 
 import { Admins } from "./collections/Admins";
+import { AudioFiles } from "./collections/AudioFiles";
 import { Media } from "./collections/Media";
 import { Lessons } from "./collections/Lessons";
 import { TagGroups } from "./collections/TagGroups";
@@ -46,7 +48,7 @@ export default buildConfig({
       },
     },
   },
-  collections: [Admins, Media, Lessons, TagGroups],
+  collections: [Admins, Media, Lessons, TagGroups, AudioFiles],
   editor: lexicalEditor(),
   email: resendAdapter({
     defaultFromAddress: process.env.EMAIL_FROM || "",
@@ -79,5 +81,33 @@ export default buildConfig({
     ],
   }),
   sharp,
-  plugins: [],
+  plugins: [
+    gcsStorage({
+      enabled: Boolean(process.env.GCS_BUCKET),
+      collections: {
+        "audio-files": {
+          generateFileURL: ({
+            filename,
+            prefix,
+          }: {
+            filename: string;
+            prefix?: string;
+          }) => {
+            const cdn = process.env.NEXT_PUBLIC_GCS_CDN_URL;
+            const key = prefix ? `${prefix}/${filename}` : filename;
+            if (cdn) return `${cdn.replace(/\/$/, "")}/${key}`;
+            return `https://storage.googleapis.com/${process.env.GCS_BUCKET}/${key}`;
+          },
+        },
+      },
+      bucket: process.env.GCS_BUCKET || "",
+      options: {
+        projectId: process.env.GCS_PROJECT_ID,
+        credentials: process.env.GCS_CREDENTIALS
+          ? JSON.parse(process.env.GCS_CREDENTIALS)
+          : undefined,
+      },
+      acl: "Public",
+    }),
+  ],
 });

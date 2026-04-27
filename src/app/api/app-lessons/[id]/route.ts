@@ -50,12 +50,21 @@ export async function GET(
     }
   }
 
+  function audioUrl(value: unknown): string | null {
+    if (!value || typeof value !== "object") return null;
+    const url = (value as { url?: unknown }).url;
+    return typeof url === "string" ? url : null;
+  }
+
   const lesson = {
     id: doc.id,
     sentence: doc.sentence,
     translation: doc.translation,
     context: doc.context ?? null,
-    audio: doc.audio,
+    audio: {
+      normal: audioUrl(doc.audioNormal),
+      slow: audioUrl(doc.audioSlow),
+    },
     grammar: doc.grammar ?? [],
     liaisonTips: doc.liaisonTips ?? null,
     tags: (doc.tags ?? []).filter((t): t is string => typeof t === "string"),

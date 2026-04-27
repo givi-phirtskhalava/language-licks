@@ -1,37 +1,57 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPlay, faPause } from "@fortawesome/free-solid-svg-icons";
 import styles from "./AudioButton.module.css";
 
 interface Props {
-  src: string;
+  src: string | null;
+  label: string;
+  isPlaying: boolean;
+  onTogglePlay: () => void;
+  onEnd: () => void;
 }
 
-export default function AudioButton({ src }: Props) {
+export default function AudioButton({
+  src,
+  label,
+  isPlaying,
+  onTogglePlay,
+  onEnd,
+}: Props) {
   const audioRef = useRef<HTMLAudioElement>(null);
-  const [isPlaying, setIsPlaying] = useState(false);
 
-  function play() {
-    const audio = audioRef.current;
-    if (!audio) return;
-    audio.currentTime = 0;
-    audio.play();
-    setIsPlaying(true);
+  useEffect(
+    function syncPlayback() {
+      const audio = audioRef.current;
+      if (!audio) return;
+
+      if (isPlaying) {
+        audio.currentTime = 0;
+        audio.play().catch(() => {});
+      } else {
+        audio.pause();
+      }
+    },
+    [isPlaying]
+  );
+
+  if (!src) {
+    return (
+      <button className={styles.audioBtn} disabled>
+        <FontAwesomeIcon icon={faPlay} />
+        {label}
+      </button>
+    );
   }
 
   return (
     <>
-      <audio
-        ref={audioRef}
-        src={src}
-        onEnded={() => setIsPlaying(false)}
-        onPause={() => setIsPlaying(false)}
-      />
-      <button onClick={play} className={styles.audioBtn}>
+      <audio ref={audioRef} src={src} onEnded={onEnd} />
+      <button onClick={onTogglePlay} className={styles.audioBtn}>
         <FontAwesomeIcon icon={isPlaying ? faPause : faPlay} />
-        {isPlaying ? "Playing" : "Listen"}
+        {label}
       </button>
     </>
   );

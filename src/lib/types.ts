@@ -16,7 +16,10 @@ export interface ILesson {
   sentence: string;
   translation: string;
   context?: string;
-  audio: string;
+  audio: {
+    normal: string | null;
+    slow: string | null;
+  };
   grammar: { label: string; explanation: string }[];
   liaisonTips?: { phrase: string; explanation: string }[];
   tags: string[];

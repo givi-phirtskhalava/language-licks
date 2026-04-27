@@ -61,6 +61,15 @@ export const Lessons: CollectionConfig = {
         return data;
       },
     ],
+    beforeDelete: [
+      async ({ id, req }) => {
+        await req.payload.delete({
+          collection: "audio-files",
+          where: { lesson: { equals: id } },
+          req,
+        });
+      },
+    ],
   },
   fields: [
     {
@@ -95,10 +104,41 @@ export const Lessons: CollectionConfig = {
       type: "textarea",
     },
     {
-      name: "audio",
-      type: "text",
-      required: true,
-      defaultValue: "/sentence.mp3",
+      name: "audioCreateNotice",
+      type: "ui",
+      admin: {
+        condition: (data) => !data?.id,
+        components: {
+          Field: "@/collections/Lessons/AudioCreateNotice#default",
+        },
+      },
+    },
+    {
+      name: "audioNormal",
+      type: "upload",
+      relationTo: "audio-files",
+      filterOptions: ({ id }) => ({
+        lesson: { equals: id },
+        speed: { equals: "normal" },
+      }),
+      admin: {
+        description: "Normal-speed mp3 recording.",
+        condition: (data) => Boolean(data?.id),
+      },
+    },
+    {
+      name: "audioSlow",
+      type: "upload",
+      relationTo: "audio-files",
+      filterOptions: ({ id }) => ({
+        lesson: { equals: id },
+        speed: { equals: "slow" },
+      }),
+      admin: {
+        description:
+          "Slow-speed mp3 recording, used for pronunciation practice.",
+        condition: (data) => Boolean(data?.id),
+      },
     },
     {
       name: "order",
