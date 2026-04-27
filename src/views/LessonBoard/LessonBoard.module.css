@@ -275,3 +275,17 @@
   text-transform: uppercase;
   letter-spacing: 0.05em;
 }
+
+.draftBadge {
+  margin-right: 0.4em;
+  color: var(--theme-warning-600);
+  font-size: 0.85em;
+  font-weight: 600;
+}
+
+.modifiedBadge {
+  margin-right: 0.4em;
+  color: var(--theme-elevation-600);
+  font-size: 0.85em;
+  font-weight: 600;
+}

@@ -38,6 +38,7 @@ export interface ILesson {
   cefr: TCefr;
   order: number;
   isFree: boolean;
+  _status?: "draft" | "published" | "changed";
 }
 
 const STORAGE_LANGUAGE_KEY = "lessonBoard:language";
@@ -80,19 +81,43 @@ export default function LessonBoardClient() {
       const controller = new AbortController();
       setLoading(true);
 
-      const url =
-        `/api/lessons?where[language][equals]=${encodeURIComponent(language)}` +
-        `&limit=1000&depth=0&sort=cefr,order,id`;
+      const base =
+        `where[language][equals]=${encodeURIComponent(language)}` +
+        `&limit=1000&depth=0`;
+      const allUrl = `/api/lessons?${base}&sort=cefr,order,id&draft=true`;
+      const publishedUrl = `/api/lessons?${base}&where[_status][equals]=published`;
 
-      fetch(url, { signal: controller.signal, credentials: "include" })
-        .then(function parse(response) {
+      Promise.all([
+        fetch(allUrl, {
+          signal: controller.signal,
+          credentials: "include",
+        }).then(function parse(response) {
           if (!response.ok) throw new Error("Failed to load lessons");
           return response.json() as Promise<{ docs: ILesson[] }>;
-        })
-        .then(function apply(data) {
-          const normalized = data.docs.map(function normalizeCefr(l) {
-            return { ...l, cefr: l.cefr ?? "A1" };
+        }),
+        fetch(publishedUrl, {
+          signal: controller.signal,
+          credentials: "include",
+        }).then(function parse(response) {
+          if (!response.ok) throw new Error("Failed to load lessons");
+          return response.json() as Promise<{ docs: { id: number }[] }>;
+        }),
+      ])
+        .then(function apply([allData, publishedData]) {
+          const publishedIds = new Set(
+            publishedData.docs.map(function toId(d) {
+              return d.id;
+            })
+          );
+
+          const normalized = allData.docs.map(function enrich(l) {
+            const status =
+              l._status === "draft" && publishedIds.has(l.id)
+                ? "changed"
+                : l._status;
+            return { ...l, cefr: l.cefr ?? "A1", _status: status };
           });
+
           setLessons(normalized);
           setLoading(false);
         })

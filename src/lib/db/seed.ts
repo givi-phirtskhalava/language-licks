@@ -641,6 +641,7 @@ async function seedLessons(payload: Awaited<ReturnType<typeof getPayload>>) {
       liaisonTips: lesson.liaisonTips ?? [],
       tags: lesson.tags,
       order: lesson.order,
+      _status: "published" as const,
     };
 
     const existing = await payload.find({

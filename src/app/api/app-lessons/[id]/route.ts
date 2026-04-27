@@ -36,6 +36,10 @@ export async function GET(
     return Response.json({ error: "Lesson not found" }, { status: 404 });
   }
 
+  if (doc._status !== "published") {
+    return Response.json({ error: "Lesson not found" }, { status: 404 });
+  }
+
   if (!doc.isFree) {
     try {
       await requirePremium();

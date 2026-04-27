@@ -23,7 +23,12 @@ export async function GET(request: NextRequest) {
 
     const result = await payload.find({
       collection: "lessons",
-      where: { language: { equals: language } },
+      where: {
+        and: [
+          { language: { equals: language } },
+          { _status: { equals: "published" } },
+        ],
+      },
       sort: ["cefr", "order", "id"],
       limit: 1000,
       depth: 0,

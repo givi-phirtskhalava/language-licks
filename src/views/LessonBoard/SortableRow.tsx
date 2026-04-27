@@ -52,7 +52,18 @@ export default function SortableRow({ lesson, dragDisabled }: Props) {
         href={`/admin/collections/lessons/${lesson.id}`}
         className={style.rowBody}
       >
-        <div className={style.sentence}>{lesson.sentence}</div>
+        <div className={style.sentence}>
+          {lesson._status === "draft" && (
+            <span className={style.draftBadge}>[draft]</span>
+          )}
+
+          {lesson._status === "changed" && (
+            <span className={style.modifiedBadge}>[modified]</span>
+          )}
+
+          {lesson.sentence}
+        </div>
+
         <div className={style.translation}>{lesson.translation}</div>
       </Link>
 

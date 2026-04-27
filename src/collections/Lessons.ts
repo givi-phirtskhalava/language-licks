@@ -16,6 +16,9 @@ export const Lessons: CollectionConfig = {
     useAsTitle: "sentence",
     defaultColumns: ["sentence", "language", "order"],
   },
+  versions: {
+    drafts: true,
+  },
   access: {
     read: lessonsRead,
     create: lessonsCreate,
@@ -26,6 +29,7 @@ export const Lessons: CollectionConfig = {
     beforeValidate: [
       ({ data, req, operation }) => {
         if (operation !== "create" && operation !== "update") return data;
+        if (!req.user) return data;
         if (isSuperAdmin(req)) return data;
         if (!data?.language) return data;
 
@@ -52,6 +56,7 @@ export const Lessons: CollectionConfig = {
           sort: "-order",
           limit: 1,
           depth: 0,
+          draft: true,
           req,
         });
 
