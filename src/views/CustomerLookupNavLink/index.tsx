@@ -1,26 +1,21 @@
-"use client";
+import { headers as nextHeaders } from "next/headers";
+import { getPayload } from "payload";
+import config from "@payload-config";
 
-import { usePathname } from "next/navigation";
-import Link from "next/link";
-import classNames from "classnames";
+import CustomerLookupNavLinkClient from "./CustomerLookupNavLinkClient";
 
-import style from "./CustomerLookupNavLink.module.css";
+export default async function CustomerLookupNavLink() {
+  const requestHeaders = await nextHeaders();
+  const payload = await getPayload({ config });
+  const result = await payload.auth({ headers: requestHeaders });
 
-const HREF = "/admin/customer-lookup";
+  const adminEmail = process.env.INITIAL_ADMIN_EMAIL?.toLowerCase();
+  const userEmail =
+    typeof result.user?.email === "string"
+      ? result.user.email.toLowerCase()
+      : null;
 
-export default function CustomerLookupNavLink() {
-  const pathname = usePathname();
-  const isActive = pathname === HREF;
+  if (!adminEmail || !userEmail || userEmail !== adminEmail) return null;
 
-  return (
-    <Link
-      href={HREF}
-      id="nav-customer-lookup"
-      className={classNames("nav__link", style.link)}
-      prefetch={false}
-    >
-      {isActive && <div className="nav__link-indicator" />}
-      <span className="nav__link-label">Customer Lookup</span>
-    </Link>
-  );
+  return <CustomerLookupNavLinkClient />;
 }

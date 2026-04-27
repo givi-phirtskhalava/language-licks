@@ -2,11 +2,11 @@ import type { NextRequest } from "next/server";
 import { db } from "@lib/db";
 import { users } from "@lib/db/schema";
 import { eq } from "drizzle-orm";
-import { requireAdmin, AuthError, isPremium } from "@lib/auth";
+import { requireSuperAdmin, AuthError, isPremium } from "@lib/auth";
 
 export async function POST(request: NextRequest) {
   try {
-    await requireAdmin(request.headers);
+    await requireSuperAdmin(request.headers);
 
     const body = await request.json();
     const email = typeof body?.email === "string" ? body.email.trim().toLowerCase() : "";

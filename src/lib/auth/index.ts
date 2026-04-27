@@ -13,3 +13,4 @@ export { requireAuth, AuthError } from "./requireAuth";
 export { requirePremium } from "./requirePremium";
 export { isPremium } from "./isPremium";
 export { requireAdmin } from "./requireAdmin";
+export { requireSuperAdmin } from "./requireSuperAdmin";

@@ -2,11 +2,11 @@ import type { NextRequest } from "next/server";
 import { db } from "@lib/db";
 import { users } from "@lib/db/schema";
 import { eq } from "drizzle-orm";
-import { requireAdmin, AuthError } from "@lib/auth";
+import { requireSuperAdmin, AuthError } from "@lib/auth";
 
 export async function POST(request: NextRequest) {
   try {
-    await requireAdmin(request.headers);
+    await requireSuperAdmin(request.headers);
 
     const body = await request.json();
     const userId = body?.userId;
