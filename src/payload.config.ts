@@ -22,6 +22,13 @@ import {
 const filename = fileURLToPath(import.meta.url);
 const dirname = path.dirname(filename);
 
+const { PAYLOAD_SECRET, DATABASE_URL, RESEND_API_KEY, EMAIL_FROM } =
+  process.env;
+if (!PAYLOAD_SECRET) throw new Error("Missing required env: PAYLOAD_SECRET");
+if (!DATABASE_URL) throw new Error("Missing required env: DATABASE_URL");
+if (!RESEND_API_KEY) throw new Error("Missing required env: RESEND_API_KEY");
+if (!EMAIL_FROM) throw new Error("Missing required env: EMAIL_FROM");
+
 export default buildConfig({
   admin: {
     user: Admins.slug,
@@ -51,17 +58,17 @@ export default buildConfig({
   collections: [Admins, Media, Lessons, TagGroups, AudioFiles],
   editor: lexicalEditor(),
   email: resendAdapter({
-    defaultFromAddress: process.env.EMAIL_FROM || "",
+    defaultFromAddress: EMAIL_FROM,
     defaultFromName: "Language Licks",
-    apiKey: process.env.RESEND_API_KEY || "",
+    apiKey: RESEND_API_KEY,
   }),
-  secret: process.env.PAYLOAD_SECRET || "",
+  secret: PAYLOAD_SECRET,
   typescript: {
     outputFile: path.resolve(dirname, "payload-types.ts"),
   },
   db: postgresAdapter({
     pool: {
-      connectionString: process.env.DATABASE_URL || "",
+      connectionString: DATABASE_URL,
       ssl:
         process.env.NODE_ENV === "production"
           ? { rejectUnauthorized: false }
