@@ -2,7 +2,7 @@
 
 A language learning app for practicing sentence comprehension, writing, and speaking. Built with Next.js 16, PostgreSQL, Drizzle ORM, and Payload CMS.
 
-Each lesson presents a sentence in the target language with grammar breakdowns, liaison/pronunciation tips, writing practice, speaking practice, and a review test. Progress is tracked with a spaced repetition system. French and Italian are supported.
+Each lesson presents a sentence in the target language with grammar breakdowns, writing practice, speaking practice, and a review test. Progress is tracked with a spaced repetition system. French and Italian are supported.
 
 ## Tech Stack
 
@@ -55,29 +55,29 @@ Each lesson presents a sentence in the target language with grammar breakdowns, 
 
 All vars live in `.env.local` (gitignored). A template is in `.env.sample`.
 
-| Var                                                 | Required | Purpose                                                                    |
-| --------------------------------------------------- | -------- | -------------------------------------------------------------------------- |
-| `DATABASE_URL`                                      | yes      | Postgres connection string                                                 |
-| `JWT_ACCESS_SECRET`                                 | yes      | HS256 secret for access tokens (15-min TTL)                                |
-| `JWT_REFRESH_SECRET`                                | yes      | HS256 secret for refresh tokens (90-day TTL). **Must differ** from access. |
-| `RESEND_API_KEY`                                    | yes      | Resend API key used to send OTP emails                                     |
-| `EMAIL_FROM`                                        | yes      | Verified sender address in Resend                                          |
-| `PAYLOAD_SECRET`                                    | yes      | Secret used to sign Payload admin sessions                                 |
-| `INITIAL_ADMIN_EMAIL`                               | yes      | Email of the first admin user created on boot                              |
-| `SPEECH_CHECK_URL`                                  | yes      | Base URL of the speech-check Cloud Run service (or `http://localhost:8000` in dev) |
+| Var                                                 | Required | Purpose                                                                                                                                            |
+| --------------------------------------------------- | -------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `DATABASE_URL`                                      | yes      | Postgres connection string                                                                                                                         |
+| `JWT_ACCESS_SECRET`                                 | yes      | HS256 secret for access tokens (15-min TTL)                                                                                                        |
+| `JWT_REFRESH_SECRET`                                | yes      | HS256 secret for refresh tokens (90-day TTL). **Must differ** from access.                                                                         |
+| `RESEND_API_KEY`                                    | yes      | Resend API key used to send OTP emails                                                                                                             |
+| `EMAIL_FROM`                                        | yes      | Verified sender address in Resend                                                                                                                  |
+| `PAYLOAD_SECRET`                                    | yes      | Secret used to sign Payload admin sessions                                                                                                         |
+| `INITIAL_ADMIN_EMAIL`                               | yes      | Email of the first admin user created on boot                                                                                                      |
+| `SPEECH_CHECK_URL`                                  | yes      | Base URL of the speech-check Cloud Run service (or `http://localhost:8000` in dev)                                                                 |
 | `GCP_SA_KEY`                                        | prod     | JSON of a service account with `roles/run.invoker` on the speech-check service. **Omit in dev** — the route skips IAM when `NODE_ENV=development`. |
-| `SPEECH_CHECK_MAX_AUDIO_BYTES`                      | no       | Upload cap in bytes (default `491520`)                                     |
-| `SPEECH_CHECK_PER_USER_RPM`                         | no       | Per-user rate limit, requests per minute (default `60`)                    |
-| `PADDLE_API_KEY`                                    | yes      | Paddle server-side key (sandbox for dev, prod for prod)                    |
-| `PADDLE_WEBHOOK_SECRET`                             | yes      | Used to verify Paddle webhook signatures                                   |
-| `NEXT_PUBLIC_PADDLE_CLIENT_TOKEN`                   | yes      | Paddle client token (exposed to the browser)                               |
-| `NEXT_PUBLIC_PADDLE_PRICE_ID`                       | yes      | Paddle price ID for the subscription product                               |
-| `NEXT_PUBLIC_PADDLE_ENV`                            | yes      | `sandbox` or `production`                                                  |
-| `GCS_PROJECT_ID` / `GCS_BUCKET` / `GCS_CREDENTIALS` | no       | Google Cloud Storage for Payload media uploads. Optional in dev.           |
-| `GOOGLE_OAUTH_CLIENT_ID`                            | yes      | OAuth client ID for the admin panel sign-in flow                           |
-| `GOOGLE_OAUTH_CLIENT_SECRET`                        | yes      | OAuth client secret matching `GOOGLE_OAUTH_CLIENT_ID`                      |
-| `GOOGLE_OAUTH_REDIRECT_URI`                         | yes      | Callback URL — must match the value registered in Google Cloud Console exactly |
-| `GOOGLE_WORKSPACE_DOMAIN`                           | no       | Restrict admin sign-in to a Workspace domain via the `hd` claim (set to `languagelicks.com`) |
+| `SPEECH_CHECK_MAX_AUDIO_BYTES`                      | no       | Upload cap in bytes (default `491520`)                                                                                                             |
+| `SPEECH_CHECK_PER_USER_RPM`                         | no       | Per-user rate limit, requests per minute (default `60`)                                                                                            |
+| `PADDLE_API_KEY`                                    | yes      | Paddle server-side key (sandbox for dev, prod for prod)                                                                                            |
+| `PADDLE_WEBHOOK_SECRET`                             | yes      | Used to verify Paddle webhook signatures                                                                                                           |
+| `NEXT_PUBLIC_PADDLE_CLIENT_TOKEN`                   | yes      | Paddle client token (exposed to the browser)                                                                                                       |
+| `NEXT_PUBLIC_PADDLE_PRICE_ID`                       | yes      | Paddle price ID for the subscription product                                                                                                       |
+| `NEXT_PUBLIC_PADDLE_ENV`                            | yes      | `sandbox` or `production`                                                                                                                          |
+| `GCS_PROJECT_ID` / `GCS_BUCKET` / `GCS_CREDENTIALS` | no       | Google Cloud Storage for Payload media uploads. Optional in dev.                                                                                   |
+| `GOOGLE_OAUTH_CLIENT_ID`                            | yes      | OAuth client ID for the admin panel sign-in flow                                                                                                   |
+| `GOOGLE_OAUTH_CLIENT_SECRET`                        | yes      | OAuth client secret matching `GOOGLE_OAUTH_CLIENT_ID`                                                                                              |
+| `GOOGLE_OAUTH_REDIRECT_URI`                         | yes      | Callback URL — must match the value registered in Google Cloud Console exactly                                                                     |
+| `GOOGLE_WORKSPACE_DOMAIN`                           | no       | Restrict admin sign-in to a Workspace domain via the `hd` claim (set to `languagelicks.com`)                                                       |
 
 Generate JWT secrets with:
 
@@ -213,25 +213,25 @@ Without the prefix, a route like `/api/lessons/route.ts` would shadow Payload's 
 
 ### API routes (under `src/app/api/`)
 
-| Route                      | Purpose                                                                                                                     |
-| -------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
-| `/api/app-lessons`         | Lightweight lesson list (id, sentence, translation)                                                                         |
-| `/api/app-lessons/[id]`    | Full lesson detail                                                                                                          |
-| `/api/app-tag-groups`      | Flattened tag groups for filters                                                                                            |
-| `/api/auth/send-code`      | Email the user a 6-digit OTP                                                                                                |
-| `/api/auth/verify`         | Verify OTP, issue access + refresh cookies                                                                                  |
-| `/api/auth/refresh`        | Silently renew access token via refresh cookie                                                                              |
-| `/api/auth/logout`         | Clear auth cookies                                                                                                          |
-| `/api/auth/me`             | Return the current user (or 401)                                                                                            |
-| `/api/billing/*`           | Paddle checkout / portal / cancel endpoints                                                                                 |
-| `/api/paddle/webhook`      | Paddle subscription webhook                                                                                                 |
-| `/api/progress`            | Read/write per-lesson progress for the current user                                                                         |
-| `/api/progress/sync`       | Bulk upload local progress on first login                                                                                   |
-| `/api/progress/clear`      | Wipe progress for the current user                                                                                          |
-| `/api/daily-activity`      | Per-day lessons/reviews count (for streak)                                                                                  |
-| `/api/daily-activity/sync` | Bulk upload local daily-activity log on first login                                                                         |
+| Route                      | Purpose                                                                                                                                                                                         |
+| -------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `/api/app-lessons`         | Lightweight lesson list (id, sentence, translation)                                                                                                                                             |
+| `/api/app-lessons/[id]`    | Full lesson detail                                                                                                                                                                              |
+| `/api/app-tag-groups`      | Flattened tag groups for filters                                                                                                                                                                |
+| `/api/auth/send-code`      | Email the user a 6-digit OTP                                                                                                                                                                    |
+| `/api/auth/verify`         | Verify OTP, issue access + refresh cookies                                                                                                                                                      |
+| `/api/auth/refresh`        | Silently renew access token via refresh cookie                                                                                                                                                  |
+| `/api/auth/logout`         | Clear auth cookies                                                                                                                                                                              |
+| `/api/auth/me`             | Return the current user (or 401)                                                                                                                                                                |
+| `/api/billing/*`           | Paddle checkout / portal / cancel endpoints                                                                                                                                                     |
+| `/api/paddle/webhook`      | Paddle subscription webhook                                                                                                                                                                     |
+| `/api/progress`            | Read/write per-lesson progress for the current user                                                                                                                                             |
+| `/api/progress/sync`       | Bulk upload local progress on first login                                                                                                                                                       |
+| `/api/progress/clear`      | Wipe progress for the current user                                                                                                                                                              |
+| `/api/daily-activity`      | Per-day lessons/reviews count (for streak)                                                                                                                                                      |
+| `/api/daily-activity/sync` | Bulk upload local daily-activity log on first login                                                                                                                                             |
 | `/api/speech/check`        | Proxy audio to the speech-check service after verifying the session, premium status (or `lesson.isFree`), and per-user rate limit. Adds a Google-signed ID token so Cloud Run accepts the call. |
-| `/api/seed`                | Dev-only: run `runSeed()` against the DB                                                                                    |
+| `/api/seed`                | Dev-only: run `runSeed()` against the DB                                                                                                                                                        |
 
 ## Free Tier
 
@@ -304,12 +304,12 @@ Two roles, derived not from a DB column but from the env:
 - **Super admin** — whoever's email matches `INITIAL_ADMIN_EMAIL` (case-insensitive). Full CRUD on every collection.
 - **Editor** — every other admin record, scoped to the languages in their `allowedLanguages` field (set by the super admin in the Payload UI).
 
-| Collection   | Super admin     | Editor                                                   |
-| ------------ | --------------- | -------------------------------------------------------- |
-| `admins`     | full CRUD       | read self only                                           |
-| `lessons`    | full CRUD       | read / create / update only where `language ∈ allowedLanguages`; no delete |
-| `media`      | full CRUD       | create + read; no update/delete                          |
-| `tag-groups` | full CRUD       | read + update only their language; can add tags but cannot reassign the `language` field, create new groups, or delete |
+| Collection   | Super admin | Editor                                                                                                                 |
+| ------------ | ----------- | ---------------------------------------------------------------------------------------------------------------------- |
+| `admins`     | full CRUD   | read self only                                                                                                         |
+| `lessons`    | full CRUD   | read / create / update only where `language ∈ allowedLanguages`; no delete                                             |
+| `media`      | full CRUD   | create + read; no update/delete                                                                                        |
+| `tag-groups` | full CRUD   | read + update only their language; can add tags but cannot reassign the `language` field, create new groups, or delete |
 
 The super-admin check lives in `src/lib/adminAuth/access.ts`. To make a different admin the super admin, change `INITIAL_ADMIN_EMAIL` and restart — no migration needed.
 
@@ -323,11 +323,11 @@ To add an editor: super admin creates a new admin record, sets `allowedLanguages
 
 Each environment has its own OAuth client in its own Google Cloud project:
 
-| Env   | Cloud project         | Authorized redirect URI                                  |
-| ----- | --------------------- | -------------------------------------------------------- |
-| Dev   | `languagelicks-stage` | `http://localhost:3000/api/admin/google/callback`        |
-| Stage | `languagelicks-stage` | `https://<stage-domain>/api/admin/google/callback`       |
-| Prod  | `languagelicks-prod`  | `https://languagelicks.com/api/admin/google/callback`    |
+| Env   | Cloud project         | Authorized redirect URI                                       |
+| ----- | --------------------- | ------------------------------------------------------------- |
+| Dev   | `languagelicks-stage` | `http://localhost:3000/api/admin/google/callback`             |
+| Stage | `languagelicks-stage` | `https://staging.languagelicks.com/api/admin/google/callback` |
+| Prod  | `languagelicks-prod`  | `https://languagelicks.com/api/admin/google/callback`         |
 
 Each client gives its own `GOOGLE_OAUTH_CLIENT_ID` + `GOOGLE_OAUTH_CLIENT_SECRET`. Store them per-environment (`.env.local` for dev, `heroku config:set` for stage/prod). The `GOOGLE_OAUTH_REDIRECT_URI` env var must match the registered URI character-for-character (scheme, host, path, no trailing slash).
 
