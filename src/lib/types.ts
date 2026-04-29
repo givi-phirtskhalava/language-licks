@@ -11,15 +11,23 @@ export interface ILessonListItem {
   cefr: TCefrLevel;
 }
 
+export interface IRecording {
+  voiceActor: {
+    id: number;
+    name: string;
+    accent: string;
+    sampleUrl: string | null;
+  };
+  normalUrl: string | null;
+  slowUrl: string | null;
+}
+
 export interface ILesson {
   id: number;
   sentence: string;
   translation: string;
   context?: string;
-  audio: {
-    normal: string | null;
-    slow: string | null;
-  };
+  recordings: IRecording[];
   grammar: { label: string; explanation: string }[];
   liaisonTips?: { phrase: string; explanation: string }[];
   tags: string[];

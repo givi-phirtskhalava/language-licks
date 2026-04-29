@@ -23,40 +23,6 @@
   gap: 1em;
 }
 
-.languageTabs {
-  display: inline-flex;
-  gap: 0;
-  background: var(--theme-elevation-50);
-  border: 1px solid transparent;
-  border-radius: 0.25em;
-  overflow: hidden;
-  height: 2.4em;
-  box-sizing: border-box;
-}
-
-.langTab {
-  display: inline-flex;
-  align-items: center;
-  padding: 0 1em;
-  background: transparent;
-  color: var(--theme-elevation-700);
-  border: none;
-  cursor: pointer;
-  font-size: 0.9em;
-  font-weight: 500;
-  line-height: 1;
-}
-
-.langTab:hover {
-  background: var(--theme-elevation-100);
-}
-
-.langTabActive,
-.langTabActive:hover {
-  background: var(--theme-elevation-1000);
-  color: var(--theme-elevation-0);
-}
-
 .totalCount {
   display: inline-flex;
   align-items: center;

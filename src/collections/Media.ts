@@ -4,6 +4,9 @@ import { adminOrEditor, superAdminOnly } from '@/lib/adminAuth/access'
 
 export const Media: CollectionConfig = {
   slug: 'media',
+  admin: {
+    group: 'Admin',
+  },
   access: {
     read: () => true,
     create: adminOrEditor,

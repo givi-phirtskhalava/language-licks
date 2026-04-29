@@ -67,23 +67,31 @@ export interface Config {
   };
   blocks: {};
   collections: {
+    lessons: Lesson;
+    'audio-files': AudioFile;
+    'voice-actors': VoiceActor;
+    'voice-actor-samples': VoiceActorSample;
     admins: Admin;
     media: Media;
-    lessons: Lesson;
     'tag-groups': TagGroup;
-    'audio-files': AudioFile;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
     'payload-migrations': PayloadMigration;
   };
-  collectionsJoins: {};
+  collectionsJoins: {
+    lessons: {
+      audioFiles: 'audio-files';
+    };
+  };
   collectionsSelect: {
+    lessons: LessonsSelect<false> | LessonsSelect<true>;
+    'audio-files': AudioFilesSelect<false> | AudioFilesSelect<true>;
+    'voice-actors': VoiceActorsSelect<false> | VoiceActorsSelect<true>;
+    'voice-actor-samples': VoiceActorSamplesSelect<false> | VoiceActorSamplesSelect<true>;
     admins: AdminsSelect<false> | AdminsSelect<true>;
     media: MediaSelect<false> | MediaSelect<true>;
-    lessons: LessonsSelect<false> | LessonsSelect<true>;
     'tag-groups': TagGroupsSelect<false> | TagGroupsSelect<true>;
-    'audio-files': AudioFilesSelect<false> | AudioFilesSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -125,6 +133,98 @@ export interface AdminAuthOperations {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "lessons".
+ */
+export interface Lesson {
+  id: number;
+  language: 'french' | 'italian';
+  sentence: string;
+  translation: string;
+  context?: string | null;
+  audioFiles?: {
+    docs?: (number | AudioFile)[];
+    hasNextPage?: boolean;
+    totalDocs?: number;
+  };
+  order: number;
+  isFree?: boolean | null;
+  cefr?: ('A1' | 'A2' | 'B1' | 'B2' | 'C1' | 'C2') | null;
+  tags?: string[] | null;
+  grammar: {
+    label: string;
+    explanation: string;
+    id?: string | null;
+  }[];
+  liaisonTips?:
+    | {
+        phrase: string;
+        explanation: string;
+        id?: string | null;
+      }[]
+    | null;
+  updatedAt: string;
+  createdAt: string;
+  _status?: ('draft' | 'published') | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "audio-files".
+ */
+export interface AudioFile {
+  id: number;
+  lesson: number | Lesson;
+  speed: 'normal' | 'slow';
+  voiceActor: number | VoiceActor;
+  language: 'french' | 'italian';
+  updatedAt: string;
+  createdAt: string;
+  url?: string | null;
+  thumbnailURL?: string | null;
+  filename?: string | null;
+  mimeType?: string | null;
+  filesize?: number | null;
+  width?: number | null;
+  height?: number | null;
+  focalX?: number | null;
+  focalY?: number | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "voice-actors".
+ */
+export interface VoiceActor {
+  id: number;
+  name: string;
+  language: 'french' | 'italian';
+  accent: string;
+  /**
+   * Optional mp3 sample so users can preview this voice.
+   */
+  sample?: (number | null) | VoiceActorSample;
+  updatedAt: string;
+  createdAt: string;
+  _status?: ('draft' | 'published') | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "voice-actor-samples".
+ */
+export interface VoiceActorSample {
+  id: number;
+  updatedAt: string;
+  createdAt: string;
+  url?: string | null;
+  thumbnailURL?: string | null;
+  filename?: string | null;
+  mimeType?: string | null;
+  filesize?: number | null;
+  width?: number | null;
+  height?: number | null;
+  focalX?: number | null;
+  focalY?: number | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "admins".
  */
 export interface Admin {
@@ -160,65 +260,6 @@ export interface Admin {
 export interface Media {
   id: number;
   alt: string;
-  updatedAt: string;
-  createdAt: string;
-  url?: string | null;
-  thumbnailURL?: string | null;
-  filename?: string | null;
-  mimeType?: string | null;
-  filesize?: number | null;
-  width?: number | null;
-  height?: number | null;
-  focalX?: number | null;
-  focalY?: number | null;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "lessons".
- */
-export interface Lesson {
-  id: number;
-  language: 'french' | 'italian';
-  sentence: string;
-  translation: string;
-  context?: string | null;
-  /**
-   * Normal-speed mp3 recording.
-   */
-  audioNormal?: (number | null) | AudioFile;
-  /**
-   * Slow-speed mp3 recording, used for pronunciation practice.
-   */
-  audioSlow?: (number | null) | AudioFile;
-  order: number;
-  isFree?: boolean | null;
-  cefr?: ('A1' | 'A2' | 'B1' | 'B2' | 'C1' | 'C2') | null;
-  tags?: string[] | null;
-  grammar: {
-    label: string;
-    explanation: string;
-    id?: string | null;
-  }[];
-  liaisonTips?:
-    | {
-        phrase: string;
-        explanation: string;
-        id?: string | null;
-      }[]
-    | null;
-  updatedAt: string;
-  createdAt: string;
-  _status?: ('draft' | 'published') | null;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "audio-files".
- */
-export interface AudioFile {
-  id: number;
-  lesson: number | Lesson;
-  speed: 'normal' | 'slow';
-  language: 'french' | 'italian';
   updatedAt: string;
   createdAt: string;
   url?: string | null;
@@ -278,6 +319,22 @@ export interface PayloadLockedDocument {
   id: number;
   document?:
     | ({
+        relationTo: 'lessons';
+        value: number | Lesson;
+      } | null)
+    | ({
+        relationTo: 'audio-files';
+        value: number | AudioFile;
+      } | null)
+    | ({
+        relationTo: 'voice-actors';
+        value: number | VoiceActor;
+      } | null)
+    | ({
+        relationTo: 'voice-actor-samples';
+        value: number | VoiceActorSample;
+      } | null)
+    | ({
         relationTo: 'admins';
         value: number | Admin;
       } | null)
@@ -286,16 +343,8 @@ export interface PayloadLockedDocument {
         value: number | Media;
       } | null)
     | ({
-        relationTo: 'lessons';
-        value: number | Lesson;
-      } | null)
-    | ({
         relationTo: 'tag-groups';
         value: number | TagGroup;
-      } | null)
-    | ({
-        relationTo: 'audio-files';
-        value: number | AudioFile;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -341,6 +390,89 @@ export interface PayloadMigration {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "lessons_select".
+ */
+export interface LessonsSelect<T extends boolean = true> {
+  language?: T;
+  sentence?: T;
+  translation?: T;
+  context?: T;
+  audioFiles?: T;
+  order?: T;
+  isFree?: T;
+  cefr?: T;
+  tags?: T;
+  grammar?:
+    | T
+    | {
+        label?: T;
+        explanation?: T;
+        id?: T;
+      };
+  liaisonTips?:
+    | T
+    | {
+        phrase?: T;
+        explanation?: T;
+        id?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+  _status?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "audio-files_select".
+ */
+export interface AudioFilesSelect<T extends boolean = true> {
+  lesson?: T;
+  speed?: T;
+  voiceActor?: T;
+  language?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  url?: T;
+  thumbnailURL?: T;
+  filename?: T;
+  mimeType?: T;
+  filesize?: T;
+  width?: T;
+  height?: T;
+  focalX?: T;
+  focalY?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "voice-actors_select".
+ */
+export interface VoiceActorsSelect<T extends boolean = true> {
+  name?: T;
+  language?: T;
+  accent?: T;
+  sample?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  _status?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "voice-actor-samples_select".
+ */
+export interface VoiceActorSamplesSelect<T extends boolean = true> {
+  updatedAt?: T;
+  createdAt?: T;
+  url?: T;
+  thumbnailURL?: T;
+  filename?: T;
+  mimeType?: T;
+  filesize?: T;
+  width?: T;
+  height?: T;
+  focalX?: T;
+  focalY?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "admins_select".
  */
 export interface AdminsSelect<T extends boolean = true> {
@@ -383,39 +515,6 @@ export interface MediaSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "lessons_select".
- */
-export interface LessonsSelect<T extends boolean = true> {
-  language?: T;
-  sentence?: T;
-  translation?: T;
-  context?: T;
-  audioNormal?: T;
-  audioSlow?: T;
-  order?: T;
-  isFree?: T;
-  cefr?: T;
-  tags?: T;
-  grammar?:
-    | T
-    | {
-        label?: T;
-        explanation?: T;
-        id?: T;
-      };
-  liaisonTips?:
-    | T
-    | {
-        phrase?: T;
-        explanation?: T;
-        id?: T;
-      };
-  updatedAt?: T;
-  createdAt?: T;
-  _status?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "tag-groups_select".
  */
 export interface TagGroupsSelect<T extends boolean = true> {
@@ -434,26 +533,6 @@ export interface TagGroupsSelect<T extends boolean = true> {
       };
   updatedAt?: T;
   createdAt?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "audio-files_select".
- */
-export interface AudioFilesSelect<T extends boolean = true> {
-  lesson?: T;
-  speed?: T;
-  language?: T;
-  updatedAt?: T;
-  createdAt?: T;
-  url?: T;
-  thumbnailURL?: T;
-  filename?: T;
-  mimeType?: T;
-  filesize?: T;
-  width?: T;
-  height?: T;
-  focalX?: T;
-  focalY?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

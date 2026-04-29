@@ -54,10 +54,57 @@ export async function GET(
     }
   }
 
-  function audioUrl(value: unknown): string | null {
-    if (!value || typeof value !== "object") return null;
-    const url = (value as { url?: unknown }).url;
-    return typeof url === "string" ? url : null;
+  const audioFiles = await payload.find({
+    collection: "audio-files",
+    where: { lesson: { equals: lessonId } },
+    depth: 2,
+    limit: 100,
+    pagination: false,
+  });
+
+  type Recording = {
+    voiceActor: {
+      id: number;
+      name: string;
+      accent: string;
+      sampleUrl: string | null;
+    };
+    normalUrl: string | null;
+    slowUrl: string | null;
+  };
+
+  const grouped = new Map<number, Recording>();
+
+  for (const af of audioFiles.docs) {
+    const actor = af.voiceActor;
+    if (!actor || typeof actor !== "object") continue;
+    if (actor._status !== "published") continue;
+
+    const url = typeof af.url === "string" ? af.url : null;
+    if (!url) continue;
+
+    let entry = grouped.get(actor.id);
+    if (!entry) {
+      const sample = actor.sample;
+      const sampleUrl =
+        sample && typeof sample === "object" && typeof sample.url === "string"
+          ? sample.url
+          : null;
+      entry = {
+        voiceActor: {
+          id: actor.id,
+          name: actor.name,
+          accent: actor.accent,
+          sampleUrl,
+        },
+        normalUrl: null,
+        slowUrl: null,
+      };
+      grouped.set(actor.id, entry);
+    }
+
+    if (af.speed === "normal") entry.normalUrl = url;
+    else if (af.speed === "slow") entry.slowUrl = url;
   }
 
   const lesson = {
@@ -65,10 +112,7 @@ export async function GET(
     sentence: doc.sentence,
     translation: doc.translation,
     context: doc.context ?? null,
-    audio: {
-      normal: audioUrl(doc.audioNormal),
-      slow: audioUrl(doc.audioSlow),
-    },
+    recordings: Array.from(grouped.values()),
     grammar: doc.grammar ?? [],
     liaisonTips: doc.liaisonTips ?? null,
     tags: (doc.tags ?? []).filter((t): t is string => typeof t === "string"),

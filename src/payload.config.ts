@@ -12,6 +12,8 @@ import { AudioFiles } from "./collections/AudioFiles";
 import { Media } from "./collections/Media";
 import { Lessons } from "./collections/Lessons";
 import { TagGroups } from "./collections/TagGroups";
+import { VoiceActors } from "./collections/VoiceActors";
+import { VoiceActorSamples } from "./collections/VoiceActorSamples";
 import {
   users,
   verificationCodes,
@@ -36,10 +38,8 @@ export default buildConfig({
       baseDir: path.resolve(dirname),
     },
     components: {
-      afterNavLinks: [
-        "@/views/LessonBoardNavLink#default",
-        "@/views/CustomerLookupNavLink#default",
-      ],
+      beforeNavLinks: ["@/views/LessonsNavLinks#default"],
+      afterNavLinks: ["@/views/CustomerLookupNavLink#default"],
       logout: {
         Button: "@/views/AdminLogoutButton#default",
       },
@@ -55,7 +55,15 @@ export default buildConfig({
       },
     },
   },
-  collections: [Admins, Media, Lessons, TagGroups, AudioFiles],
+  collections: [
+    Lessons,
+    AudioFiles,
+    VoiceActors,
+    VoiceActorSamples,
+    Admins,
+    Media,
+    TagGroups,
+  ],
   editor: lexicalEditor(),
   email: resendAdapter({
     defaultFromAddress: EMAIL_FROM,
@@ -93,6 +101,20 @@ export default buildConfig({
       enabled: Boolean(process.env.GCS_BUCKET),
       collections: {
         "audio-files": {
+          generateFileURL: ({
+            filename,
+            prefix,
+          }: {
+            filename: string;
+            prefix?: string;
+          }) => {
+            const cdn = process.env.NEXT_PUBLIC_GCS_CDN_URL;
+            const key = prefix ? `${prefix}/${filename}` : filename;
+            if (cdn) return `${cdn.replace(/\/$/, "")}/${key}`;
+            return `https://storage.googleapis.com/${process.env.GCS_BUCKET}/${key}`;
+          },
+        },
+        "voice-actor-samples": {
           generateFileURL: ({
             filename,
             prefix,

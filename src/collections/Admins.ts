@@ -28,6 +28,7 @@ export const Admins: CollectionConfig = {
   admin: {
     useAsTitle: "email",
     defaultColumns: ["email", "name", "allowedLanguages"],
+    group: "Admin",
   },
   access: {
     read: adminsRead,

@@ -15,6 +15,7 @@ export const Lessons: CollectionConfig = {
   admin: {
     useAsTitle: "sentence",
     defaultColumns: ["sentence", "language", "order"],
+    group: false,
   },
   versions: {
     drafts: true,
@@ -119,29 +120,13 @@ export const Lessons: CollectionConfig = {
       },
     },
     {
-      name: "audioNormal",
-      type: "upload",
-      relationTo: "audio-files",
-      filterOptions: ({ id }) => ({
-        lesson: { equals: id },
-        speed: { equals: "normal" },
-      }),
+      name: "audioFiles",
+      type: "join",
+      collection: "audio-files",
+      on: "lesson",
+      defaultSort: "voiceActor",
       admin: {
-        description: "Normal-speed mp3 recording.",
-        condition: (data) => Boolean(data?.id),
-      },
-    },
-    {
-      name: "audioSlow",
-      type: "upload",
-      relationTo: "audio-files",
-      filterOptions: ({ id }) => ({
-        lesson: { equals: id },
-        speed: { equals: "slow" },
-      }),
-      admin: {
-        description:
-          "Slow-speed mp3 recording, used for pronunciation practice.",
+        defaultColumns: ["voiceActor", "speed"],
         condition: (data) => Boolean(data?.id),
       },
     },

@@ -13,7 +13,7 @@ const LANG_SHORT: Record<TLanguageId, string> = {
   italian: "it",
 };
 
-function resolveLessonId(value: unknown): number | null {
+function resolveRelationId(value: unknown): number | null {
   if (typeof value === "number") return value;
   if (typeof value === "string") {
     const n = Number(value);
@@ -38,7 +38,8 @@ export const AudioFiles: CollectionConfig = {
   },
   admin: {
     useAsTitle: "filename",
-    defaultColumns: ["filename", "lesson", "speed", "language"],
+    defaultColumns: ["filename", "lesson", "speed", "voiceActor", "language"],
+    group: "Audio",
   },
   upload: {
     mimeTypes: ["audio/mpeg"],
@@ -87,6 +88,17 @@ export const AudioFiles: CollectionConfig = {
       },
     },
     {
+      name: "voiceActor",
+      type: "relationship",
+      relationTo: "voice-actors",
+      required: true,
+      hasMany: false,
+      filterOptions: ({ data }) => {
+        if (data?.language) return { language: { equals: data.language } };
+        return true;
+      },
+    },
+    {
       name: "language",
       type: "select",
       required: true,
@@ -97,13 +109,13 @@ export const AudioFiles: CollectionConfig = {
       admin: { hidden: true },
     },
   ],
-  indexes: [{ fields: ["lesson", "speed"], unique: true }],
+  indexes: [{ fields: ["lesson", "speed", "voiceActor"], unique: true }],
   hooks: {
     beforeValidate: [
       async ({ data, req }) => {
         if (!data) return data;
 
-        const lessonId = resolveLessonId(data.lesson);
+        const lessonId = resolveRelationId(data.lesson);
         if (lessonId !== null && !data.language) {
           const lesson = await req.payload
             .findByID({
@@ -118,6 +130,23 @@ export const AudioFiles: CollectionConfig = {
           }
         }
 
+        const voiceActorId = resolveRelationId(data.voiceActor);
+        if (voiceActorId !== null && data.language) {
+          const voiceActor = await req.payload
+            .findByID({
+              collection: "voice-actors",
+              id: voiceActorId,
+              depth: 0,
+              req,
+            })
+            .catch(() => null);
+          if (voiceActor && voiceActor.language !== data.language) {
+            throw new Error(
+              `Voice actor language "${voiceActor.language}" does not match audio file language "${data.language}".`,
+            );
+          }
+        }
+
         return data;
       },
     ],
@@ -125,7 +154,7 @@ export const AudioFiles: CollectionConfig = {
       ({ data, req }) => {
         if (!req.file) return data;
 
-        const lessonId = resolveLessonId(data.lesson);
+        const lessonId = resolveRelationId(data.lesson);
         const speed = data.speed;
         const language = data.language as TLanguageId | undefined;
 

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import classNames from "classnames";
 import { Button } from "@payloadcms/ui";
 import {
@@ -18,45 +19,46 @@ import {
 } from "@dnd-kit/sortable";
 import SortableRow from "./SortableRow";
 
-import style from "./LessonBoard.module.css";
+import { LANGUAGES, DEFAULT_LANGUAGE, type TLanguageId } from "@/lib/projectConfig";
 
-const LANGUAGES = [
-  { label: "French", value: "french" },
-  { label: "Italian", value: "italian" },
-] as const;
+import style from "./LessonBoard.module.css";
 
 const CEFR_LEVELS = ["A1", "A2", "B1", "B2", "C1", "C2"] as const;
 
 type TCefr = (typeof CEFR_LEVELS)[number];
-type TLanguage = (typeof LANGUAGES)[number]["value"];
 
 export interface ILesson {
   id: number;
   sentence: string;
   translation: string;
-  language: TLanguage;
+  language: TLanguageId;
   cefr: TCefr;
   order: number;
   isFree: boolean;
   _status?: "draft" | "published" | "changed";
 }
 
-const STORAGE_LANGUAGE_KEY = "lessonBoard:language";
 const STORAGE_CEFR_KEY = "lessonBoard:cefr";
 
+function isLanguageId(value: string | null): value is TLanguageId {
+  return LANGUAGES.some(function match(l) {
+    return l.id === value;
+  });
+}
+
 export default function LessonBoardClient() {
-  const [language, setLanguage] = useState<TLanguage>("french");
+  const searchParams = useSearchParams();
+  const langParam = searchParams.get("language");
+  const language: TLanguageId = isLanguageId(langParam)
+    ? langParam
+    : DEFAULT_LANGUAGE;
+
   const [cefr, setCefr] = useState<TCefr>("A1");
   const [search, setSearch] = useState("");
   const [lessons, setLessons] = useState<ILesson[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(function loadFromStorage() {
-    const storedLang = window.localStorage.getItem(STORAGE_LANGUAGE_KEY);
-    if (storedLang === "french" || storedLang === "italian") {
-      setLanguage(storedLang);
-    }
-
     const storedCefr = window.localStorage.getItem(STORAGE_CEFR_KEY);
     if (
       storedCefr !== null &&
@@ -65,11 +67,6 @@ export default function LessonBoardClient() {
       setCefr(storedCefr as TCefr);
     }
   }, []);
-
-  function handleLanguageChange(next: TLanguage) {
-    setLanguage(next);
-    window.localStorage.setItem(STORAGE_LANGUAGE_KEY, next);
-  }
 
   function handleCefrChange(next: TCefr) {
     setCefr(next);
@@ -246,25 +243,6 @@ export default function LessonBoardClient() {
     <>
       <div className={style.header}>
         <div className={style.headerRow}>
-          <div className={style.languageTabs}>
-            {LANGUAGES.map(function renderLang(l) {
-              const active = language === l.value;
-              return (
-                <button
-                  key={l.value}
-                  type="button"
-                  className={classNames(
-                    style.langTab,
-                    active && style.langTabActive
-                  )}
-                  onClick={() => handleLanguageChange(l.value)}
-                >
-                  {l.label}
-                </button>
-              );
-            })}
-          </div>
-
           <div className={style.totalCount}>
             <span className={style.totalLabel}>Total</span>
             <span className={style.totalValue}>{totalCount}</span>

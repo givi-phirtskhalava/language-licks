@@ -31,6 +31,8 @@ export default function SentenceDisplay({
 
   const blurred = alwaysBlurred || !revealed;
 
+  const recording = lesson.recordings[0] ?? null;
+
   function togglePlay(which: Exclude<TPlaying, null>) {
     setPlaying((prev) => (prev === which ? null : which));
   }
@@ -51,17 +53,17 @@ export default function SentenceDisplay({
           </p>
         </div>
 
-        {showAudio && (
+        {showAudio && recording && (
           <div className={styles.audioButtons}>
             <AudioButton
-              src={lesson.audio.normal}
+              src={recording.normalUrl}
               label="Listen"
               isPlaying={playing === "normal"}
               onTogglePlay={() => togglePlay("normal")}
               onEnd={handleEnd}
             />
             <AudioButton
-              src={lesson.audio.slow}
+              src={recording.slowUrl}
               label="Slow"
               isPlaying={playing === "slow"}
               onTogglePlay={() => togglePlay("slow")}

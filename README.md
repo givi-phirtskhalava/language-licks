@@ -105,7 +105,7 @@ The app uses **one Postgres database** shared by two ORMs that own disjoint sets
 
 | Tool        | Owns                                                                            | Why                                                                                               |
 | ----------- | ------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------- |
-| **Payload** | `lessons`, `tag-groups`, `media`, `admins` (and Payload's internal bookkeeping) | Content authored by humans. The admin UI, access control, and field validation are net wins here. |
+| **Payload** | `lessons`, `tag-groups`, `media`, `admins`, `voice-actors`, `audio-files`, `voice-actor-samples` (and Payload's internal bookkeeping) | Content authored by humans. The admin UI, access control, and field validation are net wins here. |
 | **Drizzle** | `users`, `verification_codes`, `progress`, `daily_activity`                     | Runtime/transactional data written on every interaction. Needs raw SQL control and low overhead.  |
 
 **Rule of thumb**: if a non-developer would ever edit it, it goes in Payload. If the app writes to it on every lesson interaction, it goes in Drizzle.
@@ -146,10 +146,13 @@ Collections live in `src/collections/`, wired up in `src/payload.config.ts`. Gen
 
 Current collections:
 
-- **lessons** — sentence, translation, grammar breakdown, liaison tips, language, tags (string array). Lessons reference tags by name (string), not by FK.
+- **lessons** — sentence, translation, grammar breakdown, liaison tips, language, tags (string array). Lessons reference tags by name (string), not by FK. Drafts are versioned, and the admin sidebar's per-language entries open a custom Lesson Board view that lets editors drag-reorder lessons within each CEFR level.
 - **tag-groups** — one document per language. Each document has a nested array of groups; each group has a nested array of tags. Edit all groups + tags for a language on a single page.
 - **media** — uploads used by Payload admin (GCS-backed in prod).
 - **admins** — Payload's auth-managed collection, used only for logging in to `/admin`. **Not** the same as the Drizzle `users` table that holds app accounts (see [Two user tables](#two-user-tables)).
+- **voice-actors** — one record per `(name, language)` pair (unique index): name, language, accent, optional preview sample. Drafts are versioned. A `beforeDelete` hook blocks deletion while any `audio-files` still reference the actor.
+- **audio-files** — mp3 recording for a `(lesson, voice actor, speed)` combination (unique index); speed is `normal` or `slow`. Language is hidden in the form and back-filled from the lesson in `beforeValidate`; the voice actor's language must match. Filenames are auto-generated (`<lessonId>-<speed>-<hash>.mp3`) and uploads land in `audio/{fr,it}/` in GCS. The app frontend reads these through `/api/app-lessons/[id]`, grouped by voice actor with `normalUrl` / `slowUrl` / `sampleUrl`.
+- **voice-actor-samples** — internal upload collection that holds optional voice-actor preview clips. Hidden from the sidebar; only reached as the relation target on `voice-actors.sample`. Filenames are randomized on upload.
 
 After changing a collection:
 
@@ -304,12 +307,15 @@ Two roles, derived not from a DB column but from the env:
 - **Super admin** — whoever's email matches `INITIAL_ADMIN_EMAIL` (case-insensitive). Full CRUD on every collection.
 - **Editor** — every other admin record, scoped to the languages in their `allowedLanguages` field (set by the super admin in the Payload UI).
 
-| Collection   | Super admin | Editor                                                                                                                 |
-| ------------ | ----------- | ---------------------------------------------------------------------------------------------------------------------- |
-| `admins`     | full CRUD   | read self only                                                                                                         |
-| `lessons`    | full CRUD   | read / create / update only where `language ∈ allowedLanguages`; no delete                                             |
-| `media`      | full CRUD   | create + read; no update/delete                                                                                        |
-| `tag-groups` | full CRUD   | read + update only their language; can add tags but cannot reassign the `language` field, create new groups, or delete |
+| Collection            | Super admin | Editor                                                                                                                 |
+| --------------------- | ----------- | ---------------------------------------------------------------------------------------------------------------------- |
+| `admins`              | full CRUD   | read self only                                                                                                         |
+| `lessons`             | full CRUD   | read / create / update only where `language ∈ allowedLanguages`; no delete                                             |
+| `media`               | full CRUD   | create + read; no update/delete                                                                                        |
+| `tag-groups`          | full CRUD   | read + update only their language; can add tags but cannot reassign the `language` field, create new groups, or delete |
+| `voice-actors`        | full CRUD   | read all; create + update where `language ∈ allowedLanguages`; the `language` field itself is locked to super admin; no delete |
+| `audio-files`         | full CRUD   | read all; create + update where `language ∈ allowedLanguages`; no delete                                               |
+| `voice-actor-samples` | full CRUD   | create + read + update; no delete                                                                                      |
 
 The super-admin check lives in `src/lib/adminAuth/access.ts`. To make a different admin the super admin, change `INITIAL_ADMIN_EMAIL` and restart — no migration needed.
 
@@ -448,7 +454,7 @@ src/
       daily-activity/     # Per-day lessons/reviews counts for streaks
       speech/             # /api/speech/check — proxies audio to the speech-check Cloud Run service
       seed/               # Dev-only seed runner
-  collections/            # Payload collections (Admins, Lessons, TagGroups, Media)
+  collections/            # Payload collections (Admins, Lessons, TagGroups, Media, VoiceActors, AudioFiles, VoiceActorSamples)
   components/
     atoms/                # Stateless, reusable UI components
     organisms/            # Stateful, composed components

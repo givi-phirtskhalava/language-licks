@@ -585,6 +585,59 @@ const ITALIAN_LESSONS: ISeedLesson[] = [
   },
 ];
 
+interface ISeedVoiceActor {
+  name: string;
+  accent: string;
+}
+
+const VOICE_ACTORS_BY_LANGUAGE: Record<TLanguage, ISeedVoiceActor[]> = {
+  french: [
+    { name: "Marie", accent: "Parisian" },
+    { name: "Jean", accent: "Lyonnais" },
+  ],
+  italian: [{ name: "Giulia", accent: "Florentine" }],
+};
+
+async function seedVoiceActors(
+  payload: Awaited<ReturnType<typeof getPayload>>,
+) {
+  for (const language of Object.keys(VOICE_ACTORS_BY_LANGUAGE) as TLanguage[]) {
+    for (const actor of VOICE_ACTORS_BY_LANGUAGE[language]) {
+      const existing = await payload.find({
+        collection: "voice-actors",
+        where: {
+          and: [
+            { name: { equals: actor.name } },
+            { language: { equals: language } },
+          ],
+        },
+        limit: 1,
+        draft: true,
+      });
+
+      const data = {
+        name: actor.name,
+        language,
+        accent: actor.accent,
+        _status: "published" as const,
+      };
+
+      if (existing.docs.length > 0) {
+        await payload.update({
+          collection: "voice-actors",
+          id: existing.docs[0].id,
+          data,
+        });
+      } else {
+        await payload.create({
+          collection: "voice-actors",
+          data,
+        });
+      }
+    }
+  }
+}
+
 async function seedTags(payload: Awaited<ReturnType<typeof getPayload>>) {
   for (const language of Object.keys(TAG_GROUPS_BY_LANGUAGE) as TLanguage[]) {
     const groups = TAG_GROUPS_BY_LANGUAGE[language].map((group) => ({
@@ -689,6 +742,7 @@ async function seedLessons(payload: Awaited<ReturnType<typeof getPayload>>) {
 export async function runSeed() {
   const payload = await getPayload({ config });
   await seedTags(payload);
+  await seedVoiceActors(payload);
   const { updated, inserted, removed } = await seedLessons(payload);
   return { updated, inserted, removed };
 }

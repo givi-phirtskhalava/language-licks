@@ -15,6 +15,7 @@ export const TagGroups: CollectionConfig = {
   admin: {
     useAsTitle: "language",
     defaultColumns: ["language"],
+    group: "Admin",
   },
   access: {
     read: ({ req }) => {

@@ -5,8 +5,8 @@ export default function AudioCreateNotice() {
     <div className={style.notice}>
       <p className={style.title}>Audio uploads</p>
       <p className={style.body}>
-        Save the lesson first, then come back here to upload normal-speed and
-        slow-speed mp3 recordings.
+        Save the lesson first, then come back here to upload normal- and
+        slow-speed mp3 recordings per voice actor.
       </p>
     </div>
   );
