@@ -136,7 +136,6 @@ export default buildConfig({
           ? JSON.parse(process.env.GCS_CREDENTIALS)
           : undefined,
       },
-      acl: "Public",
     }),
   ],
 });
